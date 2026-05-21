@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ギャンブル損失シミュレーター — 続けると本当はいくら損するのか</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0D1B2A;
+      --surface: #142233;
+      --surface2: #1A2E44;
+      --border: #243850;
+      --blue: #5B8DEF;
+      --blue-dim: rgba(91,141,239,0.15);
+      --red: #E05252;
+      --red-dim: rgba(224,82,82,0.12);
+      --green: #4CAF82;
+      --green-dim: rgba(76,175,130,0.12);
+      --orange: #E09A5B;
+      --purple: #9B7FE8;
+      --text: #F0F4F8;
+      --muted: #7A90A8;
+      --light: #A8BCCF;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      padding: 40px 24px 80px;
+    }
+
+    .header { text-align: center; margin-bottom: 48px; }
+    .header .eyebrow {
+      font-size: 11px; letter-spacing: 0.14em; font-weight: 700;
+      color: var(--blue); text-transform: uppercase; margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: clamp(22px, 5vw, 34px);
+      font-weight: 800; line-height: 1.25;
+      letter-spacing: -0.02em; margin-bottom: 14px;
+    }
+    .header h1 span { color: var(--red); }
+    .header .lead {
+      font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 540px; margin: 0 auto;
+    }
+
+    .container { max-width: 760px; margin: 0 auto; }
+
+    .input-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-bottom: 32px;
+    }
+    .input-panel > h2 {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 24px;
+    }
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    @media(max-width:520px) { .input-grid { grid-template-columns: 1fr; } }
+
+    .input-item label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 13px; font-weight: 600; color: var(--light); margin-bottom: 10px;
+    }
+    .input-item label .val {
+      font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -0.01em;
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%; height: 4px;
+      background: var(--border);
+      border-radius: 4px; outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--blue);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 0 1px var(--blue);
+      cursor: pointer;
+    }
+
+    .type-selector {
+      margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;
+    }
+    .ts-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 14px;
+    }
+    .type-group {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px; flex-wrap: wrap;
+    }
+    .type-group:last-child { margin-bottom: 0; }
+    .group-label {
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.08em; min-width: 58px;
+    }
+    .type-btn {
+      padding: 5px 13px; border-radius: 6px; font-size: 12px; font-weight: 700;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .type-btn.active {
+      background: var(--blue-dim); border-color: var(--blue); color: var(--blue);
+    }
+    .type-btn:hover:not(.active) { border-color: var(--light); color: var(--light); }
+
+    .results-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+      margin-bottom: 32px;
+    }
+    @media(max-width:520px) { .results-grid { grid-template-columns: 1fr; } }
+
+    .result-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 22px;
+    }
+    .result-card .label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+    }
+    .result-card .amount {
+      font-size: clamp(22px, 4vw, 30px); font-weight: 800;
+      letter-spacing: -0.02em; line-height: 1;
+    }
+    .result-card .sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    .card-spent  .amount { color: var(--text); }
+    .card-return { border-color: var(--red); background: var(--red-dim); }
+    .card-return .amount { color: var(--red); }
+    .card-loss   { border-color: var(--red); }
+    .card-loss   .amount { color: var(--red); }
+    .card-invest { border-color: var(--green); background: var(--green-dim); }
+    .card-invest .amount { color: var(--green); }
+
+    .chart-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px 32px; margin-bottom: 32px;
+    }
+    .chart-panel h2 {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 20px;
+    }
+    .chart-note {
+      font-size: 11px; color: var(--muted); margin-top: 14px; line-height: 1.6;
+    }
+
+    .facts {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px 32px; margin-bottom: 32px;
+    }
+    .facts h2 {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 20px;
+    }
+    .fact-item {
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 16px; align-items: center;
+      padding: 16px 0; border-bottom: 1px solid var(--border);
+    }
+    .fact-item:last-child { border-bottom: none; }
+    .fact-label { font-size: 13px; color: var(--light); line-height: 1.5; }
+    .fact-label strong { color: var(--text); font-weight: 700; display: block; margin-bottom: 2px; }
+    .fact-value {
+      font-size: 20px; font-weight: 800; color: var(--red);
+      white-space: nowrap; text-align: right; letter-spacing: -0.01em;
+    }
+    .fact-value.blue   { color: var(--blue); }
+    .fact-value.orange { color: var(--orange); }
+    .fact-value.green  { color: var(--green); }
+
+    .pachislot-note {
+      background: rgba(155,127,232,0.1); border: 1px solid rgba(155,127,232,0.3);
+      border-radius: 8px; padding: 12px 16px; margin-top: 16px;
+      font-size: 12px; color: #C4B0F0; line-height: 1.7;
+    }
+
+    .share-section { text-align: center; }
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #1a1a2e; border: 1px solid #333;
+      color: var(--text); font-size: 14px; font-weight: 700;
+      padding: 14px 28px; border-radius: 8px; cursor: pointer;
+      transition: all 0.15s; text-decoration: none;
+    }
+    .share-btn:hover { background: #222240; border-color: #555; }
+    .share-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .share-note { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+    .footer {
+      text-align: center; font-size: 11px; color: var(--muted);
+      margin-top: 48px; line-height: 1.8;
+    }
+    .footer a { color: var(--blue); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="eyebrow">K' Intelligence — 戦略思考を武器にする</div>
+    <h1>ギャンブルを続けると<br><span>本当にいくら損するのか</span></h1>
+    <p class="lead">
+      ロト・競馬・競輪・競艇・パチンコ・BIG。<br>
+      還元率・期待損失・機会コストを数字で直視しよう。
+    </p>
+  </div>
+
+  <div class="input-panel">
+    <h2>シミュレーション設定</h2>
+    <div class="input-grid">
+      <div class="input-item">
+        <label>
+          週あたり使用額
+          <span class="val" id="weeklyLabel">¥1,000</span>
+        </label>
+        <input type="range" id="weeklySlider" min="100" max="10000" step="100" value="1000">
+      </div>
+      <div class="input-item">
+        <label>
+          継続年数
+          <span class="val" id="yearsLabel">30年</span>
+        </label>
+        <input type="range" id="yearsSlider" min="5" max="40" step="1" value="30">
+      </div>
+    </div>
+    <div class="type-selector">
+      <div class="ts-label">ギャンブル種別</div>
+      <div class="type-group">
+        <span class="group-label">宝くじ</span>
+        <button class="type-btn active" id="btn-loto6"     onclick="selectType('loto6')">ロト6</button>
+        <button class="type-btn"        id="btn-loto4"     onclick="selectType('loto4')">ロト4</button>
+        <button class="type-btn"        id="btn-big"       onclick="selectType('big')">BIG</button>
+      </div>
+      <div class="type-group">
+        <span class="group-label">公営競技</span>
+        <button class="type-btn"        id="btn-keiba"     onclick="selectType('keiba')">競馬</button>
+        <button class="type-btn"        id="btn-keirin"    onclick="selectType('keirin')">競輪</button>
+        <button class="type-btn"        id="btn-kyotei"    onclick="selectType('kyotei')">競艇</button>
+      </div>
+      <div class="type-group">
+        <span class="group-label">パチンコ</span>
+        <button class="type-btn"        id="btn-pachinko"  onclick="selectType('pachinko')">パチンコ</button>
+        <button class="type-btn"        id="btn-pachislot" onclick="selectType('pachislot')">パチスロ</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-grid">
+    <div class="result-card card-spent">
+      <div class="label">累計使用額</div>
+      <div class="amount" id="totalSpent">—</div>
+      <div class="sub" id="totalSpentSub">—</div>
+    </div>
+    <div class="result-card card-return">
+      <div class="label">期待回収額（還元率<span id="returnRateLabel">—</span>%）</div>
+      <div class="amount" id="expectedReturn">—</div>
+      <div class="sub">統計上、戻ってくると期待できる金額</div>
+    </div>
+    <div class="result-card card-loss">
+      <div class="label">実質損失額</div>
+      <div class="amount" id="netLoss">—</div>
+      <div class="sub" id="netLossSub">—</div>
+    </div>
+    <div class="result-card card-invest">
+      <div class="label">同額を投資した場合（年利7%）</div>
+      <div class="amount" id="investValue">—</div>
+      <div class="sub" id="investSub">—</div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <h2 id="mainChartTitle">お金の行方を比較する</h2>
+    <canvas id="mainChart" height="180"></canvas>
+  </div>
+
+  <div class="chart-panel">
+    <h2>全8種 損失比較 — 同条件でいくら損するか</h2>
+    <canvas id="compareChart" height="300"></canvas>
+    <p class="chart-note" id="compareNote"></p>
+  </div>
+
+  <div class="facts">
+    <h2>知っておくべき数字</h2>
+    <div class="fact-item">
+      <div class="fact-label">
+        <strong>投資との差額（機会コスト）</strong>
+        ギャンブルに使った分を年利7%で運用したら、<span id="yearsLabel2">30</span>年後の差
+      </div>
+      <div class="fact-value orange" id="oppCost">—</div>
+    </div>
+    <div class="fact-item">
+      <div class="fact-label">
+        <strong>週1回を<span id="yearsLabel3">30</span>年続けた累計回数</strong>
+      </div>
+      <div class="fact-value blue" id="totalTickets">—</div>
+    </div>
+    <div class="fact-item">
+      <div class="fact-label">
+        <strong>胴元の取り分（控除率）</strong>
+        1回プレイするたびに、確実に胴元に渡る割合
+      </div>
+      <div class="fact-value" id="houseEdge">—</div>
+    </div>
+    <div id="lottoFacts">
+      <div class="fact-item">
+        <div class="fact-label">
+          <strong>1等に当たるまでの期待年数</strong>
+          週1枚購入を続けた場合の平均
+        </div>
+        <div class="fact-value" id="yearsToWin">—</div>
+      </div>
+      <div class="fact-item">
+        <div class="fact-label">
+          <strong>1等当選確率（1枚あたり）</strong>
+        </div>
+        <div class="fact-value blue" id="winProb">—</div>
+      </div>
+    </div>
+    <div class="pachislot-note" id="pachislotNote" style="display:none;">
+      ⚠ パチンコ・パチスロの「週あたり使用額」は<strong>純損失額（持ち出し分）</strong>を入力してください。実際の投入額は数倍にのぼります（¥10,000を入れて¥8,400で帰宅 → 純損失¥1,600）。また、資金が循環するため損切りの心理的障壁が高く、実際の損失は試算より大きくなりがちです。
+    </div>
+  </div>
+
+  <div class="share-section">
+    <a href="#" class="share-btn" id="shareBtn" onclick="shareToX(); return false;">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+      結果をXでシェアする
+    </a>
+    <p class="share-note">シミュレーション結果が自動でテキストに入ります</p>
+  </div>
+
+  <div class="footer">
+    ※ 還元率: ロト6=45.7%、ロト4=45.0%（総務省発表）/ BIG=50.0%（スポーツ振興センター）<br>
+    ※ 競馬=77.0%（JRA馬券種別の平均）/ 競輪・競艇=75.0%（公営競技法定払戻率）<br>
+    ※ パチンコ≈84.0%、パチスロ≈89.0%（業界平均目安。機種・設定により大幅に変動）<br>
+    ※ 投資リターンはS&P500の長期平均（年利7%）を使用。元本割れリスクあり。<br>
+    ※ このツールは教育目的の試算です。実際の結果を保証するものではありません。<br><br>
+    Powered by <a href="#">K' Intelligence</a> — 思考と実装で、現代を解く
+  </div>
+
+</div>
+
+<script>
+  const GAMBLE = {
+    loto6:     { name: 'ロト6',    cat: 'lotto',     returnRate: 0.457, jackpotOdds: 6096454 },
+    loto4:     { name: 'ロト4',    cat: 'lotto',     returnRate: 0.450, jackpotOdds: 8145    },
+    big:       { name: 'BIG',      cat: 'lotto',     returnRate: 0.500, jackpotOdds: 4782969 },
+    keiba:     { name: '競馬',     cat: 'racing',    returnRate: 0.770, jackpotOdds: null    },
+    keirin:    { name: '競輪',     cat: 'racing',    returnRate: 0.750, jackpotOdds: null    },
+    kyotei:    { name: '競艇',     cat: 'racing',    returnRate: 0.750, jackpotOdds: null    },
+    pachinko:  { name: 'パチンコ', cat: 'pachislot', returnRate: 0.840, jackpotOdds: null    },
+    pachislot: { name: 'パチスロ', cat: 'pachislot', returnRate: 0.890, jackpotOdds: null    },
+  };
+
+  // 損失率が高い順（左上から見て一番インパクトが出る順）
+  const COMPARE_ORDER = ['loto4', 'loto6', 'big', 'kyotei', 'keirin', 'keiba', 'pachinko', 'pachislot'];
+
+  let currentType = 'loto6';
+  let mainChart   = null;
+  let cmpChart    = null;
+  let _cmpTotal   = 0;
+
+  function selectType(type) {
+    currentType = type;
+    Object.keys(GAMBLE).forEach(k => {
+      document.getElementById('btn-' + k).classList.toggle('active', k === type);
+    });
+    update();
+  }
+
+  function fmt(n) {
+    if (n >= 1e8) return '¥' + (n / 1e8).toFixed(1) + '億';
+    if (n >= 1e4) return '¥' + Math.round(n / 1e4).toLocaleString() + '万';
+    return '¥' + Math.round(n).toLocaleString();
+  }
+  function fmtNum(n) { return Math.round(n).toLocaleString(); }
+
+  function calcInvestFV(weeklyAmt, years) {
+    const r = Math.pow(1.07, 1/52) - 1;
+    const n = years * 52;
+    return weeklyAmt * ((Math.pow(1 + r, n) - 1) / r);
+  }
+
+  function update() {
+    const weekly = parseInt(document.getElementById('weeklySlider').value);
+    const years  = parseInt(document.getElementById('yearsSlider').value);
+    const g      = GAMBLE[currentType];
+
+    document.getElementById('weeklyLabel').textContent      = '¥' + weekly.toLocaleString();
+    document.getElementById('yearsLabel').textContent       = years + '年';
+    document.getElementById('yearsLabel2').textContent      = years;
+    document.getElementById('yearsLabel3').textContent      = years;
+    document.getElementById('returnRateLabel').textContent  = (g.returnRate * 100).toFixed(1);
+    document.getElementById('mainChartTitle').textContent   = `${g.name}：お金の行方を比較する`;
+
+    const totalWeeks = years * 52;
+    const totalSpent = weekly * totalWeeks;
+    const expReturn  = totalSpent * g.returnRate;
+    const netLoss    = totalSpent - expReturn;
+    const investFV   = calcInvestFV(weekly, years);
+    const oppCost    = investFV - totalSpent;
+
+    document.getElementById('totalSpent').textContent    = fmt(totalSpent);
+    document.getElementById('totalSpentSub').textContent = `${years}年間 × 週${weekly.toLocaleString()}円`;
+    document.getElementById('expectedReturn').textContent = fmt(expReturn);
+    document.getElementById('netLoss').textContent       = fmt(netLoss);
+    document.getElementById('netLossSub').textContent    = `使用額の${Math.round((1 - g.returnRate)*100)}%が消える`;
+    document.getElementById('investValue').textContent   = fmt(investFV);
+    document.getElementById('investSub').textContent     = `元本${fmt(totalSpent)}が${fmt(investFV)}に`;
+
+    document.getElementById('oppCost').textContent      = '+' + fmt(oppCost);
+    document.getElementById('totalTickets').textContent = fmtNum(totalWeeks) + '回';
+    document.getElementById('houseEdge').textContent    = Math.round((1 - g.returnRate) * 100) + '%';
+
+    const isLotto = g.cat === 'lotto';
+    document.getElementById('lottoFacts').style.display    = isLotto ? '' : 'none';
+    document.getElementById('pachislotNote').style.display = g.cat === 'pachislot' ? '' : 'none';
+
+    if (isLotto && g.jackpotOdds) {
+      const yrs = g.jackpotOdds / 52;
+      document.getElementById('yearsToWin').textContent =
+        yrs >= 1000 ? fmtNum(Math.round(yrs)) + '年' : Math.round(yrs) + '年';
+      document.getElementById('winProb').textContent = '1 / ' + fmtNum(g.jackpotOdds);
+    }
+
+    updateMainChart(totalSpent, expReturn, netLoss, investFV, g.name);
+    updateCompareChart(weekly, years, totalSpent, investFV);
+
+    const shareText =
+      `【${g.name}シミュレーション】\n週${weekly.toLocaleString()}円を${years}年続けると…\n\n` +
+      `💸 累計使用: ${fmt(totalSpent)}\n` +
+      `❌ 実質損失: ${fmt(netLoss)}（${Math.round((1-g.returnRate)*100)}%消える）\n` +
+      `📈 同額を投資: ${fmt(investFV)}\n\n` +
+      (isLotto && g.jackpotOdds ? `1等確率: 1/${fmtNum(g.jackpotOdds)}\n\n` : '') +
+      `#戦略思考 #お金の話 #K'`;
+    document.getElementById('shareBtn').href =
+      'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText);
+  }
+
+  function updateMainChart(totalSpent, expReturn, netLoss, investFV, name) {
+    const labels = [`${name}に使う金額`, `${name}から戻る金額`, '実質損失', '同額を投資した場合'];
+    const values = [totalSpent, expReturn, netLoss, investFV];
+    const alphas = ['rgba(91,141,239,0.8)', 'rgba(224,82,82,0.6)', 'rgba(224,82,82,0.9)', 'rgba(76,175,130,0.85)'];
+    const bords  = ['#5B8DEF', '#E05252', '#E05252', '#4CAF82'];
+
+    if (mainChart) {
+      mainChart.data.labels = labels;
+      mainChart.data.datasets[0].data = values;
+      mainChart.data.datasets[0].backgroundColor = alphas;
+      mainChart.data.datasets[0].borderColor = bords;
+      mainChart.update('none');
+      return;
+    }
+
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    mainChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ data: values, backgroundColor: alphas, borderColor: bords,
+          borderWidth: 1.5, borderRadius: 6, borderSkipped: false }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => ' ' + fmt(c.raw) } }
+        },
+        scales: {
+          x: { ticks: { color: '#7A90A8', font: { size: 11 } }, grid: { display: false }, border: { color: '#243850' } },
+          y: {
+            ticks: { color: '#7A90A8', font: { size: 11 },
+              callback: v => v >= 1e8 ? (v/1e8).toFixed(0)+'億' : v >= 1e4 ? (v/1e4).toFixed(0)+'万' : v
+            },
+            grid: { color: '#1A2E44' }, border: { color: '#243850' }
+          }
+        },
+        animation: false
+      },
+      plugins: [{
+        id: 'topLabels',
+        afterDatasetsDraw(chart) {
+          const { ctx, data } = chart;
+          chart.getDatasetMeta(0).data.forEach((bar, i) => {
+            const v = data.datasets[0].data[i];
+            ctx.save();
+            ctx.fillStyle = '#F0F4F8';
+            ctx.font = 'bold 11px Helvetica Neue, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(fmt(v), bar.x, bar.y - 4);
+            ctx.restore();
+          });
+        }
+      }]
+    });
+  }
+
+  function updateCompareChart(weekly, years, totalSpent, investFV) {
+    _cmpTotal = totalSpent;
+
+    const labels   = COMPARE_ORDER.map(k => GAMBLE[k].name);
+    const losses   = COMPARE_ORDER.map(k => totalSpent * (1 - GAMBLE[k].returnRate));
+
+    const bgColors = COMPARE_ORDER.map(k => {
+      if (k === currentType)             return 'rgba(91,141,239,0.85)';
+      if (GAMBLE[k].returnRate >= 0.85)  return 'rgba(76,175,130,0.5)';
+      if (GAMBLE[k].returnRate >= 0.70)  return 'rgba(224,154,91,0.5)';
+      return 'rgba(224,82,82,0.55)';
+    });
+    const bdColors = COMPARE_ORDER.map(k => {
+      if (k === currentType)             return '#5B8DEF';
+      if (GAMBLE[k].returnRate >= 0.85)  return '#4CAF82';
+      if (GAMBLE[k].returnRate >= 0.70)  return '#E09A5B';
+      return '#E05252';
+    });
+
+    document.getElementById('compareNote').textContent =
+      `週${weekly.toLocaleString()}円 × ${years}年の条件で試算。` +
+      `青いバーが現在選択中の種別。同額を年利7%で投資した場合は ${fmt(investFV)} になる（損失0）。`;
+
+    if (cmpChart) {
+      cmpChart.data.labels = labels;
+      cmpChart.data.datasets[0].data   = losses;
+      cmpChart.data.datasets[0].backgroundColor = bgColors;
+      cmpChart.data.datasets[0].borderColor     = bdColors;
+      cmpChart.update('none');
+      return;
+    }
+
+    const ctx = document.getElementById('compareChart').getContext('2d');
+    cmpChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ data: losses, backgroundColor: bgColors, borderColor: bdColors,
+          borderWidth: 1.5, borderRadius: 5, borderSkipped: false }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: c => ` 損失: ${fmt(c.raw)}（${Math.round(c.raw / _cmpTotal * 100)}%）`
+            }
+          }
+        },
+        scales: {
+          y: { ticks: { color: '#A8BCCF', font: { size: 12, weight: '600' } }, grid: { display: false }, border: { color: '#243850' } },
+          x: {
+            ticks: { color: '#7A90A8', font: { size: 11 },
+              callback: v => v >= 1e8 ? (v/1e8).toFixed(0)+'億' : v >= 1e4 ? (v/1e4).toFixed(0)+'万' : v
+            },
+            grid: { color: '#1A2E44' }, border: { color: '#243850' }
+          }
+        },
+        animation: false
+      },
+      plugins: [{
+        id: 'rightLabels',
+        afterDatasetsDraw(chart) {
+          const { ctx, data } = chart;
+          chart.getDatasetMeta(0).data.forEach((bar, i) => {
+            const v   = data.datasets[0].data[i];
+            const pct = Math.round(v / _cmpTotal * 100);
+            ctx.save();
+            ctx.fillStyle = '#F0F4F8';
+            ctx.font = 'bold 11px Helvetica Neue, Arial, sans-serif';
+            ctx.textAlign    = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${fmt(v)}  ${pct}%損`, bar.x + 6, bar.y);
+            ctx.restore();
+          });
+        }
+      }]
+    });
+  }
+
+  function shareToX() {
+    window.open(document.getElementById('shareBtn').href, '_blank');
+  }
+
+  document.getElementById('weeklySlider').addEventListener('input', update);
+  document.getElementById('yearsSlider').addEventListener('input',  update);
+  update();
+</script>
+
+</body>
+</html>
