@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ドット絵コンバーター | K'</title>
+<style>
+  :root {
+    --bg:#0D1B2A; --surface:#1A2B3C; --border:#2A3F55;
+    --accent:#4ECDC4; --text:#E8F4FD; --muted:#7A9BB5;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',sans-serif; font-size:14px; min-height:100vh; }
+
+  header { background:var(--surface); border-bottom:1px solid var(--border); padding:14px 24px; }
+  header h1 { font-size:16px; font-weight:600; color:var(--accent); letter-spacing:1px; }
+
+  main { padding:20px 24px; display:grid; grid-template-columns:280px 1fr; gap:20px; align-items:start; }
+
+  /* コントロールパネル */
+  .panel { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px; display:grid; gap:16px; }
+  .panel-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
+
+  .drop-zone {
+    border:2px dashed var(--border); border-radius:8px; padding:30px 16px;
+    text-align:center; cursor:pointer; transition:border-color .2s, background .2s;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color:var(--accent); background:rgba(78,205,196,0.05);
+  }
+  .drop-zone p { color:var(--muted); font-size:13px; margin-top:8px; }
+  .drop-icon { font-size:32px; }
+  #fileInput { display:none; }
+
+  .option-group { display:grid; gap:8px; }
+  .option-label { font-size:12px; color:var(--muted); display:flex; justify-content:space-between; }
+  .option-label span { color:var(--accent); font-weight:600; }
+
+  input[type=range] {
+    width:100%; accent-color:var(--accent); height:4px; cursor:pointer;
+  }
+  select {
+    width:100%; background:var(--bg); border:1px solid var(--border);
+    color:var(--text); padding:7px 10px; border-radius:5px; font-size:13px; cursor:pointer;
+  }
+  select:focus { outline:none; border-color:var(--accent); }
+
+  .toggle-row { display:flex; gap:8px; }
+  .toggle-btn {
+    flex:1; padding:7px; border:1px solid var(--border); border-radius:5px;
+    background:transparent; color:var(--muted); font-size:12px; cursor:pointer; transition:.15s;
+  }
+  .toggle-btn.active { background:var(--accent); color:#0D1B2A; border-color:var(--accent); font-weight:600; }
+
+  .btn-primary {
+    width:100%; padding:11px; background:var(--accent); color:#0D1B2A;
+    border:none; border-radius:6px; font-size:14px; font-weight:700;
+    cursor:pointer; transition:opacity .15s;
+  }
+  .btn-primary:hover { opacity:.85; }
+  .btn-primary:disabled { opacity:.4; cursor:default; }
+
+  .btn-secondary {
+    width:100%; padding:9px; background:transparent; color:var(--accent);
+    border:1px solid var(--accent); border-radius:6px; font-size:13px;
+    font-weight:600; cursor:pointer; transition:.15s; margin-top:6px;
+  }
+  .btn-secondary:hover { background:rgba(78,205,196,0.1); }
+  .btn-secondary:disabled { opacity:.3; cursor:default; }
+
+  /* プレビューエリア */
+  .preview-area { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px; }
+  .preview-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .preview-title { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .preview-info { font-size:11px; color:var(--muted); }
+
+  .canvas-wrap {
+    display:flex; gap:20px; flex-wrap:wrap; justify-content:center; align-items:flex-start;
+  }
+  .canvas-box { text-align:center; }
+  .canvas-label { font-size:11px; color:var(--muted); margin-bottom:8px; }
+  canvas {
+    border:1px solid var(--border); border-radius:4px; max-width:100%;
+    image-rendering:pixelated; display:block;
+  }
+
+  .empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
+  .empty-state p { margin-top:8px; font-size:13px; }
+
+  /* パレットプレビュー */
+  .palette-preview { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
+  .palette-dot { width:16px; height:16px; border-radius:3px; border:1px solid rgba(255,255,255,0.1); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>K' DOT ART CONVERTER</h1>
+</header>
+
+<main>
+  <!-- コントロールパネル -->
+  <div class="panel">
+    <div>
+      <div class="panel-title">画像を選択</div>
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-icon">🖼</div>
+        <p>クリックまたはドラッグ&ドロップ</p>
+        <p style="font-size:11px;margin-top:4px">JPG / PNG / WebP</p>
+      </div>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="option-group">
+      <div class="option-label">ドットサイズ <span id="dotSizeVal">8px</span></div>
+      <input type="range" id="dotSize" min="2" max="32" value="8" step="2">
+    </div>
+
+    <div class="option-group">
+      <div class="option-label">カラーパレット</div>
+      <select id="palette">
+        <option value="full">フルカラー</option>
+        <option value="16">16色</option>
+        <option value="8">8色</option>
+        <option value="mono">モノクロ</option>
+        <option value="sepia">セピア</option>
+        <option value="gameboy">ゲームボーイ（4色）</option>
+        <option value="famicom">ファミコン風（52色）</option>
+        <option value="cga">CGA（4色・レトロPC）</option>
+      </select>
+      <div class="palette-preview" id="palettePreview"></div>
+    </div>
+
+    <div class="option-group">
+      <div class="option-label">ドットの形</div>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-shape="square">■ 四角</button>
+        <button class="toggle-btn" data-shape="circle">● 丸</button>
+        <button class="toggle-btn" data-shape="diamond">◆ ダイヤ</button>
+      </div>
+    </div>
+
+    <div class="option-group">
+      <div class="option-label">グリッド線</div>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-grid="off">なし</button>
+        <button class="toggle-btn" data-grid="on">あり</button>
+      </div>
+    </div>
+
+    <div class="option-group">
+      <div class="option-label">輪郭強調</div>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-edge="off">OFF</button>
+        <button class="toggle-btn" data-edge="on">ON</button>
+      </div>
+    </div>
+
+    <div class="option-group">
+      <div class="option-label">背景色</div>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-bg="transparent">透明</button>
+        <button class="toggle-btn" data-bg="white">白</button>
+        <button class="toggle-btn" data-bg="black">黒</button>
+      </div>
+    </div>
+
+    <div class="option-group">
+      <div class="option-label">ディザリング <span id="ditherVal">OFF</span></div>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-dither="off">OFF</button>
+        <button class="toggle-btn" data-dither="on">ON（グラデ改善）</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="convertBtn" disabled>変換する</button>
+    <button class="btn-secondary" id="downloadBtn" disabled>PNG保存</button>
+  </div>
+
+  <!-- プレビュー -->
+  <div class="preview-area">
+    <div class="preview-header">
+      <div class="preview-title">プレビュー</div>
+      <div class="preview-info" id="previewInfo"></div>
+    </div>
+    <div class="canvas-wrap" id="canvasWrap">
+      <div class="empty-state">
+        <div style="font-size:48px">🎨</div>
+        <p>画像をアップロードすると<br>ここにプレビューが表示されます</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<canvas id="srcCanvas" style="display:none"></canvas>
+<canvas id="outCanvas" style="display:none"></canvas>
+
+<script>
+// ─── パレット定義 ─────────────────────────────────────────────
+
+const PALETTES = {
+  full: null,
+  16: [
+    [0,0,0],[128,0,0],[0,128,0],[128,128,0],
+    [0,0,128],[128,0,128],[0,128,128],[192,192,192],
+    [128,128,128],[255,0,0],[0,255,0],[255,255,0],
+    [0,0,255],[255,0,255],[0,255,255],[255,255,255],
+  ],
+  8: [
+    [0,0,0],[255,0,0],[0,255,0],[255,255,0],
+    [0,0,255],[255,0,255],[0,255,255],[255,255,255],
+  ],
+  mono: [[0,0,0],[255,255,255]],
+  sepia: [
+    [20,12,8],[60,40,25],[100,75,50],[140,110,80],
+    [180,150,110],[210,185,150],[235,215,185],[255,245,220],
+  ],
+  gameboy: [[15,56,15],[48,98,48],[139,172,15],[155,188,15]],
+  cga: [[0,0,0],[255,85,255],[85,255,255],[255,255,255]],
+  famicom: generateFamicom(),
+};
+
+function generateFamicom() {
+  return [
+    [124,124,124],[0,0,252],[0,0,188],[68,40,188],[148,0,132],[168,0,32],[168,16,0],[136,20,0],
+    [80,48,0],[0,120,0],[0,104,0],[0,88,0],[0,64,88],[0,0,0],[0,0,0],[0,0,0],
+    [188,188,188],[0,120,248],[0,88,248],[104,68,252],[216,0,204],[228,0,88],[248,56,0],[228,92,16],
+    [172,124,0],[0,184,0],[0,168,0],[0,168,68],[0,136,136],[0,0,0],[0,0,0],[0,0,0],
+    [248,248,248],[60,188,252],[104,136,252],[152,120,248],[248,120,248],[248,88,152],[248,120,88],[252,160,68],
+    [248,184,0],[184,248,24],[88,216,84],[88,248,152],[0,232,216],[120,120,120],[0,0,0],[0,0,0],
+    [252,252,252],[164,228,252],[184,184,248],[216,184,248],[248,184,248],[248,164,192],[240,208,176],[252,224,168],
+    [248,216,120],[216,248,120],[184,248,184],[184,248,216],[0,252,252],[248,216,248],[0,0,0],[0,0,0],
+  ];
+}
+
+function nearestColor(r, g, b, palette) {
+  if (!palette) return [r, g, b];
+  let best = palette[0], bestD = Infinity;
+  for (const c of palette) {
+    const d = (r-c[0])**2 + (g-c[1])**2 + (b-c[2])**2;
+    if (d < bestD) { bestD = d; best = c; }
+  }
+  return best;
+}
+
+// ─── 状態 ─────────────────────────────────────────────────────
+
+const state = {
+  image: null,
+  dotSize: 8,
+  palette: 'full',
+  shape: 'square',
+  grid: false,
+  edge: false,
+  bg: 'transparent',
+  dither: false,
+};
+
+// ─── UI更新 ───────────────────────────────────────────────────
+
+function updatePalettePreview() {
+  const p = PALETTES[state.palette];
+  const el = document.getElementById('palettePreview');
+  if (!p) { el.innerHTML = '<span style="font-size:11px;color:var(--muted)">制限なし</span>'; return; }
+  el.innerHTML = p.map(c => `<div class="palette-dot" style="background:rgb(${c.join(',')})"></div>`).join('');
+}
+
+document.getElementById('dotSize').addEventListener('input', e => {
+  state.dotSize = +e.target.value;
+  document.getElementById('dotSizeVal').textContent = state.dotSize + 'px';
+});
+
+document.getElementById('palette').addEventListener('change', e => {
+  state.palette = e.target.value;
+  updatePalettePreview();
+});
+
+document.querySelectorAll('[data-shape]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-shape]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.shape = btn.dataset.shape;
+  });
+});
+
+document.querySelectorAll('[data-grid]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-grid]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.grid = btn.dataset.grid === 'on';
+  });
+});
+
+document.querySelectorAll('[data-edge]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-edge]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.edge = btn.dataset.edge === 'on';
+  });
+});
+
+document.querySelectorAll('[data-bg]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-bg]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.bg = btn.dataset.bg;
+  });
+});
+
+document.querySelectorAll('[data-dither]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-dither]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.dither = btn.dataset.dither === 'on';
+    document.getElementById('ditherVal').textContent = state.dither ? 'ON' : 'OFF';
+  });
+});
+
+// ─── 画像読み込み ──────────────────────────────────────────────
+
+function loadImage(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      state.image = img;
+      document.getElementById('convertBtn').disabled = false;
+      showOriginal(img);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function showOriginal(img) {
+  const MAX = 400;
+  const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+  const w = Math.round(img.width * scale);
+  const h = Math.round(img.height * scale);
+
+  const wrap = document.getElementById('canvasWrap');
+  wrap.innerHTML = `
+    <div class="canvas-box">
+      <div class="canvas-label">元画像 (${img.width}×${img.height})</div>
+      <canvas id="previewOrig"></canvas>
+    </div>
+  `;
+  const c = document.getElementById('previewOrig');
+  c.width = w; c.height = h;
+  c.style.width = w + 'px'; c.style.height = h + 'px';
+  c.getContext('2d').drawImage(img, 0, 0, w, h);
+}
+
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('click', () => document.getElementById('fileInput').click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  loadImage(e.dataTransfer.files[0]);
+});
+document.getElementById('fileInput').addEventListener('change', e => loadImage(e.target.files[0]));
+
+// ─── 変換処理 ──────────────────────────────────────────────────
+
+function convert() {
+  const img = state.image;
+  const ds  = state.dotSize;
+  const pal = PALETTES[state.palette];
+
+  // 元画像をsrcCanvasに描画
+  const src = document.getElementById('srcCanvas');
+  src.width  = img.width;
+  src.height = img.height;
+  const sCtx = src.getContext('2d');
+  sCtx.drawImage(img, 0, 0);
+
+  // 輪郭マップ生成
+  let edgeMap = null;
+  if (state.edge) {
+    edgeMap = buildEdgeMap(sCtx, img.width, img.height);
+  }
+
+  // 出力キャンバス（ドットをdotSize倍で描画）
+  const out  = document.getElementById('outCanvas');
+  const cols = Math.ceil(img.width  / ds);
+  const rows = Math.ceil(img.height / ds);
+  out.width  = cols * ds;
+  out.height = rows * ds;
+  const oCtx = out.getContext('2d');
+
+  // 背景
+  if (state.bg === 'white')  { oCtx.fillStyle='#fff'; oCtx.fillRect(0,0,out.width,out.height); }
+  else if (state.bg === 'black') { oCtx.fillStyle='#000'; oCtx.fillRect(0,0,out.width,out.height); }
+  else { oCtx.clearRect(0,0,out.width,out.height); }
+
+  // ディザリング用エラーバッファ
+  const errR = new Float32Array(img.width * img.height);
+  const errG = new Float32Array(img.width * img.height);
+  const errB = new Float32Array(img.width * img.height);
+
+  const srcData = sCtx.getImageData(0, 0, img.width, img.height).data;
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      // セルの平均色を計算
+      let sumR=0, sumG=0, sumB=0, sumA=0, cnt=0;
+      for (let dy=0; dy<ds; dy++) {
+        for (let dx=0; dx<ds; dx++) {
+          const px = col*ds+dx, py = row*ds+dy;
+          if (px >= img.width || py >= img.height) continue;
+          const i = (py*img.width+px)*4;
+          sumR += srcData[i]+errR[py*img.width+px];
+          sumG += srcData[i+1]+errG[py*img.width+px];
+          sumB += srcData[i+2]+errB[py*img.width+px];
+          sumA += srcData[i+3];
+          cnt++;
+        }
+      }
+      if (!cnt) continue;
+      let r = Math.max(0,Math.min(255,sumR/cnt));
+      let g = Math.max(0,Math.min(255,sumG/cnt));
+      let b = Math.max(0,Math.min(255,sumB/cnt));
+      const a = sumA/cnt;
+
+      // 輪郭強調
+      const cx = col*ds+Math.floor(ds/2);
+      const cy = row*ds+Math.floor(ds/2);
+      if (state.edge && edgeMap && cx<img.width && cy<img.height) {
+        const e = edgeMap[cy*img.width+cx];
+        if (e > 80) { r=0; g=0; b=0; }
+      }
+
+      // パレット適用
+      const [nr,ng,nb] = nearestColor(r,g,b,pal);
+
+      // ディザリング誤差拡散
+      if (state.dither && pal) {
+        const er=r-nr, eg=g-ng, eb=b-nb;
+        diffuseError(errR, errG, errB, col*ds, row*ds, er, eg, eb, img.width, img.height, ds);
+      }
+
+      // 描画
+      const x = col*ds, y = row*ds;
+      oCtx.fillStyle = `rgba(${nr},${ng},${nb},${a/255})`;
+      drawDot(oCtx, x, y, ds, state.shape);
+
+      // グリッド
+      if (state.grid) {
+        oCtx.strokeStyle = 'rgba(0,0,0,0.25)';
+        oCtx.lineWidth = 0.5;
+        oCtx.strokeRect(x+0.5, y+0.5, ds-1, ds-1);
+      }
+    }
+  }
+
+  showResult(out, img, cols, rows, ds);
+}
+
+function drawDot(ctx, x, y, size, shape) {
+  const pad = shape === 'square' ? 0 : 1;
+  const s = size - pad*2;
+  if (shape === 'square') {
+    ctx.fillRect(x, y, size, size);
+  } else if (shape === 'circle') {
+    ctx.beginPath();
+    ctx.arc(x+size/2, y+size/2, s/2, 0, Math.PI*2);
+    ctx.fill();
+  } else if (shape === 'diamond') {
+    ctx.beginPath();
+    ctx.moveTo(x+size/2, y+pad);
+    ctx.lineTo(x+size-pad, y+size/2);
+    ctx.lineTo(x+size/2, y+size-pad);
+    ctx.lineTo(x+pad, y+size/2);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function buildEdgeMap(ctx, w, h) {
+  const d = ctx.getImageData(0,0,w,h).data;
+  const gray = new Uint8Array(w*h);
+  for (let i=0;i<w*h;i++) gray[i] = 0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
+  const edge = new Uint8Array(w*h);
+  for (let y=1;y<h-1;y++) for (let x=1;x<w-1;x++) {
+    const gx = -gray[(y-1)*w+(x-1)] + gray[(y-1)*w+(x+1)]
+               -2*gray[y*w+(x-1)]   + 2*gray[y*w+(x+1)]
+               -gray[(y+1)*w+(x-1)] + gray[(y+1)*w+(x+1)];
+    const gy = -gray[(y-1)*w+(x-1)] - 2*gray[(y-1)*w+x] - gray[(y-1)*w+(x+1)]
+               +gray[(y+1)*w+(x-1)] + 2*gray[(y+1)*w+x] + gray[(y+1)*w+(x+1)];
+    edge[y*w+x] = Math.min(255, Math.sqrt(gx*gx+gy*gy));
+  }
+  return edge;
+}
+
+function diffuseError(errR,errG,errB, x,y, er,eg,eb, w,h, ds) {
+  const neighbors = [[ds,0,7/16],[ds,ds,1/16],[0,ds,5/16],[-ds,ds,3/16]];
+  for (const [dx,dy,w2] of neighbors) {
+    const nx=x+dx, ny=y+dy;
+    if (nx<0||nx>=w||ny<0||ny>=h) continue;
+    errR[ny*w+nx] += er*w2;
+    errG[ny*w+nx] += eg*w2;
+    errB[ny*w+nx] += eb*w2;
+  }
+}
+
+function showResult(out, img, cols, rows, ds) {
+  const DISP = Math.min(500, Math.max(out.width, 200));
+  const scale = DISP / out.width;
+  const dw = Math.round(out.width * scale);
+  const dh = Math.round(out.height * scale);
+
+  const wrap = document.getElementById('canvasWrap');
+  const MAX = 300;
+  const sc2 = Math.min(1, MAX / Math.max(img.width, img.height));
+  const ow = Math.round(img.width*sc2), oh = Math.round(img.height*sc2);
+
+  wrap.innerHTML = `
+    <div class="canvas-box">
+      <div class="canvas-label">元画像 (${img.width}×${img.height})</div>
+      <canvas id="previewOrig"></canvas>
+    </div>
+    <div class="canvas-box">
+      <div class="canvas-label">ドット絵 (${cols}×${rows}ドット)</div>
+      <canvas id="previewOut"></canvas>
+    </div>
+  `;
+  const origC = document.getElementById('previewOrig');
+  origC.width=ow; origC.height=oh;
+  origC.style.width=ow+'px'; origC.style.height=oh+'px';
+  origC.getContext('2d').drawImage(img,0,0,ow,oh);
+
+  const outC = document.getElementById('previewOut');
+  outC.width=dw; outC.height=dh;
+  outC.style.width=dw+'px'; outC.style.height=dh+'px';
+  outC.style.imageRendering='pixelated';
+  outC.getContext('2d').drawImage(out,0,0,dw,dh);
+
+  document.getElementById('previewInfo').textContent =
+    `${cols}×${rows}ドット / ${out.width}×${out.height}px`;
+  document.getElementById('downloadBtn').disabled = false;
+}
+
+// ─── ダウンロード ──────────────────────────────────────────────
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const out = document.getElementById('outCanvas');
+  const a = document.createElement('a');
+  a.download = 'dotart.png';
+  a.href = out.toDataURL('image/png');
+  a.click();
+});
+
+document.getElementById('convertBtn').addEventListener('click', convert);
+
+// 初期化
+updatePalettePreview();
+</script>
+</body>
+</html>
