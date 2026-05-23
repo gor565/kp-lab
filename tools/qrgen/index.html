@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QRコード生成 — K' Lab</title>
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+  <style>
+    :root {
+      --bg: #0D1B2A; --surface: #142233; --surface2: #1A2C42;
+      --border: #243850; --blue: #5B8DEF; --text: #F0F4F8;
+      --muted: #7A90A8; --light: #A8BCCF; --green: #4CAF82;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
+      min-height: 100vh; padding-bottom: 60px;
+    }
+    .header {
+      padding: 14px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .back { font-size: 12px; color: var(--blue); text-decoration: none; letter-spacing: 0.06em; }
+    .header h1 { font-size: 15px; font-weight: 700; }
+    .badge { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+    .layout {
+      display: flex; gap: 32px; max-width: 1060px;
+      margin: 0 auto; padding: 32px 24px;
+    }
+    .controls { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+    .preview-col { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 20px;
+    }
+    .card-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 14px;
+    }
+    .form-row { margin-bottom: 12px; }
+    .form-row:last-child { margin-bottom: 0; }
+    label { font-size: 12px; color: var(--light); display: block; margin-bottom: 5px; }
+
+    textarea, select, input[type="text"] {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px;
+      padding: 9px 12px; outline: none; transition: border-color 0.15s; font-family: inherit;
+    }
+    textarea { resize: vertical; min-height: 72px; }
+    textarea:focus, select:focus, input[type="text"]:focus { border-color: var(--blue); }
+    select { cursor: pointer; }
+
+    input[type="range"] { width: 100%; accent-color: var(--blue); margin-top: 4px; cursor: pointer; }
+    .range-row { display: flex; align-items: center; gap: 8px; }
+    .range-val { font-size: 12px; color: var(--blue); min-width: 36px; text-align: right; }
+
+    input[type="color"] {
+      width: 36px; height: 30px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--surface2); cursor: pointer; padding: 2px;
+    }
+    .color-row { display: flex; align-items: center; gap: 10px; }
+    .color-row label { margin: 0; flex: 1; font-size: 12px; }
+
+    /* ─── Themes ─── */
+    .theme-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+    .theme-chip {
+      display: flex; align-items: center; gap: 7px;
+      padding: 6px 10px; border-radius: 20px;
+      border: 2px solid var(--border); cursor: pointer;
+      font-size: 11px; color: var(--muted); transition: all 0.15s;
+    }
+    .theme-chip:hover { border-color: var(--light); color: var(--text); }
+    .theme-chip.active { border-color: var(--blue); color: var(--text); }
+    .theme-swatch {
+      width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    /* ─── Gradient toggle ─── */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .toggle-label { font-size: 12px; color: var(--light); }
+    .toggle {
+      width: 36px; height: 20px; background: var(--surface2); border-radius: 10px;
+      border: 1px solid var(--border); cursor: pointer; position: relative; transition: background 0.2s;
+    }
+    .toggle.on { background: var(--blue); border-color: var(--blue); }
+    .toggle::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left 0.2s;
+    }
+    .toggle.on::after { left: 18px; }
+    .grad-options { display: none; }
+    .grad-options.visible { display: block; }
+
+    /* ─── Dot / Corner grid ─── */
+    .dot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .dot-opt {
+      border: 2px solid var(--border); border-radius: 8px; padding: 10px 4px 7px;
+      cursor: pointer; text-align: center; font-size: 11px; color: var(--muted);
+      transition: all 0.15s;
+    }
+    .dot-opt svg { display: block; margin: 0 auto 4px; }
+    .dot-opt:hover { border-color: var(--light); color: var(--text); }
+    .dot-opt.active { border-color: var(--blue); color: var(--text); }
+
+    .corner-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .corner-opt {
+      border: 2px solid var(--border); border-radius: 8px; padding: 8px 4px 6px;
+      cursor: pointer; text-align: center; font-size: 10px; color: var(--muted);
+      transition: all 0.15s;
+    }
+    .corner-opt .icon { width: 22px; height: 22px; margin: 0 auto 4px; border: 3px solid #5B8DEF; }
+    .corner-opt:hover { border-color: var(--light); }
+    .corner-opt.active { border-color: var(--blue); color: var(--text); }
+
+    /* ─── Drop zones ─── */
+    .drop-zone {
+      border: 2px dashed var(--border); border-radius: 8px; padding: 14px;
+      text-align: center; cursor: pointer; transition: border-color 0.15s;
+      font-size: 12px; color: var(--muted); line-height: 1.5;
+    }
+    .drop-zone:hover { border-color: var(--blue); }
+    .drop-zone.active { border-color: var(--green); color: var(--green); }
+    .drop-zone small { font-size: 10px; }
+    input[type="file"] { display: none; }
+
+    .clear-btn {
+      margin-top: 8px; padding: 5px 12px; font-size: 11px; border-radius: 6px;
+      border: 1px solid var(--border); background: transparent; color: var(--muted);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .clear-btn:hover { border-color: var(--border); color: var(--text); }
+
+    /* ─── Frame ─── */
+    .frame-text-row { margin-top: 10px; }
+
+    /* ─── Preview ─── */
+    .preview-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 28px 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+    #previewCanvas {
+      border-radius: 8px; max-width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    #qrOffscreen { display: none; }
+
+    .dl-row { display: flex; gap: 10px; width: 100%; }
+    .btn {
+      flex: 1; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--light); cursor: pointer; transition: all 0.15s; text-align: center;
+    }
+    .btn:hover { border-color: var(--blue); color: var(--text); }
+    .btn.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .btn.primary:hover { opacity: 0.88; }
+
+    .hint { font-size: 11px; color: var(--muted); line-height: 1.6; text-align: center; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--green); color: #fff; padding: 8px 20px; border-radius: 20px;
+      font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.2s;
+      pointer-events: none; z-index: 99;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back" href="../../">← K' Lab</a>
+  <h1>QRコード生成</h1>
+  <span class="badge">グラデーション・背景画像・枠対応 · ブラウザ完結</span>
+</div>
+
+<div class="layout">
+  <div class="controls">
+
+    <!-- テキスト/URL -->
+    <div class="card">
+      <div class="card-title">テキスト / URL</div>
+      <div class="form-row">
+        <textarea id="inputText" placeholder="URLや文字列を入力">https://gor565.github.io/kp-lab/</textarea>
+      </div>
+      <div class="form-row">
+        <label>エラー訂正レベル</label>
+        <select id="errorLevel">
+          <option value="L">L — 低（7%）</option>
+          <option value="M">M — 中（15%）</option>
+          <option value="Q">Q — 高（25%）</option>
+          <option value="H" selected>H — 最高（30%）· ロゴ入り推奨</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- テーマ -->
+    <div class="card">
+      <div class="card-title">プリセットテーマ</div>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
+
+    <!-- カラー -->
+    <div class="card">
+      <div class="card-title">カラー</div>
+      <div class="form-row">
+        <div class="toggle-row">
+          <span class="toggle-label">グラデーション</span>
+          <div class="toggle" id="gradToggle" onclick="toggleGradient()"></div>
+        </div>
+        <div class="color-row">
+          <label>ドット色</label>
+          <input type="color" id="dotColor" value="#000000">
+        </div>
+        <div class="grad-options" id="gradOptions" style="margin-top:10px;">
+          <div class="color-row" style="margin-bottom:8px;">
+            <label>グラデ 終色</label>
+            <input type="color" id="dotColor2" value="#5B8DEF">
+          </div>
+          <div class="form-row">
+            <label>種類</label>
+            <select id="gradType">
+              <option value="linear">線形（Linear）</option>
+              <option value="radial">放射（Radial）</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>角度（線形のみ）<span class="range-val" id="gradAngleVal">45°</span></label>
+            <input type="range" id="gradAngle" min="0" max="360" value="45">
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="color-row">
+          <label>背景色</label>
+          <input type="color" id="bgColor" value="#ffffff">
+        </div>
+      </div>
+    </div>
+
+    <!-- ドット形状 -->
+    <div class="card">
+      <div class="card-title">ドット形状</div>
+      <div class="dot-grid" id="dotGrid">
+        <div class="dot-opt active" data-dot="square">
+          <svg width="30" height="30" viewBox="0 0 30 30"><rect x="2" y="2" width="9" height="9" fill="#5B8DEF"/><rect x="13" y="2" width="9" height="9" fill="#5B8DEF"/><rect x="2" y="13" width="9" height="9" fill="#5B8DEF"/><rect x="19" y="19" width="9" height="9" fill="#5B8DEF"/></svg>四角
+        </div>
+        <div class="dot-opt" data-dot="dots">
+          <svg width="30" height="30" viewBox="0 0 30 30"><circle cx="6.5" cy="6.5" r="4.5" fill="#5B8DEF"/><circle cx="17.5" cy="6.5" r="4.5" fill="#5B8DEF"/><circle cx="6.5" cy="17.5" r="4.5" fill="#5B8DEF"/><circle cx="23" cy="23" r="4.5" fill="#5B8DEF"/></svg>丸
+        </div>
+        <div class="dot-opt" data-dot="rounded">
+          <svg width="30" height="30" viewBox="0 0 30 30"><rect x="2" y="2" width="9" height="9" rx="3" fill="#5B8DEF"/><rect x="13" y="2" width="9" height="9" rx="3" fill="#5B8DEF"/><rect x="2" y="13" width="9" height="9" rx="3" fill="#5B8DEF"/><rect x="19" y="19" width="9" height="9" rx="3" fill="#5B8DEF"/></svg>角丸
+        </div>
+        <div class="dot-opt" data-dot="classy">
+          <svg width="30" height="30" viewBox="0 0 30 30"><rect x="2" y="2" width="9" height="9" fill="#5B8DEF" transform="rotate(12,6.5,6.5)"/><rect x="13" y="2" width="9" height="9" fill="#5B8DEF" transform="rotate(-8,17.5,6.5)"/><rect x="2" y="13" width="9" height="9" fill="#5B8DEF" transform="rotate(5,6.5,17.5)"/><rect x="19" y="19" width="9" height="9" fill="#5B8DEF"/></svg>クラシー
+        </div>
+        <div class="dot-opt" data-dot="classy-rounded">
+          <svg width="30" height="30" viewBox="0 0 30 30"><rect x="2" y="2" width="9" height="9" rx="3" fill="#5B8DEF" transform="rotate(12,6.5,6.5)"/><rect x="13" y="2" width="9" height="9" rx="3" fill="#5B8DEF" transform="rotate(-8,17.5,6.5)"/><rect x="2" y="13" width="9" height="9" rx="3" fill="#5B8DEF" transform="rotate(5,6.5,17.5)"/><rect x="19" y="19" width="9" height="9" rx="3" fill="#5B8DEF"/></svg>クラシー丸
+        </div>
+        <div class="dot-opt" data-dot="extra-rounded">
+          <svg width="30" height="30" viewBox="0 0 30 30"><rect x="1" y="1" width="11" height="11" rx="5.5" fill="#5B8DEF"/><rect x="14" y="1" width="11" height="11" rx="5.5" fill="#5B8DEF"/><rect x="1" y="14" width="11" height="11" rx="5.5" fill="#5B8DEF"/><rect x="18" y="18" width="11" height="11" rx="5.5" fill="#5B8DEF"/></svg>楕円
+        </div>
+      </div>
+    </div>
+
+    <!-- コーナー形状 -->
+    <div class="card">
+      <div class="card-title">コーナー形状</div>
+      <div class="corner-grid" id="cornerGrid">
+        <div class="corner-opt active" data-outer="square" data-inner="square">
+          <div class="icon" style="border-radius:0;"></div>四角×四角
+        </div>
+        <div class="corner-opt" data-outer="extra-rounded" data-inner="square">
+          <div class="icon" style="border-radius:6px;"></div>丸×四角
+        </div>
+        <div class="corner-opt" data-outer="square" data-inner="dot">
+          <div class="icon" style="border-radius:0;display:flex;align-items:center;justify-content:center;"><div style="width:9px;height:9px;border-radius:50%;background:#5B8DEF;"></div></div>四角×丸
+        </div>
+        <div class="corner-opt" data-outer="extra-rounded" data-inner="dot">
+          <div class="icon" style="border-radius:6px;display:flex;align-items:center;justify-content:center;"><div style="width:9px;height:9px;border-radius:50%;background:#5B8DEF;"></div></div>丸×丸
+        </div>
+      </div>
+    </div>
+
+    <!-- 背景画像 -->
+    <div class="card">
+      <div class="card-title">背景画像（任意）</div>
+      <div class="drop-zone" id="bgDrop" onclick="document.getElementById('bgInput').click()">
+        <div id="bgDropText">クリックまたはドロップで背景画像を追加<br><small>JPG / PNG · QRは半透明で重なります</small></div>
+      </div>
+      <input type="file" id="bgInput" accept="image/*">
+      <p style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6;">
+        ⚠ 背景画像はQRのスキャン精度を下げる場合があります。<br>
+        暗め調整を強めにし、エラー訂正レベルを <strong style="color:var(--light)">H</strong> に設定することを推奨します。<br>
+        必ず実機でスキャン確認してから使用してください。
+      </p>
+      <div id="bgControls" style="display:none;">
+        <div class="form-row" style="margin-top:10px;">
+          <label>背景の明暗調整（暗め → 明るめ）<span class="range-val" id="bgOverlayVal">40%</span></label>
+          <input type="range" id="bgOverlay" min="0" max="80" value="40">
+        </div>
+        <button class="clear-btn" onclick="clearBgImage()">背景画像を削除</button>
+      </div>
+    </div>
+
+    <!-- 枠・テキスト -->
+    <div class="card">
+      <div class="card-title">枠・テキスト</div>
+      <div class="form-row">
+        <label>枠スタイル</label>
+        <select id="frameStyle">
+          <option value="none">なし</option>
+          <option value="simple">シンプル枠</option>
+          <option value="rounded">角丸枠</option>
+          <option value="shadow">影付き枠</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>枠の色</label>
+        <div class="color-row">
+          <input type="color" id="frameColor" value="#000000">
+          <span style="font-size:11px;color:var(--muted);">枠スタイルが「なし」の場合は無効</span>
+        </div>
+      </div>
+      <div class="form-row frame-text-row">
+        <label>下部テキスト（空欄で非表示）</label>
+        <input type="text" id="frameText" placeholder="例: このQRを読んでみて →">
+      </div>
+      <div class="form-row">
+        <div class="color-row">
+          <label>テキスト色</label>
+          <input type="color" id="textColor" value="#000000">
+        </div>
+      </div>
+    </div>
+
+    <!-- 中央ロゴ -->
+    <div class="card">
+      <div class="card-title">中央ロゴ（任意）</div>
+      <div class="drop-zone" id="logoDrop" onclick="document.getElementById('logoInput').click()">
+        <div id="logoDropText">クリックまたはドロップでロゴ追加<br><small>PNG / JPG / SVG · エラー訂正 H 推奨</small></div>
+      </div>
+      <input type="file" id="logoInput" accept="image/*">
+      <div id="logoControls" style="display:none;">
+        <div class="form-row" style="margin-top:10px;">
+          <div class="range-row">
+            <label style="margin:0;flex:1;">ロゴサイズ</label>
+            <span class="range-val" id="logoSizeVal">25%</span>
+          </div>
+          <input type="range" id="logoSize" min="10" max="38" value="25">
+        </div>
+        <button class="clear-btn" onclick="clearLogo()">ロゴを削除</button>
+      </div>
+    </div>
+
+    <!-- サイズ -->
+    <div class="card">
+      <div class="card-title">出力サイズ</div>
+      <div class="form-row">
+        <div class="range-row">
+          <label style="margin:0;flex:1;">サイズ</label>
+          <span class="range-val" id="sizeVal">400px</span>
+        </div>
+        <input type="range" id="qrSize" min="200" max="800" step="50" value="400">
+      </div>
+    </div>
+
+  </div><!-- /controls -->
+
+  <!-- Preview -->
+  <div class="preview-col">
+    <div class="preview-card">
+      <canvas id="previewCanvas" width="400" height="400"></canvas>
+      <div class="dl-row">
+        <button class="btn" onclick="downloadPng()">PNG ダウンロード</button>
+        <button class="btn primary" onclick="downloadSvg()">SVG ダウンロード</button>
+      </div>
+      <div class="hint">
+        背景画像・枠・テキストはPNGに反映されます。SVGはQRのみ。<br>
+        ロゴ・背景画像を使う場合はエラー訂正 <strong>H</strong> を推奨。<br>
+        カラーや背景画像を使用した場合は、<strong>必ず実機でスキャン確認</strong>してから印刷・公開してください。
+      </div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- hidden QR render target -->
+<div id="qrOffscreen" style="position:fixed;left:-9999px;top:-9999px;"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────
+let dotStyle   = 'square';
+let cornerOuter = 'square';
+let cornerInner = 'square';
+let logoDataUrl = null;
+let bgImageEl   = null;
+let gradEnabled = false;
+let renderTimer = null;
+
+// ─── Themes ───────────────────────────────────────────────────────────────
+const THEMES = [
+  { name: 'クラシック', dot: '#000000', dot2: '#000000', bg: '#ffffff', grad: false, swatch: '#000000' },
+  { name: 'ダーク',     dot: '#ffffff', dot2: '#A8BCCF', bg: '#0D1B2A', grad: true,  gradType: 'radial', angle: 0,   swatch: '#0D1B2A' },
+  { name: 'オーシャン', dot: '#5B8DEF', dot2: '#A8C7FA', bg: '#0D1B2A', grad: true,  gradType: 'linear', angle: 135, swatch: '#5B8DEF' },
+  { name: 'サンセット', dot: '#FF6B6B', dot2: '#FFB347', bg: '#1a0808', grad: true,  gradType: 'linear', angle: 45,  swatch: '#FF6B6B' },
+  { name: 'フォレスト', dot: '#4CAF82', dot2: '#8BC34A', bg: '#0a1a0f', grad: true,  gradType: 'linear', angle: 90,  swatch: '#4CAF82' },
+  { name: 'パープル',   dot: '#A855F7', dot2: '#EC4899', bg: '#1a0a2e', grad: true,  gradType: 'linear', angle: 45,  swatch: '#A855F7' },
+];
+
+const themeGrid = document.getElementById('themeGrid');
+THEMES.forEach((t, i) => {
+  const el = document.createElement('div');
+  el.className = 'theme-chip' + (i === 0 ? ' active' : '');
+  el.innerHTML = `<div class="theme-swatch" style="background:${t.swatch}"></div>${t.name}`;
+  el.addEventListener('click', () => applyTheme(t, el));
+  themeGrid.appendChild(el);
+});
+
+function applyTheme(t, el) {
+  document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('dotColor').value  = t.dot;
+  document.getElementById('dotColor2').value = t.dot2;
+  document.getElementById('bgColor').value   = t.bg;
+  gradEnabled = t.grad;
+  document.getElementById('gradToggle').classList.toggle('on', gradEnabled);
+  document.getElementById('gradOptions').classList.toggle('visible', gradEnabled);
+  if (t.gradType) document.getElementById('gradType').value = t.gradType;
+  if (t.angle !== undefined) {
+    document.getElementById('gradAngle').value = t.angle;
+    document.getElementById('gradAngleVal').textContent = t.angle + '°';
+  }
+  scheduleRender();
+}
+
+// ─── QR instance ──────────────────────────────────────────────────────────
+const qrCode = new QRCodeStyling({
+  width: 400, height: 400,
+  data: 'https://gor565.github.io/kp-lab/',
+  dotsOptions:         { color: '#000000', type: 'square' },
+  cornersSquareOptions:{ color: '#000000', type: 'square' },
+  cornersDotOptions:   { color: '#000000', type: 'square' },
+  backgroundOptions:   { color: '#00000000' },
+  imageOptions:        { crossOrigin: 'anonymous', margin: 6 },
+  qrOptions:           { errorCorrectionLevel: 'H' },
+});
+qrCode.append(document.getElementById('qrOffscreen'));
+
+// ─── Compose canvas ───────────────────────────────────────────────────────
+function scheduleRender() {
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(renderComposite, 120);
+}
+
+async function buildQROptions() {
+  const size       = parseInt(document.getElementById('qrSize').value);
+  const dotColor   = document.getElementById('dotColor').value;
+  const dotColor2  = document.getElementById('dotColor2').value;
+  const bgColor    = document.getElementById('bgColor').value;
+  const logoRatio  = parseInt(document.getElementById('logoSize').value) / 100;
+  const errorLevel = document.getElementById('errorLevel').value;
+  const gradType   = document.getElementById('gradType').value;
+  const gradAngle  = parseInt(document.getElementById('gradAngle').value);
+
+  const dotsOptions = gradEnabled
+    ? { type: dotStyle, gradient: { type: gradType, rotation: gradAngle * Math.PI / 180,
+        colorStops: [{ offset: 0, color: dotColor }, { offset: 1, color: dotColor2 }] } }
+    : { type: dotStyle, color: dotColor };
+
+  const cornerColor = gradEnabled ? dotColor : dotColor;
+
+  const opts = {
+    width: size, height: size,
+    data: document.getElementById('inputText').value || ' ',
+    dotsOptions,
+    cornersSquareOptions: { color: cornerColor, type: cornerOuter },
+    cornersDotOptions:    { color: cornerColor, type: cornerInner },
+    backgroundOptions:    { color: '#00000000' },
+    qrOptions:            { errorCorrectionLevel: errorLevel },
+    imageOptions:         { crossOrigin: 'anonymous', margin: 6, imageSize: logoRatio },
+  };
+  if (logoDataUrl) opts.image = logoDataUrl;
+  return opts;
+}
+
+async function renderComposite() {
+  const opts = await buildQROptions();
+  qrCode.update(opts);
+
+  await new Promise(r => setTimeout(r, 180));
+
+  const qrEl = document.getElementById('qrOffscreen');
+  const srcCanvas = qrEl.querySelector('canvas');
+  if (!srcCanvas) return;
+
+  const size       = opts.width;
+  const bgColor    = document.getElementById('bgColor').value;
+  const frameStyle = document.getElementById('frameStyle').value;
+  const frameColor = document.getElementById('frameColor').value;
+  const frameText  = document.getElementById('frameText').value.trim();
+  const textColor  = document.getElementById('textColor').value;
+
+  const FRAME_PAD = frameStyle !== 'none' ? 16 : 0;
+  const TEXT_H    = frameText ? 40 : 0;
+  const totalW    = size + FRAME_PAD * 2;
+  const totalH    = size + FRAME_PAD * 2 + TEXT_H;
+
+  const canvas = document.getElementById('previewCanvas');
+  canvas.width  = totalW;
+  canvas.height = totalH;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, totalW, totalH);
+
+  // 1. Background
+  if (bgImageEl) {
+    const overlay = parseInt(document.getElementById('bgOverlay').value) / 100;
+    // cover-fit background image
+    const iw = bgImageEl.naturalWidth, ih = bgImageEl.naturalHeight;
+    const scale = Math.max(totalW / iw, totalH / ih);
+    const dw = iw * scale, dh = ih * scale;
+    const dx = (totalW - dw) / 2, dy = (totalH - dh) / 2;
+    ctx.drawImage(bgImageEl, dx, dy, dw, dh);
+    // dark overlay to make QR readable
+    ctx.fillStyle = `rgba(0,0,0,${overlay})`;
+    ctx.fillRect(0, 0, totalW, totalH);
+  } else {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, totalW, totalH);
+  }
+
+  // 2. Frame
+  if (frameStyle !== 'none') {
+    ctx.strokeStyle = frameColor;
+    ctx.lineWidth   = 3;
+    if (frameStyle === 'shadow') {
+      ctx.shadowColor   = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur    = 18;
+      ctx.shadowOffsetX = 4;
+      ctx.shadowOffsetY = 4;
+    }
+    const r = frameStyle === 'rounded' || frameStyle === 'shadow' ? 16 : 0;
+    ctx.beginPath();
+    if (r > 0) {
+      ctx.roundRect(FRAME_PAD / 2, FRAME_PAD / 2, size + FRAME_PAD, size + FRAME_PAD + TEXT_H, r);
+    } else {
+      ctx.rect(FRAME_PAD / 2, FRAME_PAD / 2, size + FRAME_PAD, size + FRAME_PAD + TEXT_H);
+    }
+    ctx.stroke();
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur  = 0;
+  }
+
+  // 3. QR
+  ctx.drawImage(srcCanvas, FRAME_PAD, FRAME_PAD, size, size);
+
+  // 4. Text
+  if (frameText) {
+    ctx.fillStyle  = textColor;
+    ctx.font       = `bold ${Math.round(size * 0.042)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+    ctx.textAlign  = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(frameText, totalW / 2, size + FRAME_PAD + TEXT_H / 2);
+  }
+}
+
+// ─── Gradient toggle ──────────────────────────────────────────────────────
+function toggleGradient() {
+  gradEnabled = !gradEnabled;
+  document.getElementById('gradToggle').classList.toggle('on', gradEnabled);
+  document.getElementById('gradOptions').classList.toggle('visible', gradEnabled);
+  scheduleRender();
+}
+
+// ─── Dot grid ─────────────────────────────────────────────────────────────
+document.getElementById('dotGrid').addEventListener('click', e => {
+  const opt = e.target.closest('.dot-opt');
+  if (!opt) return;
+  document.querySelectorAll('.dot-opt').forEach(el => el.classList.remove('active'));
+  opt.classList.add('active');
+  dotStyle = opt.dataset.dot;
+  scheduleRender();
+});
+
+// ─── Corner grid ──────────────────────────────────────────────────────────
+document.getElementById('cornerGrid').addEventListener('click', e => {
+  const opt = e.target.closest('.corner-opt');
+  if (!opt) return;
+  document.querySelectorAll('.corner-opt').forEach(el => el.classList.remove('active'));
+  opt.classList.add('active');
+  cornerOuter = opt.dataset.outer;
+  cornerInner = opt.dataset.inner;
+  scheduleRender();
+});
+
+// ─── Inputs ───────────────────────────────────────────────────────────────
+['inputText','dotColor','dotColor2','bgColor','errorLevel','gradType','frameStyle','frameColor','frameText','textColor'].forEach(id => {
+  document.getElementById(id).addEventListener('input', scheduleRender);
+});
+
+document.getElementById('gradAngle').addEventListener('input', function() {
+  document.getElementById('gradAngleVal').textContent = this.value + '°';
+  scheduleRender();
+});
+document.getElementById('qrSize').addEventListener('input', function() {
+  document.getElementById('sizeVal').textContent = this.value + 'px';
+  scheduleRender();
+});
+document.getElementById('logoSize').addEventListener('input', function() {
+  document.getElementById('logoSizeVal').textContent = this.value + '%';
+  scheduleRender();
+});
+document.getElementById('bgOverlay').addEventListener('input', function() {
+  document.getElementById('bgOverlayVal').textContent = this.value + '%';
+  scheduleRender();
+});
+
+// ─── Logo ─────────────────────────────────────────────────────────────────
+function handleLogoFile(file) {
+  if (!file?.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    logoDataUrl = e.target.result;
+    document.getElementById('logoDrop').classList.add('active');
+    document.getElementById('logoDropText').textContent = '✓ ' + file.name;
+    document.getElementById('logoControls').style.display = '';
+    scheduleRender();
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById('logoInput').addEventListener('change', e => handleLogoFile(e.target.files[0]));
+setupDrop('logoDrop', handleLogoFile);
+function clearLogo() {
+  logoDataUrl = null;
+  document.getElementById('logoInput').value = '';
+  document.getElementById('logoDrop').classList.remove('active');
+  document.getElementById('logoDropText').innerHTML = 'クリックまたはドロップでロゴ追加<br><small>PNG / JPG / SVG · エラー訂正 H 推奨</small>';
+  document.getElementById('logoControls').style.display = 'none';
+  scheduleRender();
+}
+
+// ─── Background image ─────────────────────────────────────────────────────
+function handleBgFile(file) {
+  if (!file?.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      bgImageEl = img;
+      document.getElementById('bgDrop').classList.add('active');
+      document.getElementById('bgDropText').textContent = '✓ ' + file.name;
+      document.getElementById('bgControls').style.display = '';
+      scheduleRender();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById('bgInput').addEventListener('change', e => handleBgFile(e.target.files[0]));
+setupDrop('bgDrop', handleBgFile);
+function clearBgImage() {
+  bgImageEl = null;
+  document.getElementById('bgInput').value = '';
+  document.getElementById('bgDrop').classList.remove('active');
+  document.getElementById('bgDropText').innerHTML = 'クリックまたはドロップで背景画像を追加<br><small>JPG / PNG · QRは半透明で重なります</small>';
+  document.getElementById('bgControls').style.display = 'none';
+  scheduleRender();
+}
+
+// ─── Drag & drop helper ───────────────────────────────────────────────────
+function setupDrop(id, handler) {
+  const el = document.getElementById(id);
+  el.addEventListener('dragover',  e => { e.preventDefault(); el.style.borderColor = 'var(--blue)'; });
+  el.addEventListener('dragleave', () => { el.style.borderColor = ''; });
+  el.addEventListener('drop',      e => { e.preventDefault(); el.style.borderColor = ''; handler(e.dataTransfer.files[0]); });
+}
+
+// ─── Download ─────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function downloadPng() {
+  const canvas = document.getElementById('previewCanvas');
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'qrcode.png';
+  a.click();
+  showToast('PNG ダウンロード完了');
+}
+
+function downloadSvg() {
+  qrCode.download({ name: 'qrcode', extension: 'svg' });
+  showToast('SVG ダウンロード完了');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+scheduleRender();
+</script>
+</body>
+</html>
