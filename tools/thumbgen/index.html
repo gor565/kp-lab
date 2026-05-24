@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>サムネイル合成 — K' Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0D1B2A; --surface: #142233; --surface2: #1A2C42;
+      --border: #243850; --blue: #5B8DEF; --text: #F0F4F8;
+      --muted: #7A90A8; --light: #A8BCCF; --green: #4CAF82;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
+      min-height: 100vh; padding-bottom: 60px;
+    }
+    .header {
+      padding: 14px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .back { font-size: 12px; color: var(--blue); text-decoration: none; letter-spacing: 0.06em; }
+    .header h1 { font-size: 15px; font-weight: 700; }
+    .badge { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+    .layout {
+      display: flex; gap: 28px; max-width: 1200px;
+      margin: 0 auto; padding: 28px 24px;
+    }
+    .controls { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+    .preview-col { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 18px;
+    }
+    .card-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 12px;
+    }
+    .form-row { margin-bottom: 10px; }
+    .form-row:last-child { margin-bottom: 0; }
+    label { font-size: 12px; color: var(--light); display: block; margin-bottom: 4px; }
+    .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .label-row label { margin-bottom: 0; }
+    .label-val { font-size: 12px; color: var(--blue); }
+
+    textarea, select, input[type="text"], input[type="number"] {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px;
+      padding: 8px 11px; outline: none; transition: border-color 0.15s; font-family: inherit;
+    }
+    textarea:focus, select:focus, input:focus { border-color: var(--blue); }
+    textarea { resize: vertical; min-height: 56px; }
+
+    input[type="range"] {
+      width: 100%; accent-color: var(--blue); cursor: pointer;
+    }
+    input[type="color"] {
+      width: 36px; height: 28px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--surface2); cursor: pointer; padding: 2px;
+    }
+    .color-row { display: flex; align-items: center; gap: 8px; }
+    .color-row input[type="text"] { flex: 1; }
+
+    .drop-zone {
+      border: 2px dashed var(--border); border-radius: 10px;
+      padding: 28px 16px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s; color: var(--muted); font-size: 13px;
+    }
+    .drop-zone:hover, .drop-zone.over { border-color: var(--blue); color: var(--blue); }
+    .drop-zone input { display: none; }
+
+    .preview-wrap {
+      width: 100%; aspect-ratio: 1280/670;
+      background: #000; border-radius: 10px; overflow: hidden;
+      position: relative; cursor: pointer;
+    }
+    canvas#preview { width: 100%; height: 100%; display: block; }
+
+    .btn {
+      width: 100%; padding: 11px; border-radius: 9px; border: none;
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-secondary { background: var(--surface2); color: var(--light); border: 1px solid var(--border); }
+
+    .size-info { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; }
+
+    .tab-row { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab {
+      flex: 1; padding: 6px; text-align: center; font-size: 12px; font-weight: 700;
+      border-radius: 7px; cursor: pointer; border: 1px solid var(--border);
+      color: var(--muted); background: var(--surface2); transition: all 0.15s;
+    }
+    .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .pos-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    }
+    .pos-btn {
+      padding: 6px 4px; text-align: center; font-size: 11px;
+      border-radius: 6px; cursor: pointer; border: 1px solid var(--border);
+      color: var(--muted); background: var(--surface2); transition: all 0.15s;
+    }
+    .pos-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    .no-bg { color: var(--muted); font-size: 12px; text-align: center; padding: 8px 0; }
+
+    @media (max-width: 800px) {
+      .layout { flex-direction: column; }
+      .controls { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back" href="../../">← K' Lab</a>
+  <h1>サムネイル合成</h1>
+  <span class="badge">1280 × 670 px</span>
+</div>
+
+<div class="layout">
+  <!-- Controls -->
+  <div class="controls">
+
+    <!-- Background -->
+    <div class="card">
+      <div class="card-title">背景画像</div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="bgFile" accept="image/*">
+        クリックまたはドラッグで画像を選択
+      </div>
+      <div class="form-row" style="margin-top:10px;">
+        <div class="label-row">
+          <label>暗さオーバーレイ</label>
+          <span class="label-val" id="overlayVal">40%</span>
+        </div>
+        <input type="range" id="overlay" min="0" max="90" value="40">
+      </div>
+      <div class="form-row">
+        <div class="label-row">
+          <label>オーバーレイ範囲</label>
+        </div>
+        <select id="overlayRange">
+          <option value="full">全体</option>
+          <option value="bottom" selected>下部1/3</option>
+          <option value="top">上部1/3</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Text tabs -->
+    <div class="card">
+      <div class="card-title">テキスト</div>
+      <div class="tab-row">
+        <div class="tab active" onclick="switchTab('main')">メイン</div>
+        <div class="tab" onclick="switchTab('sub')">サブ</div>
+      </div>
+
+      <!-- Main text -->
+      <div class="section active" id="sec-main">
+        <div class="form-row">
+          <label>テキスト</label>
+          <textarea id="mainText" placeholder="フックテキストを入力&#10;改行OK" rows="3"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="label-row">
+            <label>フォントサイズ</label>
+            <span class="label-val" id="mainSizeVal">56px</span>
+          </div>
+          <input type="range" id="mainSize" min="20" max="120" value="56">
+        </div>
+        <div class="form-row">
+          <label>フォントウェイト</label>
+          <select id="mainWeight">
+            <option value="900">Black (900)</option>
+            <option value="700" selected>Bold (700)</option>
+            <option value="400">Regular (400)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>カラー</label>
+          <div class="color-row">
+            <input type="color" id="mainColorPicker" value="#ffffff">
+            <input type="text" id="mainColor" value="#ffffff" maxlength="9">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="label-row">
+            <label>行間</label>
+            <span class="label-val" id="mainLeadingVal">1.3</span>
+          </div>
+          <input type="range" id="mainLeading" min="10" max="25" value="13">
+        </div>
+        <div class="form-row">
+          <label>位置</label>
+          <div class="pos-grid">
+            <div class="pos-btn" onclick="setPos('main','top-left')">↖</div>
+            <div class="pos-btn" onclick="setPos('main','top-center')">↑</div>
+            <div class="pos-btn" onclick="setPos('main','top-right')">↗</div>
+            <div class="pos-btn" onclick="setPos('main','mid-left')">←</div>
+            <div class="pos-btn" onclick="setPos('main','mid-center')">●</div>
+            <div class="pos-btn" onclick="setPos('main','mid-right')">→</div>
+            <div class="pos-btn" onclick="setPos('main','bot-left')">↙</div>
+            <div class="pos-btn active" id="pos-main-bot-center" onclick="setPos('main','bot-center')">↓</div>
+            <div class="pos-btn" onclick="setPos('main','bot-right')">↘</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="label-row">
+            <label>Y オフセット</label>
+            <span class="label-val" id="mainOffsetVal">0px</span>
+          </div>
+          <input type="range" id="mainOffset" min="-200" max="200" value="0">
+        </div>
+      </div>
+
+      <!-- Sub text -->
+      <div class="section" id="sec-sub">
+        <div class="form-row">
+          <label>テキスト（任意）</label>
+          <textarea id="subText" placeholder="補足テキスト（任意）" rows="2"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="label-row">
+            <label>フォントサイズ</label>
+            <span class="label-val" id="subSizeVal">32px</span>
+          </div>
+          <input type="range" id="subSize" min="14" max="80" value="32">
+        </div>
+        <div class="form-row">
+          <label>フォントウェイト</label>
+          <select id="subWeight">
+            <option value="900">Black (900)</option>
+            <option value="700">Bold (700)</option>
+            <option value="400" selected>Regular (400)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>カラー</label>
+          <div class="color-row">
+            <input type="color" id="subColorPicker" value="#a8bccf">
+            <input type="text" id="subColor" value="#a8bccf" maxlength="9">
+          </div>
+        </div>
+        <div class="form-row">
+          <label>位置</label>
+          <div class="pos-grid">
+            <div class="pos-btn" onclick="setPos('sub','top-left')">↖</div>
+            <div class="pos-btn" onclick="setPos('sub','top-center')">↑</div>
+            <div class="pos-btn" onclick="setPos('sub','top-right')">↗</div>
+            <div class="pos-btn" onclick="setPos('sub','mid-left')">←</div>
+            <div class="pos-btn" onclick="setPos('sub','mid-center')">●</div>
+            <div class="pos-btn" onclick="setPos('sub','mid-right')">→</div>
+            <div class="pos-btn" onclick="setPos('sub','bot-left')">↙</div>
+            <div class="pos-btn active" id="pos-sub-bot-center" onclick="setPos('sub','bot-center')">↓</div>
+            <div class="pos-btn" onclick="setPos('sub','bot-right')">↘</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="label-row">
+            <label>Y オフセット</label>
+            <span class="label-val" id="subOffsetVal">0px</span>
+          </div>
+          <input type="range" id="subOffset" min="-200" max="200" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Download -->
+    <button class="btn btn-primary" onclick="downloadPNG()">PNG ダウンロード (1280×670)</button>
+    <button class="btn btn-secondary" onclick="resetAll()">リセット</button>
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-col">
+    <div class="card">
+      <div class="card-title">プレビュー</div>
+      <div class="preview-wrap">
+        <canvas id="preview"></canvas>
+      </div>
+      <div class="size-info">プレビューは縮小表示 — ダウンロードは実寸 1280×670px</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const W = 1280, H = 670;
+  const canvas = document.getElementById('preview');
+  const ctx = canvas.getContext('2d');
+  canvas.width = W;
+  canvas.height = H;
+
+  let bgImage = null;
+  let mainPos = 'bot-center';
+  let subPos = 'bot-center';
+
+  // ── State ──────────────────────────────────────────
+  function getState() {
+    return {
+      overlay: +document.getElementById('overlay').value / 100,
+      overlayRange: document.getElementById('overlayRange').value,
+      mainText: document.getElementById('mainText').value,
+      mainSize: +document.getElementById('mainSize').value,
+      mainWeight: document.getElementById('mainWeight').value,
+      mainColor: document.getElementById('mainColor').value,
+      mainLeading: +document.getElementById('mainLeading').value / 10,
+      mainPos,
+      mainOffset: +document.getElementById('mainOffset').value,
+      subText: document.getElementById('subText').value,
+      subSize: +document.getElementById('subSize').value,
+      subWeight: document.getElementById('subWeight').value,
+      subColor: document.getElementById('subColor').value,
+      subPos,
+      subOffset: +document.getElementById('subOffset').value,
+    };
+  }
+
+  // ── Render ─────────────────────────────────────────
+  function render() {
+    const s = getState();
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    if (bgImage) {
+      const scale = Math.max(W / bgImage.width, H / bgImage.height);
+      const sw = bgImage.width * scale, sh = bgImage.height * scale;
+      ctx.drawImage(bgImage, (W - sw) / 2, (H - sh) / 2, sw, sh);
+    } else {
+      ctx.fillStyle = '#0D1B2A';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // Overlay
+    if (s.overlay > 0) {
+      ctx.fillStyle = `rgba(0,0,0,${s.overlay})`;
+      if (s.overlayRange === 'full') {
+        ctx.fillRect(0, 0, W, H);
+      } else if (s.overlayRange === 'bottom') {
+        ctx.fillRect(0, H * 2/3, W, H / 3);
+      } else {
+        ctx.fillRect(0, 0, W, H / 3);
+      }
+    }
+
+    // Draw text layers
+    if (s.mainText.trim()) drawText(ctx, s.mainText, s.mainSize, s.mainWeight, s.mainColor, s.mainLeading, s.mainPos, s.mainOffset);
+    if (s.subText.trim()) drawText(ctx, s.subText, s.subSize, s.subWeight, s.subColor, 1.4, s.subPos, s.subOffset);
+  }
+
+  function drawText(ctx, text, size, weight, color, leading, pos, offsetY) {
+    ctx.save();
+    ctx.font = `${weight} ${size}px 'Noto Sans JP', sans-serif`;
+    ctx.fillStyle = color;
+    ctx.textAlign = pos.includes('left') ? 'left' : pos.includes('right') ? 'right' : 'center';
+
+    const lines = text.split('\n');
+    const lineH = size * leading;
+    const totalH = lines.length * lineH;
+
+    const pad = 60;
+    let x, y;
+    if (pos.includes('left')) x = pad;
+    else if (pos.includes('right')) x = W - pad;
+    else x = W / 2;
+
+    if (pos.startsWith('top')) y = pad + size;
+    else if (pos.startsWith('mid')) y = (H - totalH) / 2 + size;
+    else y = H - pad - totalH + size;
+
+    y += offsetY;
+
+    lines.forEach((line, i) => {
+      ctx.fillText(line, x, y + i * lineH);
+    });
+    ctx.restore();
+  }
+
+  // ── Tabs ───────────────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (i === 0 && tab === 'main') || (i === 1 && tab === 'sub')));
+    document.getElementById('sec-main').classList.toggle('active', tab === 'main');
+    document.getElementById('sec-sub').classList.toggle('active', tab === 'sub');
+  }
+
+  // ── Position ───────────────────────────────────────
+  function setPos(type, val) {
+    if (type === 'main') mainPos = val;
+    else subPos = val;
+    document.querySelectorAll(`#sec-${type} .pos-btn`).forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    render();
+  }
+
+  // ── Background image ───────────────────────────────
+  const dropZone = document.getElementById('dropZone');
+  const bgFile = document.getElementById('bgFile');
+
+  dropZone.addEventListener('click', () => bgFile.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('over');
+    loadImageFile(e.dataTransfer.files[0]);
+  });
+  bgFile.addEventListener('change', e => loadImageFile(e.target.files[0]));
+
+  function loadImageFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => { bgImage = img; dropZone.textContent = '✓ ' + file.name; render(); };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Color sync ─────────────────────────────────────
+  function syncColor(pickerId, textId) {
+    const picker = document.getElementById(pickerId);
+    const text = document.getElementById(textId);
+    picker.addEventListener('input', () => { text.value = picker.value; render(); });
+    text.addEventListener('input', () => {
+      const v = text.value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) picker.value = v;
+      render();
+    });
+  }
+  syncColor('mainColorPicker', 'mainColor');
+  syncColor('subColorPicker', 'subColor');
+
+  // ── Slider labels ──────────────────────────────────
+  function bindSlider(id, labelId, transform) {
+    const el = document.getElementById(id);
+    const lbl = document.getElementById(labelId);
+    el.addEventListener('input', () => { lbl.textContent = transform(el.value); render(); });
+  }
+  bindSlider('overlay', 'overlayVal', v => v + '%');
+  bindSlider('mainSize', 'mainSizeVal', v => v + 'px');
+  bindSlider('mainLeading', 'mainLeadingVal', v => (v/10).toFixed(1));
+  bindSlider('mainOffset', 'mainOffsetVal', v => (v >= 0 ? '+' : '') + v + 'px');
+  bindSlider('subSize', 'subSizeVal', v => v + 'px');
+  bindSlider('subOffset', 'subOffsetVal', v => (v >= 0 ? '+' : '') + v + 'px');
+
+  // ── Generic change → render ────────────────────────
+  ['mainText','mainWeight','overlayRange','subText','subWeight'].forEach(id => {
+    document.getElementById(id).addEventListener('input', render);
+    document.getElementById(id).addEventListener('change', render);
+  });
+
+  // ── Download ───────────────────────────────────────
+  function downloadPNG() {
+    render();
+    const a = document.createElement('a');
+    a.download = 'thumbnail_' + new Date().toISOString().slice(0,10) + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+
+  // ── Reset ──────────────────────────────────────────
+  function resetAll() {
+    bgImage = null;
+    dropZone.textContent = 'クリックまたはドラッグで画像を選択';
+    document.getElementById('overlay').value = 40; document.getElementById('overlayVal').textContent = '40%';
+    document.getElementById('overlayRange').value = 'bottom';
+    document.getElementById('mainText').value = '';
+    document.getElementById('mainSize').value = 56; document.getElementById('mainSizeVal').textContent = '56px';
+    document.getElementById('mainWeight').value = '700';
+    document.getElementById('mainColor').value = '#ffffff'; document.getElementById('mainColorPicker').value = '#ffffff';
+    document.getElementById('mainLeading').value = 13; document.getElementById('mainLeadingVal').textContent = '1.3';
+    document.getElementById('mainOffset').value = 0; document.getElementById('mainOffsetVal').textContent = '0px';
+    document.getElementById('subText').value = '';
+    document.getElementById('subSize').value = 32; document.getElementById('subSizeVal').textContent = '32px';
+    document.getElementById('subWeight').value = '400';
+    document.getElementById('subColor').value = '#a8bccf'; document.getElementById('subColorPicker').value = '#a8bccf';
+    document.getElementById('subOffset').value = 0; document.getElementById('subOffsetVal').textContent = '0px';
+    mainPos = 'bot-center'; subPos = 'bot-center';
+    render();
+  }
+
+  // Initial render
+  render();
+</script>
+</body>
+</html>
