@@ -28,7 +28,7 @@
       display: flex; gap: 24px; max-width: 1100px;
       margin: 0 auto; padding: 24px 20px;
     }
-    .controls { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+    .controls { width: 268px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
     .main-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
 
     .card {
@@ -63,38 +63,33 @@
     .btn-primary { background: var(--blue); color: #fff; }
     .btn-green { background: var(--green); color: #fff; }
     .btn-secondary { background: var(--surface2); color: var(--light); border: 1px solid var(--border); }
-
     .btn-row { display: flex; gap: 8px; }
     .btn-row .btn { flex: 1; }
 
-    canvas#maze {
-      display: block; width: 100%; border-radius: 10px;
-      image-rendering: pixelated;
-    }
     .canvas-wrap {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 12px; aspect-ratio: 1;
+      border-radius: 12px; padding: 12px; aspect-ratio: 1; position: relative;
     }
+    canvas#maze { display: block; width: 100%; border-radius: 8px; image-rendering: pixelated; }
 
-    .legend {
-      display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 14px;
-    }
-    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--light); }
-    .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 14px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--light); }
+    .legend-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
 
-    .stats {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-    }
-    .stat-box {
-      background: var(--surface2); border-radius: 8px; padding: 8px 10px; text-align: center;
-    }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-box { background: var(--surface2); border-radius: 8px; padding: 8px 10px; text-align: center; }
     .stat-val { font-size: 18px; font-weight: 700; color: var(--blue); }
     .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-    .info-text {
-      font-size: 12px; color: var(--muted); line-height: 1.7; padding: 10px 14px;
-    }
+    .info-text { font-size: 12px; color: var(--muted); line-height: 1.7; padding: 10px 14px; }
     .info-text strong { color: var(--light); }
+    .tag {
+      display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px;
+      border-radius: 4px; margin-left: 4px; vertical-align: middle;
+    }
+    .tag-opt { background: #1A3A20; color: var(--green); }
+    .tag-noopt { background: #3A1A1A; color: var(--red); }
+    .tag-prob { background: #2A1A3A; color: var(--purple); }
 
     @media (max-width: 700px) {
       .layout { flex-direction: column; }
@@ -137,10 +132,21 @@
       <div class="form-row">
         <label>アルゴリズム</label>
         <select id="solveAlgo">
-          <option value="bfs">BFS（幅優先）</option>
-          <option value="dijkstra">Dijkstra法</option>
-          <option value="astar">A*（エースター）</option>
-          <option value="bibfs">双方向BFS ★</option>
+          <optgroup label="─ 確定的（最短保証）">
+            <option value="bfs">BFS（幅優先）</option>
+            <option value="dijkstra">Dijkstra法</option>
+            <option value="astar">A*</option>
+            <option value="bibfs">双方向BFS</option>
+            <option value="biastar">双方向A*</option>
+          </optgroup>
+          <optgroup label="─ 確定的（最短非保証）">
+            <option value="greedy">Greedy最良優先</option>
+            <option value="dfs_solve">DFS（深さ優先）</option>
+            <option value="righthand">右手法（壁伝い）</option>
+          </optgroup>
+          <optgroup label="─ 確率的">
+            <option value="aco">ACO（アリコロニー）</option>
+          </optgroup>
         </select>
       </div>
       <div class="form-row">
@@ -159,21 +165,20 @@
     <div class="card">
       <div class="card-title">凡例</div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#F0F4F8"></div>通路</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#E8EDF2"></div>通路</div>
         <div class="legend-item"><div class="legend-dot" style="background:#0D1B2A;border:1px solid #243850"></div>壁</div>
         <div class="legend-item"><div class="legend-dot" style="background:#4CAF82"></div>スタート</div>
         <div class="legend-item"><div class="legend-dot" style="background:#E05252"></div>ゴール</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#1E3A5F"></div>探索済み(S側)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#3B1A4A"></div>探索済み(G側)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#F5A623"></div>最短経路</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1E3A5F"></div>探索済み(前)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3B1A4A"></div>探索済み(後)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F5A623"></div>経路</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2A3A1A"></div>フェロモン</div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">アルゴリズム解説</div>
-      <div class="info-text" id="algoInfo">
-        アルゴリズムを選択すると解説が表示されます。
-      </div>
+      <div class="info-text" id="algoInfo">アルゴリズムを選択すると解説が表示されます。</div>
     </div>
 
   </div>
@@ -182,7 +187,6 @@
     <div class="canvas-wrap">
       <canvas id="maze"></canvas>
     </div>
-
     <div class="card">
       <div class="stats">
         <div class="stat-box">
@@ -191,7 +195,7 @@
         </div>
         <div class="stat-box">
           <div class="stat-val" id="statPath">—</div>
-          <div class="stat-label">最短経路長</div>
+          <div class="stat-label">経路長</div>
         </div>
         <div class="stat-box">
           <div class="stat-val" id="statEfficiency">—</div>
@@ -203,441 +207,591 @@
 </div>
 
 <script>
-// ── Constants ──────────────────────────────────────────
-const WALL = 0, PATH = 1, START = 2, GOAL = 3, VISITED = 4, ROUTE = 5, VISITED2 = 6;
+// ── Cell types ─────────────────────────────────────────
+const WALL=0, PATH=1, START=2, GOAL=3, VISITED=4, ROUTE=5, VISITED2=6;
 
-const COLORS = {
-  [WALL]:     '#0D1B2A',
-  [PATH]:     '#E8EDF2',
-  [START]:    '#4CAF82',
-  [GOAL]:     '#E05252',
-  [VISITED]:  '#1E3A5F',
-  [VISITED2]: '#3B1A4A',
-  [ROUTE]:    '#F5A623',
-};
-
-const ALGO_INFO = {
-  bfs: '<strong>BFS（幅優先探索）</strong><br>スタートから近い順に全方向を均等に広げる。必ず最短経路を見つける。Googleマップの基礎にあたるアルゴリズム。',
-  dijkstra: '<strong>Dijkstra法</strong><br>コスト（距離・時間）を積算しながら探索。重み付きグラフに強い。BFSの拡張版で、ナビアプリで実際に使われる。',
-  astar: '<strong>A*（エースター）</strong><br>ゴールまでの推定距離（ヒューリスティック）を使って賢く絞る。BFS・Dijkstraより探索セル数が少なく高速。現代ナビの主流。',
-  bibfs: '<strong>双方向BFS</strong><br>スタートとゴールの両方から同時に探索し、2つの波が出会った地点を最短経路とする。探索範囲が通常BFSの約半分になる。Googleマップが実際に使う手法に近い。',
-  dfs: '<strong>深さ優先探索（DFS）</strong><br>一本道を端まで掘り進む。行き止まりで戻る。長い一本道が特徴的な迷路ができる。',
-  prim: '<strong>Prim法</strong><br>短い枝を均等に伸ばす。均一で複雑な迷路ができる。行き止まりが多く、解くのが難しい。',
-  kruskal: '<strong>Kruskal法</strong><br>ランダムに辺を追加しながら木を構成。均質なランダム性がある迷路ができる。',
+const BASE_COLOR = {
+  [WALL]:    [13,  27,  42],
+  [PATH]:    [232, 237, 242],
+  [START]:   [76,  175, 130],
+  [GOAL]:    [224, 82,  82],
+  [VISITED]: [30,  58,  95],
+  [ROUTE]:   [245, 166, 35],
+  [VISITED2]:[59,  26,  74],
 };
 
 // ── State ──────────────────────────────────────────────
-let grid = [], N = 21, cellSize = 1;
-let animTimer = null;
-let isRunning = false;
-
+let grid=[], N=21, pheromone=null;
+let animTimer=null, isRunning=false;
 const canvas = document.getElementById('maze');
 const ctx = canvas.getContext('2d');
+let imgData = null;
+
+// ── Algorithm info ─────────────────────────────────────
+const ALGO_INFO = {
+  bfs:      '<strong>BFS（幅優先探索）</strong><span class="tag tag-opt">最短保証</span><br>スタートから近い順に全方向を均等に広げる。必ず最短経路を見つける。Googleマップの基礎。',
+  dijkstra: '<strong>Dijkstra法</strong><span class="tag tag-opt">最短保証</span><br>コストを積算しながら探索。重み付きグラフに強く、ナビアプリで実際に使われる。均一コストではBFSと同じ動きをする。',
+  astar:    '<strong>A*（エースター）</strong><span class="tag tag-opt">最短保証</span><br>ゴールへの推定距離（ヒューリスティック）で絞る。BFSより探索セル数が少ない。現代ナビの主流。',
+  bibfs:    '<strong>双方向BFS</strong><span class="tag tag-opt">最短保証</span><br>スタートとゴールの両方から同時に探索。2つの波が出会った地点が最短。BFSの約半分の探索量で済む。',
+  biastar:  '<strong>双方向A*</strong><span class="tag tag-opt">最短保証</span><br>双方向BFSにA*のヒューリスティックを加えた版。探索セル数が最も少なく、実用ナビで最も近い手法。',
+  greedy:   '<strong>Greedy最良優先探索</strong><span class="tag tag-noopt">最短非保証</span><br>ゴール方向だけを見て貪欲に進む。速いが遠回りすることがある。A*と見比べると「ヒューリスティックだけでは足りない理由」がわかる。',
+  dfs_solve:'<strong>DFS（深さ優先探索）</strong><span class="tag tag-noopt">最短非保証</span><br>一方向に深く進んで行き止まりで戻る。バックトラックの様子が見える。生成アルゴリズムのDFSと「同じ名前で全然違う動き」になる。',
+  righthand:'<strong>右手法（壁伝い）</strong><span class="tag tag-noopt">最短非保証</span><br>常に右壁を頼りに進む古典的手法。アルゴリズムなしで迷路を解ける。ただし遠回りが多く、迷路構造によっては失敗する。',
+  aco:      '<strong>ACO（アリコロニー最適化）</strong><span class="tag tag-prob">確率的</span><br>アリの行動を模した群知能アルゴリズム。多数のアリがフェロモンを使って短いルートを集合的に発見する。グラフ彩色・巡回セールスマン問題にも応用される。',
+};
+
+const GEN_INFO = {
+  dfs:     '<strong>深さ優先探索（DFS）</strong><br>一本道を端まで掘り進む。長い直線的な通路が特徴。解くのは比較的簡単。',
+  prim:    '<strong>Prim法</strong><br>短い枝を均等に伸ばす。行き止まりが多く均一に複雑な迷路。解くのが難しい。',
+  kruskal: '<strong>Kruskal法</strong><br>ランダムに辺を追加。均質なランダム性がある迷路。',
+};
 
 // ── Controls ───────────────────────────────────────────
 document.getElementById('mazeSize').addEventListener('input', e => {
   N = +e.target.value;
   document.getElementById('sizeVal').textContent = `${N}×${N}`;
 });
-
-const speedLabels = ['', '遅い', 'やや遅い', '普通', '速い', '最速'];
+const speedLabels = ['','遅い','やや遅い','普通','速い','最速'];
 document.getElementById('speed').addEventListener('input', e => {
   document.getElementById('speedVal').textContent = speedLabels[e.target.value];
 });
-
 document.getElementById('solveAlgo').addEventListener('change', e => {
   document.getElementById('algoInfo').innerHTML = ALGO_INFO[e.target.value] || '';
 });
 document.getElementById('genAlgo').addEventListener('change', e => {
-  document.getElementById('algoInfo').innerHTML = ALGO_INFO[e.target.value] || '';
+  document.getElementById('algoInfo').innerHTML = GEN_INFO[e.target.value] || '';
 });
-
 document.getElementById('btnGenerate').addEventListener('click', generate);
 document.getElementById('btnSolve').addEventListener('click', solve);
 document.getElementById('btnReset').addEventListener('click', resetSolve);
 
 // ── Grid helpers ───────────────────────────────────────
-function initGrid(n) {
-  return Array.from({length: n}, () => new Array(n).fill(WALL));
-}
-
-function inBounds(r, c) { return r >= 0 && r < N && c >= 0 && c < N; }
-
-const DIRS4 = [[-1,0],[1,0],[0,-1],[0,1]];
-const DIRS4_STEP2 = [[-2,0],[2,0],[0,-2],[0,2]];
+function initGrid(n) { return Array.from({length:n}, ()=>new Array(n).fill(WALL)); }
+function inBounds(r,c) { return r>=0&&r<N&&c>=0&&c<N; }
+const DIRS4=[[-1,0],[1,0],[0,-1],[0,1]];
+const DIRS4S=[[-2,0],[2,0],[0,-2],[0,2]];
 
 // ── Maze Generation ────────────────────────────────────
 function generate() {
   stopAnimation();
-  const algo = document.getElementById('genAlgo').value;
   grid = initGrid(N);
-
-  if (algo === 'dfs') generateDFS();
-  else if (algo === 'prim') generatePrim();
+  pheromone = null;
+  const algo = document.getElementById('genAlgo').value;
+  if (algo==='dfs') generateDFS();
+  else if (algo==='prim') generatePrim();
   else generateKruskal();
-
-  // Start / Goal
   grid[1][1] = START;
   grid[N-2][N-2] = GOAL;
-
-  resizeCanvas();
-  draw();
-
+  resizeCanvas(); draw();
   document.getElementById('btnSolve').disabled = false;
   document.getElementById('btnReset').disabled = false;
   resetStats();
-  document.getElementById('algoInfo').innerHTML = ALGO_INFO[document.getElementById('genAlgo').value];
+  document.getElementById('algoInfo').innerHTML = GEN_INFO[algo];
 }
 
 function generateDFS() {
-  // recursive backtracking
   grid[1][1] = PATH;
-  const stack = [[1, 1]];
+  const stack = [[1,1]];
   while (stack.length) {
-    const [r, c] = stack[stack.length - 1];
-    const neighbors = shuffle(DIRS4_STEP2)
-      .filter(([dr, dc]) => inBounds(r+dr, c+dc) && grid[r+dr][c+dc] === WALL);
-    if (!neighbors.length) { stack.pop(); continue; }
-    const [dr, dc] = neighbors[0];
-    grid[r + dr/2][c + dc/2] = PATH;
-    grid[r + dr][c + dc] = PATH;
-    stack.push([r + dr, c + dc]);
+    const [r,c] = stack[stack.length-1];
+    const nb = shuffle(DIRS4S).filter(([dr,dc])=>inBounds(r+dr,c+dc)&&grid[r+dr][c+dc]===WALL);
+    if (!nb.length) { stack.pop(); continue; }
+    const [dr,dc] = nb[0];
+    grid[r+dr/2][c+dc/2] = PATH;
+    grid[r+dr][c+dc] = PATH;
+    stack.push([r+dr, c+dc]);
   }
 }
 
 function generatePrim() {
   grid[1][1] = PATH;
-  let walls = [];
-  addWalls(1, 1, walls);
-
+  const walls = [];
+  addWalls(1,1,walls);
   while (walls.length) {
-    const idx = Math.floor(Math.random() * walls.length);
-    const [wr, wc, fr, fc] = walls[idx];
-    walls.splice(idx, 1);
-    if (grid[fr][fc] === WALL) {
-      grid[wr][wc] = PATH;
-      grid[fr][fc] = PATH;
-      addWalls(fr, fc, walls);
-    }
+    const idx = Math.floor(Math.random()*walls.length);
+    const [wr,wc,fr,fc] = walls[idx]; walls.splice(idx,1);
+    if (grid[fr][fc]===WALL) { grid[wr][wc]=PATH; grid[fr][fc]=PATH; addWalls(fr,fc,walls); }
   }
 }
-
-function addWalls(r, c, walls) {
-  for (const [dr, dc] of DIRS4_STEP2) {
-    const nr = r + dr, nc = c + dc;
-    const mr = r + dr/2, mc = c + dc/2;
-    if (inBounds(nr, nc) && grid[nr][nc] === WALL)
-      walls.push([mr, mc, nr, nc]);
+function addWalls(r,c,walls) {
+  for (const [dr,dc] of DIRS4S) {
+    const nr=r+dr, nc=c+dc, mr=r+dr/2, mc=c+dc/2;
+    if (inBounds(nr,nc)&&grid[nr][nc]===WALL) walls.push([mr,mc,nr,nc]);
   }
 }
 
 function generateKruskal() {
-  // collect all interior odd cells as nodes
-  const cells = [];
-  for (let r = 1; r < N; r += 2)
-    for (let c = 1; c < N; c += 2) {
-      grid[r][c] = PATH;
-      cells.push([r, c]);
-    }
-
-  // union-find
-  const id = {};
-  cells.forEach(([r, c]) => { id[`${r},${c}`] = `${r},${c}`; });
-
-  function find(k) {
-    if (id[k] !== k) id[k] = find(id[k]);
-    return id[k];
-  }
-  function union(a, b) { id[find(a)] = find(b); }
-
-  // collect all walls between cells
-  const edges = [];
-  cells.forEach(([r, c]) => {
-    for (const [dr, dc] of DIRS4_STEP2) {
-      const nr = r + dr, nc = c + dc;
-      if (inBounds(nr, nc)) edges.push([r, c, nr, nc, r+dr/2, c+dc/2]);
-    }
+  const cells=[];
+  for (let r=1;r<N;r+=2) for (let c=1;c<N;c+=2) { grid[r][c]=PATH; cells.push([r,c]); }
+  const id={};
+  cells.forEach(([r,c])=>{ id[`${r},${c}`]=`${r},${c}`; });
+  function find(k) { if(id[k]!==k) id[k]=find(id[k]); return id[k]; }
+  function union(a,b) { id[find(a)]=find(b); }
+  const edges=[];
+  cells.forEach(([r,c])=>{
+    for(const [dr,dc] of DIRS4S) { const nr=r+dr,nc=c+dc; if(inBounds(nr,nc)) edges.push([r,c,nr,nc,r+dr/2,c+dc/2]); }
   });
-  shuffle(edges).forEach(([r1, c1, r2, c2, mr, mc]) => {
-    const a = `${r1},${c1}`, b = `${r2},${c2}`;
-    if (find(a) !== find(b)) {
-      union(a, b);
-      grid[mr][mc] = PATH;
-    }
+  shuffle(edges).forEach(([r1,c1,r2,c2,mr,mc])=>{
+    const a=`${r1},${c1}`,b=`${r2},${c2}`;
+    if(find(a)!==find(b)) { union(a,b); grid[mr][mc]=PATH; }
   });
 }
 
-// ── Pathfinding ────────────────────────────────────────
+// ── Solve dispatcher ───────────────────────────────────
 function solve() {
   if (isRunning) return;
-  resetSolveVisuals();
-
+  resetSolveVisuals(); draw();
+  pheromone = null;
   const algo = document.getElementById('solveAlgo').value;
-  const speedIdx = +document.getElementById('speed').value;
-  const delays = [0, 40, 20, 8, 3, 0];
-  const delay = delays[speedIdx];
-
   document.getElementById('algoInfo').innerHTML = ALGO_INFO[algo];
   document.getElementById('btnSolve').disabled = true;
 
+  if (algo === 'aco') { runACO(); return; }
+
+  const speedIdx = +document.getElementById('speed').value;
+  const delays = [0,40,18,7,2,0];
+  const delay = delays[speedIdx];
+
   let steps = [];
-  if (algo === 'bfs') steps = bfs();
-  else if (algo === 'dijkstra') steps = dijkstra();
-  else if (algo === 'astar') steps = astar();
-  else steps = bibfs();
+  if (algo==='bfs')       steps = bfs();
+  else if (algo==='dijkstra') steps = dijkstra();
+  else if (algo==='astar')    steps = astar();
+  else if (algo==='bibfs')    steps = bibfs();
+  else if (algo==='biastar')  steps = biAstar();
+  else if (algo==='greedy')   steps = greedy();
+  else if (algo==='dfs_solve')steps = dfsSolve();
+  else                        steps = rightHand();
 
   isRunning = true;
   let i = 0;
-
   function tick() {
-    const batch = delay === 0 ? steps.length : 1;
-    for (let b = 0; b < batch && i < steps.length; b++, i++) {
-      const {r, c, type} = steps[i];
-      if (grid[r][c] !== START && grid[r][c] !== GOAL) grid[r][c] = type;
+    const batch = delay===0 ? steps.length : 1;
+    for (let b=0; b<batch && i<steps.length; b++, i++) {
+      const {r,c,type} = steps[i];
+      if (grid[r][c]!==START && grid[r][c]!==GOAL) grid[r][c] = type;
     }
     draw();
-    if (i < steps.length) {
-      animTimer = delay === 0 ? requestAnimationFrame(tick) : setTimeout(tick, delay);
+    if (i<steps.length) {
+      animTimer = delay===0 ? requestAnimationFrame(tick) : setTimeout(tick, delay);
     } else {
-      isRunning = false;
+      isRunning=false;
       updateStats(steps);
     }
   }
   tick();
 }
 
+// ── BFS ────────────────────────────────────────────────
 function bfs() {
-  const [sr, sc] = find(START);
-  const [er, ec] = find(GOAL);
-  const visited = Array.from({length: N}, () => new Array(N).fill(false));
-  const parent = Array.from({length: N}, () => new Array(N).fill(null));
-  const queue = [[sr, sc]];
-  visited[sr][sc] = true;
-  const steps = [];
-
-  while (queue.length) {
-    const [r, c] = queue.shift();
-    if (r === er && c === ec) break;
-    for (const [dr, dc] of DIRS4) {
-      const nr = r+dr, nc = c+dc;
-      if (inBounds(nr, nc) && !visited[nr][nc] && grid[nr][nc] !== WALL) {
-        visited[nr][nc] = true;
-        parent[nr][nc] = [r, c];
-        queue.push([nr, nc]);
-        steps.push({r: nr, c: nc, type: VISITED});
-      }
+  const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
+  const vis=Array.from({length:N},()=>new Array(N).fill(false));
+  const par=Array.from({length:N},()=>new Array(N).fill(null));
+  const q=[[sr,sc]]; vis[sr][sc]=true;
+  const steps=[];
+  outer: while(q.length) {
+    const [r,c]=q.shift();
+    for(const [dr,dc] of DIRS4) {
+      const nr=r+dr,nc=c+dc;
+      if(!inBounds(nr,nc)||vis[nr][nc]||grid[nr][nc]===WALL) continue;
+      vis[nr][nc]=true; par[nr][nc]=[r,c]; q.push([nr,nc]);
+      steps.push({r:nr,c:nc,type:VISITED});
+      if(nr===er&&nc===ec) break outer;
     }
   }
-  return [...steps, ...tracePath(parent, er, ec)];
+  return [...steps,...tracePath(par,er,ec)];
 }
 
+// ── Dijkstra ───────────────────────────────────────────
 function dijkstra() {
-  const [sr, sc] = find(START);
-  const [er, ec] = find(GOAL);
-  const dist = Array.from({length: N}, () => new Array(N).fill(Infinity));
-  const parent = Array.from({length: N}, () => new Array(N).fill(null));
-  dist[sr][sc] = 0;
-  // simple priority queue via sorted array
-  const pq = [[0, sr, sc]];
-  const steps = [];
-
-  while (pq.length) {
-    pq.sort((a, b) => a[0] - b[0]);
-    const [d, r, c] = pq.shift();
-    if (d > dist[r][c]) continue;
-    if (r === er && c === ec) break;
-    for (const [dr, dc] of DIRS4) {
-      const nr = r+dr, nc = c+dc;
-      if (!inBounds(nr, nc) || grid[nr][nc] === WALL) continue;
-      const nd = d + 1;
-      if (nd < dist[nr][nc]) {
-        dist[nr][nc] = nd;
-        parent[nr][nc] = [r, c];
-        pq.push([nd, nr, nc]);
-        steps.push({r: nr, c: nc, type: VISITED});
-      }
+  const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
+  const dist=Array.from({length:N},()=>new Array(N).fill(Infinity));
+  const par=Array.from({length:N},()=>new Array(N).fill(null));
+  dist[sr][sc]=0;
+  const pq=[[0,sr,sc]]; const steps=[];
+  while(pq.length) {
+    pq.sort((a,b)=>a[0]-b[0]);
+    const [d,r,c]=pq.shift();
+    if(d>dist[r][c]) continue;
+    if(r===er&&c===ec) break;
+    for(const [dr,dc] of DIRS4) {
+      const nr=r+dr,nc=c+dc;
+      if(!inBounds(nr,nc)||grid[nr][nc]===WALL) continue;
+      const nd=d+1;
+      if(nd<dist[nr][nc]) { dist[nr][nc]=nd; par[nr][nc]=[r,c]; pq.push([nd,nr,nc]); steps.push({r:nr,c:nc,type:VISITED}); }
     }
   }
-  return [...steps, ...tracePath(parent, er, ec)];
+  return [...steps,...tracePath(par,er,ec)];
 }
 
+// ── A* ─────────────────────────────────────────────────
 function astar() {
-  const [sr, sc] = find(START);
-  const [er, ec] = find(GOAL);
-  const g = Array.from({length: N}, () => new Array(N).fill(Infinity));
-  const parent = Array.from({length: N}, () => new Array(N).fill(null));
-  g[sr][sc] = 0;
-  const h = (r, c) => Math.abs(r - er) + Math.abs(c - ec);
-  const open = [[h(sr, sc), 0, sr, sc]];
-  const steps = [];
-
-  while (open.length) {
-    open.sort((a, b) => a[0] - b[0]);
-    const [, gv, r, c] = open.shift();
-    if (gv > g[r][c]) continue;
-    if (r === er && c === ec) break;
-    for (const [dr, dc] of DIRS4) {
-      const nr = r+dr, nc = c+dc;
-      if (!inBounds(nr, nc) || grid[nr][nc] === WALL) continue;
-      const ng = gv + 1;
-      if (ng < g[nr][nc]) {
-        g[nr][nc] = ng;
-        parent[nr][nc] = [r, c];
-        open.push([ng + h(nr, nc), ng, nr, nc]);
-        steps.push({r: nr, c: nc, type: VISITED});
-      }
+  const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
+  const g=Array.from({length:N},()=>new Array(N).fill(Infinity));
+  const par=Array.from({length:N},()=>new Array(N).fill(null));
+  g[sr][sc]=0;
+  const h=(r,c)=>Math.abs(r-er)+Math.abs(c-ec);
+  const open=[[h(sr,sc),0,sr,sc]]; const steps=[];
+  while(open.length) {
+    open.sort((a,b)=>a[0]-b[0]);
+    const [,gv,r,c]=open.shift();
+    if(gv>g[r][c]) continue;
+    if(r===er&&c===ec) break;
+    for(const [dr,dc] of DIRS4) {
+      const nr=r+dr,nc=c+dc;
+      if(!inBounds(nr,nc)||grid[nr][nc]===WALL) continue;
+      const ng=gv+1;
+      if(ng<g[nr][nc]) { g[nr][nc]=ng; par[nr][nc]=[r,c]; open.push([ng+h(nr,nc),ng,nr,nc]); steps.push({r:nr,c:nc,type:VISITED}); }
     }
   }
-  return [...steps, ...tracePath(parent, er, ec)];
+  return [...steps,...tracePath(par,er,ec)];
 }
 
+// ── Bidirectional BFS ──────────────────────────────────
 function bibfs() {
-  const [sr, sc] = find(START);
-  const [er, ec] = find(GOAL);
-
-  const parentF = Array.from({length: N}, () => new Array(N).fill(null));
-  const parentB = Array.from({length: N}, () => new Array(N).fill(null));
-  const visitedF = Array.from({length: N}, () => new Array(N).fill(false));
-  const visitedB = Array.from({length: N}, () => new Array(N).fill(false));
-
-  visitedF[sr][sc] = true;
-  visitedB[er][ec] = true;
-
-  let qF = [[sr, sc]];
-  let qB = [[er, ec]];
-  const steps = [];
-  let meetR = -1, meetC = -1;
-
-  outer: while (qF.length && qB.length) {
-    // forward step
-    const nextF = [];
-    for (const [r, c] of qF) {
-      for (const [dr, dc] of DIRS4) {
-        const nr = r+dr, nc = c+dc;
-        if (!inBounds(nr, nc) || grid[nr][nc] === WALL || visitedF[nr][nc]) continue;
-        visitedF[nr][nc] = true;
-        parentF[nr][nc] = [r, c];
-        steps.push({r: nr, c: nc, type: VISITED});
-        if (visitedB[nr][nc]) { meetR = nr; meetC = nc; break outer; }
-        nextF.push([nr, nc]);
+  const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
+  const parF=Array.from({length:N},()=>new Array(N).fill(null));
+  const parB=Array.from({length:N},()=>new Array(N).fill(null));
+  const visF=Array.from({length:N},()=>new Array(N).fill(false));
+  const visB=Array.from({length:N},()=>new Array(N).fill(false));
+  visF[sr][sc]=true; visB[er][ec]=true;
+  let qF=[[sr,sc]], qB=[[er,ec]];
+  const steps=[]; let mr=-1,mc=-1;
+  outer: while(qF.length&&qB.length) {
+    const nF=[];
+    for(const [r,c] of qF) {
+      for(const [dr,dc] of DIRS4) {
+        const nr=r+dr,nc=c+dc;
+        if(!inBounds(nr,nc)||grid[nr][nc]===WALL||visF[nr][nc]) continue;
+        visF[nr][nc]=true; parF[nr][nc]=[r,c]; steps.push({r:nr,c:nc,type:VISITED});
+        if(visB[nr][nc]) { mr=nr;mc=nc; break outer; }
+        nF.push([nr,nc]);
       }
     }
-    qF = nextF;
-
-    // backward step
-    const nextB = [];
-    for (const [r, c] of qB) {
-      for (const [dr, dc] of DIRS4) {
-        const nr = r+dr, nc = c+dc;
-        if (!inBounds(nr, nc) || grid[nr][nc] === WALL || visitedB[nr][nc]) continue;
-        visitedB[nr][nc] = true;
-        parentB[nr][nc] = [r, c];
-        steps.push({r: nr, c: nc, type: VISITED2});
-        if (visitedF[nr][nc]) { meetR = nr; meetC = nc; break outer; }
-        nextB.push([nr, nc]);
+    qF=nF;
+    const nB=[];
+    for(const [r,c] of qB) {
+      for(const [dr,dc] of DIRS4) {
+        const nr=r+dr,nc=c+dc;
+        if(!inBounds(nr,nc)||grid[nr][nc]===WALL||visB[nr][nc]) continue;
+        visB[nr][nc]=true; parB[nr][nc]=[r,c]; steps.push({r:nr,c:nc,type:VISITED2});
+        if(visF[nr][nc]) { mr=nr;mc=nc; break outer; }
+        nB.push([nr,nc]);
       }
     }
-    qB = nextB;
+    qB=nB;
+  }
+  if(mr<0) return steps;
+  const route=[];
+  let cur=[mr,mc];
+  while(cur) { route.unshift(cur); cur=parF[cur[0]][cur[1]]; }
+  cur=parB[mr][mc];
+  while(cur) { route.push(cur); cur=parB[cur[0]][cur[1]]; }
+  return [...steps,...route.map(([r,c])=>({r,c,type:ROUTE}))];
+}
+
+// ── Bidirectional A* ───────────────────────────────────
+function biAstar() {
+  const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
+  const gF=Array.from({length:N},()=>new Array(N).fill(Infinity));
+  const gB=Array.from({length:N},()=>new Array(N).fill(Infinity));
+  const parF=Array.from({length:N},()=>new Array(N).fill(null));
+  const parB=Array.from({length:N},()=>new Array(N).fill(null));
+  const visF=Array.from({length:N},()=>new Array(N).fill(false));
+  const visB=Array.from({length:N},()=>new Array(N).fill(false));
+  gF[sr][sc]=0; gB[er][ec]=0;
+  const hF=(r,c)=>Math.abs(r-er)+Math.abs(c-ec);
+  const hB=(r,c)=>Math.abs(r-sr)+Math.abs(c-sc);
+  const openF=[[hF(sr,sc),0,sr,sc]], openB=[[hB(er,ec),0,er,ec]];
+  const steps=[]; let mr=-1,mc=-1;
+
+  while(openF.length&&openB.length) {
+    openF.sort((a,b)=>a[0]-b[0]);
+    const [,gv,r,c]=openF.shift();
+    if(!visF[r][c]) {
+      visF[r][c]=true;
+      if(visB[r][c]) { mr=r;mc=c; break; }
+      for(const [dr,dc] of DIRS4) {
+        const nr=r+dr,nc=c+dc;
+        if(!inBounds(nr,nc)||grid[nr][nc]===WALL) continue;
+        const ng=gv+1;
+        if(ng<gF[nr][nc]) { gF[nr][nc]=ng; parF[nr][nc]=[r,c]; openF.push([ng+hF(nr,nc),ng,nr,nc]); steps.push({r:nr,c:nc,type:VISITED}); }
+      }
+    }
+    openB.sort((a,b)=>a[0]-b[0]);
+    const [,gv2,r2,c2]=openB.shift();
+    if(!visB[r2][c2]) {
+      visB[r2][c2]=true;
+      if(visF[r2][c2]) { mr=r2;mc=c2; break; }
+      for(const [dr,dc] of DIRS4) {
+        const nr=r2+dr,nc=c2+dc;
+        if(!inBounds(nr,nc)||grid[nr][nc]===WALL) continue;
+        const ng=gv2+1;
+        if(ng<gB[nr][nc]) { gB[nr][nc]=ng; parB[nr][nc]=[r2,c2]; openB.push([ng+hB(nr,nc),ng,nr,nc]); steps.push({r:nr,c:nc,type:VISITED2}); }
+      }
+    }
+  }
+  if(mr<0) return steps;
+  const route=[];
+  let cur=[mr,mc];
+  while(cur) { route.unshift(cur); cur=parF[cur[0]][cur[1]]; }
+  cur=parB[mr][mc];
+  while(cur) { route.push(cur); cur=parB[cur[0]][cur[1]]; }
+  return [...steps,...route.map(([r,c])=>({r,c,type:ROUTE}))];
+}
+
+// ── Greedy Best-First ──────────────────────────────────
+function greedy() {
+  const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
+  const vis=Array.from({length:N},()=>new Array(N).fill(false));
+  const par=Array.from({length:N},()=>new Array(N).fill(null));
+  const h=(r,c)=>Math.abs(r-er)+Math.abs(c-ec);
+  const open=[[h(sr,sc),sr,sc]]; vis[sr][sc]=true;
+  const steps=[];
+  while(open.length) {
+    open.sort((a,b)=>a[0]-b[0]);
+    const [,r,c]=open.shift();
+    if(r===er&&c===ec) break;
+    for(const [dr,dc] of DIRS4) {
+      const nr=r+dr,nc=c+dc;
+      if(!inBounds(nr,nc)||vis[nr][nc]||grid[nr][nc]===WALL) continue;
+      vis[nr][nc]=true; par[nr][nc]=[r,c];
+      open.push([h(nr,nc),nr,nc]);
+      steps.push({r:nr,c:nc,type:VISITED});
+    }
+  }
+  return [...steps,...tracePath(par,er,ec)];
+}
+
+// ── DFS solve ──────────────────────────────────────────
+function dfsSolve() {
+  const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
+  const vis=Array.from({length:N},()=>new Array(N).fill(false));
+  const par=Array.from({length:N},()=>new Array(N).fill(null));
+  const stack=[[sr,sc]]; vis[sr][sc]=true;
+  const steps=[]; let found=false;
+  while(stack.length&&!found) {
+    const [r,c]=stack[stack.length-1];
+    let moved=false;
+    for(const [dr,dc] of DIRS4) {
+      const nr=r+dr,nc=c+dc;
+      if(!inBounds(nr,nc)||vis[nr][nc]||grid[nr][nc]===WALL) continue;
+      vis[nr][nc]=true; par[nr][nc]=[r,c]; stack.push([nr,nc]);
+      steps.push({r:nr,c:nc,type:VISITED});
+      if(nr===er&&nc===ec) { found=true; } moved=true; break;
+    }
+    if(!moved) stack.pop();
+  }
+  return [...steps,...tracePath(par,er,ec)];
+}
+
+// ── Right-hand rule ────────────────────────────────────
+function rightHand() {
+  const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
+  // directions: 0=up,1=right,2=down,3=left
+  const DR=[-1,0,1,0], DC=[0,1,0,-1];
+  let r=sr, c=sc, dir=1; // start facing right
+  const steps=[], visited=new Set();
+  const maxSteps = N*N*4;
+
+  for(let s=0; s<maxSteps; s++) {
+    const key=`${r},${c},${dir}`;
+    if(visited.has(key)) break;
+    visited.add(key);
+    if(r===er&&c===ec) break;
+
+    // try: right, forward, left, back
+    const tries=[(dir+1)%4, dir, (dir+3)%4, (dir+2)%4];
+    let moved=false;
+    for(const d of tries) {
+      const nr=r+DR[d], nc=c+DC[d];
+      if(inBounds(nr,nc)&&grid[nr][nc]!==WALL) {
+        dir=d; r=nr; c=nc;
+        steps.push({r,c,type:VISITED}); moved=true; break;
+      }
+    }
+    if(!moved) break;
+  }
+  // mark final path
+  if(r===er&&c===ec) steps.push({r,c,type:ROUTE});
+  return steps;
+}
+
+// ── ACO ────────────────────────────────────────────────
+function runACO() {
+  const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
+  const nAnts=15, nIter=60, evap=0.15, Q=100, alpha=1, beta=2;
+
+  // init pheromone
+  const pher=Array.from({length:N},()=>new Float32Array(N).fill(0.1));
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(grid[r][c]===WALL) pher[r][c]=0;
+
+  const h=(r,c)=>1/(1+Math.abs(r-er)+Math.abs(c-ec));
+  const snapshots=[];
+  let bestPath=null, bestLen=Infinity;
+
+  for(let iter=0;iter<nIter;iter++) {
+    // evaporate
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++) pher[r][c]*=(1-evap);
+
+    for(let a=0;a<nAnts;a++) {
+      let r=sr, c=sc;
+      const path=[[r,c]];
+      const vis=new Set([`${r},${c}`]);
+      const maxSteps=N*N;
+
+      for(let s=0;s<maxSteps;s++) {
+        if(r===er&&c===ec) break;
+        const nb=[];
+        let total=0;
+        for(const [dr,dc] of DIRS4) {
+          const nr=r+dr,nc=c+dc;
+          if(!inBounds(nr,nc)||grid[nr][nc]===WALL||vis.has(`${nr},${nc}`)) continue;
+          const w=Math.pow(pher[nr][nc],alpha)*Math.pow(h(nr,nc),beta);
+          nb.push([nr,nc,w]); total+=w;
+        }
+        if(!nb.length||total===0) break;
+        // roulette wheel
+        let rnd=Math.random()*total;
+        let chosen=nb[nb.length-1];
+        for(const n of nb) { rnd-=n[2]; if(rnd<=0) { chosen=n; break; } }
+        r=chosen[0]; c=chosen[1];
+        path.push([r,c]); vis.add(`${r},${c}`);
+      }
+
+      if(r===er&&c===ec) {
+        const deposit=Q/path.length;
+        for(const [pr,pc] of path) pher[pr][pc]+=deposit;
+        if(path.length<bestLen) { bestLen=path.length; bestPath=[...path]; }
+      }
+    }
+    // snapshot pheromone state every 3 iterations
+    if(iter%3===0||iter===nIter-1) {
+      snapshots.push({ pher: Array.from({length:N},(_,r)=>Float32Array.from(pher[r])), best: bestPath?[...bestPath]:null });
+    }
   }
 
-  if (meetR < 0) return steps;
+  // animate snapshots
+  pheromone = pher;
+  isRunning=true;
+  const speedIdx=+document.getElementById('speed').value;
+  const delays=[0,200,100,50,20,0];
+  const delay=delays[speedIdx];
+  let si=0;
 
-  // reconstruct: forward path from start to meet
-  const route = [];
-  let cur = [meetR, meetC];
-  while (cur) { route.unshift(cur); cur = parentF[cur[0]][cur[1]]; }
-  // backward path from meet to goal
-  cur = parentB[meetR][meetC];
-  while (cur) { route.push(cur); cur = parentB[cur[0]][cur[1]]; }
-
-  return [...steps, ...route.map(([r, c]) => ({r, c, type: ROUTE}))];
-}
-
-function tracePath(parent, er, ec) {
-  const path = [];
-  let cur = [er, ec];
-  while (cur) {
-    path.unshift({r: cur[0], c: cur[1], type: ROUTE});
-    cur = parent[cur[0]][cur[1]];
+  function tick() {
+    if(si>=snapshots.length) {
+      isRunning=false;
+      // final draw with best path
+      pheromone=snapshots[snapshots.length-1].pher;
+      drawPheromone();
+      if(bestPath) {
+        for(const [r,c] of bestPath) if(grid[r][c]!==START&&grid[r][c]!==GOAL) grid[r][c]=ROUTE;
+        draw();
+      }
+      document.getElementById('statExplored').textContent = nAnts*nIter + '匹×試行';
+      document.getElementById('statPath').textContent = bestLen>0?bestLen:'—';
+      document.getElementById('statEfficiency').textContent = nIter + 'イテレーション';
+      return;
+    }
+    const snap=snapshots[si++];
+    pheromone=snap.pher;
+    drawPheromone();
+    if(delay===0) requestAnimationFrame(()=>{ while(si<snapshots.length) { const s=snapshots[si++]; pheromone=s.pher; } drawPheromone(); isRunning=false; });
+    else animTimer=setTimeout(tick, delay);
   }
-  return path;
+  tick();
 }
 
-function find(type) {
-  for (let r = 0; r < N; r++)
-    for (let c = 0; c < N; c++)
-      if (grid[r][c] === type) return [r, c];
-  return [1, 1];
-}
-
-// ── Stats ──────────────────────────────────────────────
-function updateStats(steps) {
-  const explored = steps.filter(s => s.type === VISITED).length;
-  const path = steps.filter(s => s.type === ROUTE).length;
-  document.getElementById('statExplored').textContent = explored;
-  document.getElementById('statPath').textContent = path;
-  document.getElementById('statEfficiency').textContent =
-    explored > 0 ? Math.round(path / explored * 100) + '%' : '—';
-}
-
-function resetStats() {
-  ['statExplored', 'statPath', 'statEfficiency'].forEach(id => {
-    document.getElementById(id).textContent = '—';
-  });
-}
-
-// ── Draw ───────────────────────────────────────────────
+// ── Drawing ────────────────────────────────────────────
 function resizeCanvas() {
-  const wrap = canvas.parentElement;
-  const size = wrap.clientWidth - 24;
-  canvas.width = N;
-  canvas.height = N;
-  canvas.style.width = size + 'px';
-  canvas.style.height = size + 'px';
-  cellSize = size / N;
+  const wrap=canvas.parentElement;
+  const size=wrap.clientWidth-24;
+  canvas.width=N; canvas.height=N;
+  canvas.style.width=size+'px'; canvas.style.height=size+'px';
+  imgData=ctx.createImageData(N,N);
+}
+
+function setPixel(r,c,R,G,B) {
+  const i=(r*N+c)*4;
+  imgData.data[i]=R; imgData.data[i+1]=G; imgData.data[i+2]=B; imgData.data[i+3]=255;
 }
 
 function draw() {
-  ctx.clearRect(0, 0, N, N);
-  for (let r = 0; r < N; r++)
-    for (let c = 0; c < N; c++) {
-      ctx.fillStyle = COLORS[grid[r][c]] ?? COLORS[WALL];
-      ctx.fillRect(c, r, 1, 1);
-    }
+  if(!imgData) return;
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) {
+    const col=BASE_COLOR[grid[r][c]]||BASE_COLOR[WALL];
+    setPixel(r,c,col[0],col[1],col[2]);
+  }
+  ctx.putImageData(imgData,0,0);
 }
 
-// ── Reset ──────────────────────────────────────────────
-function resetSolve() {
-  stopAnimation();
-  resetSolveVisuals();
-  draw();
-  resetStats();
-  document.getElementById('btnSolve').disabled = false;
+function drawPheromone() {
+  if(!imgData||!pheromone) return;
+  let maxP=0;
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(pheromone[r][c]>maxP) maxP=pheromone[r][c];
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) {
+    const g=grid[r][c];
+    if(g===WALL) { setPixel(r,c,13,27,42); continue; }
+    if(g===START) { setPixel(r,c,76,175,130); continue; }
+    if(g===GOAL)  { setPixel(r,c,224,82,82); continue; }
+    if(g===ROUTE) { setPixel(r,c,245,166,35); continue; }
+    const t=maxP>0?Math.min(pheromone[r][c]/maxP,1):0;
+    const R=Math.round(42+t*(76-42));
+    const G=Math.round(58+t*(175-58));
+    const B=Math.round(42+t*(26-42));
+    setPixel(r,c,R,G,B);
+  }
+  ctx.putImageData(imgData,0,0);
 }
 
-function resetSolveVisuals() {
-  for (let r = 0; r < N; r++)
-    for (let c = 0; c < N; c++)
-      if (grid[r][c] === VISITED || grid[r][c] === VISITED2 || grid[r][c] === ROUTE) grid[r][c] = PATH;
+// ── Helpers ────────────────────────────────────────────
+function tracePath(par,er,ec) {
+  const path=[];
+  let cur=[er,ec];
+  while(cur) { path.unshift(cur); cur=par[cur[0]][cur[1]]; }
+  return path.map(([r,c])=>({r,c,type:ROUTE}));
+}
+
+function findCell(type) {
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(grid[r][c]===type) return [r,c];
+  return [1,1];
+}
+
+function updateStats(steps) {
+  const explored=steps.filter(s=>s.type===VISITED||s.type===VISITED2).length;
+  const path=steps.filter(s=>s.type===ROUTE).length;
+  document.getElementById('statExplored').textContent=explored;
+  document.getElementById('statPath').textContent=path||'—';
+  document.getElementById('statEfficiency').textContent=explored>0?Math.round(path/explored*100)+'%':'—';
+}
+function resetStats() {
+  ['statExplored','statPath','statEfficiency'].forEach(id=>{ document.getElementById(id).textContent='—'; });
 }
 
 function stopAnimation() {
-  if (animTimer) { clearTimeout(animTimer); cancelAnimationFrame(animTimer); animTimer = null; }
-  isRunning = false;
+  if(animTimer) { clearTimeout(animTimer); cancelAnimationFrame(animTimer); animTimer=null; }
+  isRunning=false;
 }
 
-// ── Utils ──────────────────────────────────────────────
+function resetSolve() {
+  stopAnimation(); pheromone=null;
+  resetSolveVisuals(); draw(); resetStats();
+  document.getElementById('btnSolve').disabled=false;
+}
+
+function resetSolveVisuals() {
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++)
+    if(grid[r][c]===VISITED||grid[r][c]===VISITED2||grid[r][c]===ROUTE) grid[r][c]=PATH;
+}
+
 function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
   return a;
 }
 
 // ── Init ───────────────────────────────────────────────
-window.addEventListener('resize', () => { if (grid.length) { resizeCanvas(); draw(); } });
+window.addEventListener('resize', ()=>{ if(grid.length) { resizeCanvas(); pheromone?drawPheromone():draw(); } });
 generate();
 </script>
 </body>
