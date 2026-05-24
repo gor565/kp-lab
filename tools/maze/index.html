@@ -587,32 +587,40 @@ function dfsSolve() {
 // ── Right-hand rule ────────────────────────────────────
 function rightHand() {
   const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
-  // directions: 0=up,1=right,2=down,3=left
   const DR=[-1,0,1,0], DC=[0,1,0,-1];
-  let r=sr, c=sc, dir=1; // start facing right
-  const steps=[], visited=new Set();
-  const maxSteps = N*N*4;
+  let r=sr, c=sc, dir=1;
+  const pathHistory=[[sr,sc]];
+  const stateVisited=new Set();
+  const cellVisited=new Set([`${sr},${sc}`]);
+  const steps=[];
+  const maxSteps=N*N*6;
 
   for(let s=0; s<maxSteps; s++) {
     const key=`${r},${c},${dir}`;
-    if(visited.has(key)) break;
-    visited.add(key);
+    if(stateVisited.has(key)) break;
+    stateVisited.add(key);
     if(r===er&&c===ec) break;
 
-    // try: right, forward, left, back
     const tries=[(dir+1)%4, dir, (dir+3)%4, (dir+2)%4];
     let moved=false;
     for(const d of tries) {
       const nr=r+DR[d], nc=c+DC[d];
       if(inBounds(nr,nc)&&grid[nr][nc]!==WALL) {
         dir=d; r=nr; c=nc;
-        steps.push({r,c,type:VISITED}); moved=true; break;
+        pathHistory.push([r,c]);
+        if(!cellVisited.has(`${r},${c}`)) {
+          steps.push({r,c,type:VISITED});
+          cellVisited.add(`${r},${c}`);
+        }
+        moved=true; break;
       }
     }
     if(!moved) break;
   }
-  // mark final path
-  if(r===er&&c===ec) steps.push({r,c,type:ROUTE});
+  // 歩いた全経路をROUTEとして追加（最短でない可能性あり）
+  if(r===er&&c===ec) {
+    for(const [pr,pc] of pathHistory) steps.push({r:pr,c:pc,type:ROUTE});
+  }
   return steps;
 }
 
@@ -621,16 +629,14 @@ function runACO() {
   const [sr,sc]=findCell(START), [er,ec]=findCell(GOAL);
   const nAnts=15, nIter=60, evap=0.15, Q=100, alpha=1, beta=2;
 
-  // init pheromone
-  const pher=Array.from({length:N},()=>new Float32Array(N).fill(0.1));
-  for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(grid[r][c]===WALL) pher[r][c]=0;
+  // フェロモン初期値0（未探索セルは色なし）
+  const pher=Array.from({length:N},()=>new Float32Array(N).fill(0));
 
   const h=(r,c)=>1/(1+Math.abs(r-er)+Math.abs(c-ec));
   const snapshots=[];
   let bestPath=null, bestLen=Infinity;
 
   for(let iter=0;iter<nIter;iter++) {
-    // evaporate
     for(let r=0;r<N;r++) for(let c=0;c<N;c++) pher[r][c]*=(1-evap);
 
     for(let a=0;a<nAnts;a++) {
@@ -646,13 +652,12 @@ function runACO() {
         for(const [dr,dc] of DIRS4) {
           const nr=r+dr,nc=c+dc;
           if(!inBounds(nr,nc)||grid[nr][nc]===WALL||vis.has(`${nr},${nc}`)) continue;
-          const w=Math.pow(pher[nr][nc],alpha)*Math.pow(h(nr,nc),beta);
+          const ph=pher[nr][nc]+0.0001; // ゼロ除算回避
+          const w=Math.pow(ph,alpha)*Math.pow(h(nr,nc),beta);
           nb.push([nr,nc,w]); total+=w;
         }
         if(!nb.length||total===0) break;
-        // roulette wheel
-        let rnd=Math.random()*total;
-        let chosen=nb[nb.length-1];
+        let rnd=Math.random()*total, chosen=nb[nb.length-1];
         for(const n of nb) { rnd-=n[2]; if(rnd<=0) { chosen=n; break; } }
         r=chosen[0]; c=chosen[1];
         path.push([r,c]); vis.add(`${r},${c}`);
@@ -664,40 +669,39 @@ function runACO() {
         if(path.length<bestLen) { bestLen=path.length; bestPath=[...path]; }
       }
     }
-    // snapshot pheromone state every 3 iterations
-    if(iter%3===0||iter===nIter-1) {
-      snapshots.push({ pher: Array.from({length:N},(_,r)=>Float32Array.from(pher[r])), best: bestPath?[...bestPath]:null });
+    if(iter%2===0||iter===nIter-1) {
+      snapshots.push({
+        pher: Array.from({length:N},(_,r)=>Float32Array.from(pher[r])),
+        best: bestPath?[...bestPath]:null,
+        iter: iter+1
+      });
     }
   }
 
-  // animate snapshots
-  pheromone = pher;
+  function finish() {
+    const last=snapshots[snapshots.length-1];
+    pheromone=last.pher;
+    drawPheromone(last.best);
+    isRunning=false;
+    document.getElementById('statExplored').textContent=nAnts+'匹×'+nIter+'iter';
+    document.getElementById('statPath').textContent=bestLen<Infinity?bestLen:'—';
+    document.getElementById('statEfficiency').textContent=nIter+'イテレーション';
+  }
+
   isRunning=true;
   const speedIdx=+document.getElementById('speed').value;
-  const delays=[0,200,100,50,20,0];
+  if(speedIdx===5) { finish(); return; }
+
+  const delays=[0,180,80,35,12,0];
   const delay=delays[speedIdx];
   let si=0;
 
   function tick() {
-    if(si>=snapshots.length) {
-      isRunning=false;
-      // final draw with best path
-      pheromone=snapshots[snapshots.length-1].pher;
-      drawPheromone();
-      if(bestPath) {
-        for(const [r,c] of bestPath) if(grid[r][c]!==START&&grid[r][c]!==GOAL) grid[r][c]=ROUTE;
-        draw();
-      }
-      document.getElementById('statExplored').textContent = nAnts*nIter + '匹×試行';
-      document.getElementById('statPath').textContent = bestLen>0?bestLen:'—';
-      document.getElementById('statEfficiency').textContent = nIter + 'イテレーション';
-      return;
-    }
+    if(si>=snapshots.length) { finish(); return; }
     const snap=snapshots[si++];
     pheromone=snap.pher;
-    drawPheromone();
-    if(delay===0) requestAnimationFrame(()=>{ while(si<snapshots.length) { const s=snapshots[si++]; pheromone=s.pher; } drawPheromone(); isRunning=false; });
-    else animTimer=setTimeout(tick, delay);
+    drawPheromone(snap.best);
+    animTimer=setTimeout(tick, delay);
   }
   tick();
 }
@@ -725,20 +729,25 @@ function draw() {
   ctx.putImageData(imgData,0,0);
 }
 
-function drawPheromone() {
+function drawPheromone(bestPath) {
   if(!imgData||!pheromone) return;
   let maxP=0;
   for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(pheromone[r][c]>maxP) maxP=pheromone[r][c];
+  const bestSet=bestPath?new Set(bestPath.map(([r,c])=>`${r},${c}`)):new Set();
+
   for(let r=0;r<N;r++) for(let c=0;c<N;c++) {
     const g=grid[r][c];
-    if(g===WALL) { setPixel(r,c,13,27,42); continue; }
+    if(g===WALL)  { setPixel(r,c,13,27,42); continue; }
     if(g===START) { setPixel(r,c,76,175,130); continue; }
     if(g===GOAL)  { setPixel(r,c,224,82,82); continue; }
-    if(g===ROUTE) { setPixel(r,c,245,166,35); continue; }
-    const t=maxP>0?Math.min(pheromone[r][c]/maxP,1):0;
-    const R=Math.round(42+t*(76-42));
-    const G=Math.round(58+t*(175-58));
-    const B=Math.round(42+t*(26-42));
+    if(bestSet.has(`${r},${c}`)) { setPixel(r,c,245,166,35); continue; }
+    const p=pheromone[r][c];
+    if(maxP===0||p===0) { setPixel(r,c,232,237,242); continue; } // 未探索 = 通常の通路色
+    // sqrt でコントラストを強調
+    const t=Math.sqrt(p/maxP);
+    const R=Math.round(232-t*(232-20));
+    const G=Math.round(237-t*(237-200));
+    const B=Math.round(242-t*(242-20));
     setPixel(r,c,R,G,B);
   }
   ctx.putImageData(imgData,0,0);
