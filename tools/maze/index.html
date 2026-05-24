@@ -140,6 +140,7 @@
           <option value="bfs">BFS（幅優先）</option>
           <option value="dijkstra">Dijkstra法</option>
           <option value="astar">A*（エースター）</option>
+          <option value="bibfs">双方向BFS ★</option>
         </select>
       </div>
       <div class="form-row">
@@ -162,7 +163,8 @@
         <div class="legend-item"><div class="legend-dot" style="background:#0D1B2A;border:1px solid #243850"></div>壁</div>
         <div class="legend-item"><div class="legend-dot" style="background:#4CAF82"></div>スタート</div>
         <div class="legend-item"><div class="legend-dot" style="background:#E05252"></div>ゴール</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#5B8DEF55"></div>探索済み</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1E3A5F"></div>探索済み(S側)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3B1A4A"></div>探索済み(G側)</div>
         <div class="legend-item"><div class="legend-dot" style="background:#F5A623"></div>最短経路</div>
       </div>
     </div>
@@ -202,21 +204,23 @@
 
 <script>
 // ── Constants ──────────────────────────────────────────
-const WALL = 0, PATH = 1, START = 2, GOAL = 3, VISITED = 4, ROUTE = 5;
+const WALL = 0, PATH = 1, START = 2, GOAL = 3, VISITED = 4, ROUTE = 5, VISITED2 = 6;
 
 const COLORS = {
-  [WALL]:    '#0D1B2A',
-  [PATH]:    '#E8EDF2',
-  [START]:   '#4CAF82',
-  [GOAL]:    '#E05252',
-  [VISITED]: '#1E3A5F',
-  [ROUTE]:   '#F5A623',
+  [WALL]:     '#0D1B2A',
+  [PATH]:     '#E8EDF2',
+  [START]:    '#4CAF82',
+  [GOAL]:     '#E05252',
+  [VISITED]:  '#1E3A5F',
+  [VISITED2]: '#3B1A4A',
+  [ROUTE]:    '#F5A623',
 };
 
 const ALGO_INFO = {
   bfs: '<strong>BFS（幅優先探索）</strong><br>スタートから近い順に全方向を均等に広げる。必ず最短経路を見つける。Googleマップの基礎にあたるアルゴリズム。',
   dijkstra: '<strong>Dijkstra法</strong><br>コスト（距離・時間）を積算しながら探索。重み付きグラフに強い。BFSの拡張版で、ナビアプリで実際に使われる。',
   astar: '<strong>A*（エースター）</strong><br>ゴールまでの推定距離（ヒューリスティック）を使って賢く絞る。BFS・Dijkstraより探索セル数が少なく高速。現代ナビの主流。',
+  bibfs: '<strong>双方向BFS</strong><br>スタートとゴールの両方から同時に探索し、2つの波が出会った地点を最短経路とする。探索範囲が通常BFSの約半分になる。Googleマップが実際に使う手法に近い。',
   dfs: '<strong>深さ優先探索（DFS）</strong><br>一本道を端まで掘り進む。行き止まりで戻る。長い一本道が特徴的な迷路ができる。',
   prim: '<strong>Prim法</strong><br>短い枝を均等に伸ばす。均一で複雑な迷路ができる。行き止まりが多く、解くのが難しい。',
   kruskal: '<strong>Kruskal法</strong><br>ランダムに辺を追加しながら木を構成。均質なランダム性がある迷路ができる。',
@@ -379,7 +383,8 @@ function solve() {
   let steps = [];
   if (algo === 'bfs') steps = bfs();
   else if (algo === 'dijkstra') steps = dijkstra();
-  else steps = astar();
+  else if (algo === 'astar') steps = astar();
+  else steps = bibfs();
 
   isRunning = true;
   let i = 0;
@@ -486,6 +491,68 @@ function astar() {
   return [...steps, ...tracePath(parent, er, ec)];
 }
 
+function bibfs() {
+  const [sr, sc] = find(START);
+  const [er, ec] = find(GOAL);
+
+  const parentF = Array.from({length: N}, () => new Array(N).fill(null));
+  const parentB = Array.from({length: N}, () => new Array(N).fill(null));
+  const visitedF = Array.from({length: N}, () => new Array(N).fill(false));
+  const visitedB = Array.from({length: N}, () => new Array(N).fill(false));
+
+  visitedF[sr][sc] = true;
+  visitedB[er][ec] = true;
+
+  let qF = [[sr, sc]];
+  let qB = [[er, ec]];
+  const steps = [];
+  let meetR = -1, meetC = -1;
+
+  outer: while (qF.length && qB.length) {
+    // forward step
+    const nextF = [];
+    for (const [r, c] of qF) {
+      for (const [dr, dc] of DIRS4) {
+        const nr = r+dr, nc = c+dc;
+        if (!inBounds(nr, nc) || grid[nr][nc] === WALL || visitedF[nr][nc]) continue;
+        visitedF[nr][nc] = true;
+        parentF[nr][nc] = [r, c];
+        steps.push({r: nr, c: nc, type: VISITED});
+        if (visitedB[nr][nc]) { meetR = nr; meetC = nc; break outer; }
+        nextF.push([nr, nc]);
+      }
+    }
+    qF = nextF;
+
+    // backward step
+    const nextB = [];
+    for (const [r, c] of qB) {
+      for (const [dr, dc] of DIRS4) {
+        const nr = r+dr, nc = c+dc;
+        if (!inBounds(nr, nc) || grid[nr][nc] === WALL || visitedB[nr][nc]) continue;
+        visitedB[nr][nc] = true;
+        parentB[nr][nc] = [r, c];
+        steps.push({r: nr, c: nc, type: VISITED2});
+        if (visitedF[nr][nc]) { meetR = nr; meetC = nc; break outer; }
+        nextB.push([nr, nc]);
+      }
+    }
+    qB = nextB;
+  }
+
+  if (meetR < 0) return steps;
+
+  // reconstruct: forward path from start to meet
+  const route = [];
+  let cur = [meetR, meetC];
+  while (cur) { route.unshift(cur); cur = parentF[cur[0]][cur[1]]; }
+  // backward path from meet to goal
+  cur = parentB[meetR][meetC];
+  while (cur) { route.push(cur); cur = parentB[cur[0]][cur[1]]; }
+
+  return [...steps, ...route.map(([r, c]) => ({r, c, type: ROUTE}))];
+}
+
 function tracePath(parent, er, ec) {
   const path = [];
   let cur = [er, ec];
@@ -551,7 +618,7 @@ function resetSolve() {
 function resetSolveVisuals() {
   for (let r = 0; r < N; r++)
     for (let c = 0; c < N; c++)
-      if (grid[r][c] === VISITED || grid[r][c] === ROUTE) grid[r][c] = PATH;
+      if (grid[r][c] === VISITED || grid[r][c] === VISITED2 || grid[r][c] === ROUTE) grid[r][c] = PATH;
 }
 
 function stopAnimation() {
