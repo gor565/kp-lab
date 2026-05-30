@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人間失格 — 太宰治</title>
+<style>
+:root{
+  --bg:#0D0C0A;
+  --ink:#CEC3A8;
+  --ink2:#A89878;
+  --red:#8B1A1A;
+  --red2:#B22222;
+  --faint:#5A5040;
+  --faint2:#3A3028;
+  --serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:2;
+  overflow-x:hidden;
+}
+
+/* 原稿用紙グリッド — 全体の地 */
+body::before{
+  content:"";
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    repeating-linear-gradient(0deg,   transparent, transparent 31px, rgba(180,155,90,.04) 31px, rgba(180,155,90,.04) 32px),
+    repeating-linear-gradient(90deg,  transparent, transparent 31px, rgba(180,155,90,.04) 31px, rgba(180,155,90,.04) 32px);
+}
+
+/* ==============================
+   HERO — 告白の封を切る
+   ============================== */
+.hero{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  z-index:1;
+  padding:80px 24px;
+  text-align:center;
+}
+
+/* タイプライター */
+.typewriter{
+  font-size:clamp(17px,3vw,24px);
+  color:var(--ink);
+  letter-spacing:.18em;
+  line-height:1.9;
+  overflow:hidden;
+  white-space:nowrap;
+  border-right:2px solid rgba(206,195,168,.6);
+  width:0;
+  animation: type 2.6s steps(16,end) 1s forwards, blink .75s step-end 3.6s 4;
+  margin:0 auto 48px;
+}
+@keyframes type{ to{ width:16em; } }
+@keyframes blink{ 0%,100%{border-color:transparent;} 50%{border-color:rgba(206,195,168,.6);} }
+
+.hero-title{
+  font-size:clamp(36px,9vw,72px);
+  font-weight:700;
+  letter-spacing:.2em;
+  color:#fff;
+  line-height:1;
+  margin-bottom:16px;
+  text-shadow:0 0 60px rgba(139,26,26,.2);
+}
+.hero-author{
+  font-family:var(--sans);
+  font-size:12px;
+  letter-spacing:.38em;
+  color:var(--faint);
+  margin-bottom:60px;
+}
+
+/* 封印の赤線 */
+.seal-line{
+  width:1px;
+  height:80px;
+  background:linear-gradient(180deg, transparent, var(--red), transparent);
+  margin:0 auto;
+  opacity:.5;
+}
+
+
+/* ==============================
+   共通レイアウト
+   ============================== */
+.page{
+  position:relative;
+  z-index:1;
+  max-width:660px;
+  margin:0 auto;
+  padding:80px 32px;
+}
+.page + .page{
+  border-top:1px solid rgba(139,26,26,.12);
+}
+
+.ch-label{
+  font-family:var(--sans);
+  font-size:10px;
+  letter-spacing:.38em;
+  color:var(--red);
+  text-transform:uppercase;
+  margin-bottom:20px;
+  display:block;
+  opacity:.8;
+}
+.ch-heading{
+  font-size:clamp(22px,4.5vw,34px);
+  font-weight:700;
+  letter-spacing:.1em;
+  line-height:1.4;
+  margin-bottom:34px;
+  color:#fff;
+}
+.ch-body{
+  font-size:clamp(15px,2vw,16.5px);
+  color:var(--ink2);
+  line-height:2.15;
+  text-align:justify;
+  margin-bottom:24px;
+}
+.ch-body:last-child{ margin-bottom:0; }
+
+/* 引用 */
+.taisetsu{
+  margin:36px 0;
+  padding:0 0 0 22px;
+  border-left:1px solid var(--red);
+  font-size:clamp(16px,2.8vw,20px);
+  color:var(--ink);
+  line-height:2;
+  letter-spacing:.05em;
+}
+.taisetsu cite{
+  display:block;
+  font-style:normal;
+  font-family:var(--sans);
+  font-size:11px;
+  letter-spacing:.16em;
+  color:var(--faint);
+  margin-top:12px;
+}
+
+
+/* ==============================
+   I. 道化 — 表裏の対比
+   ============================== */
+.omote-ura{
+  display:grid;
+  grid-template-columns:1fr 1px 1fr;
+  gap:0;
+  margin:48px 0;
+  align-items:center;
+}
+.omote-ura .side{
+  padding:32px 28px;
+  text-align:center;
+}
+.omote-ura .divider{
+  background:rgba(139,26,26,.2);
+  height:80px;
+  align-self:center;
+}
+.omote-ura .kanji{
+  font-size:clamp(36px,7vw,52px);
+  font-weight:700;
+  letter-spacing:.08em;
+  line-height:1;
+  margin-bottom:14px;
+}
+.omote-ura .side-label{
+  font-family:var(--sans);
+  font-size:10px;
+  letter-spacing:.24em;
+  color:var(--faint);
+  display:block;
+}
+.omote-ura .left .kanji{
+  color:rgba(206,195,168,.75);
+}
+.omote-ura .right .kanji{
+  color:transparent;
+  -webkit-text-stroke:1px rgba(206,195,168,.3);
+  text-stroke:1px rgba(206,195,168,.3);
+}
+
+
+/* ==============================
+   II. 恐怖 — 余白の孤立
+   ============================== */
+#ch-fear{
+  padding:120px 32px 120px;
+  text-align:center;
+}
+.fear-word{
+  font-size:clamp(42px,10vw,80px);
+  color:rgba(206,195,168,.06);
+  letter-spacing:.3em;
+  line-height:1;
+  margin-bottom:-40px;
+  font-weight:700;
+}
+.fear-body{
+  position:relative;
+  z-index:1;
+  max-width:480px;
+  margin:0 auto;
+}
+
+
+/* ==============================
+   III. 崩壊 — 傾いていくテキスト
+   ============================== */
+#ch-collapse .ch-body:nth-child(3){ transform:rotate(-.3deg); display:block; }
+#ch-collapse .ch-body:nth-child(4){ transform:rotate(-.6deg); color:#9A8E78; display:block; }
+#ch-collapse .ch-body:nth-child(5){ transform:rotate(-1deg);  color:#7A6E5A; letter-spacing:.02em; display:block; }
+
+.collapse-line{
+  width:100%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(139,26,26,.4),transparent);
+  margin:40px 0;
+  position:relative;
+}
+.collapse-line::after{
+  content:"";
+  position:absolute;
+  left:0; top:0;
+  width:35%;
+  height:1px;
+  background:linear-gradient(90deg,rgba(139,26,26,.6),transparent);
+  animation:drain 3s ease-in-out infinite;
+}
+@keyframes drain{0%{width:35%;}50%{width:0%;}100%{width:35%;}}
+
+
+/* ==============================
+   IV. 失格 — 消えていく
+   ============================== */
+#ch-end{
+  padding:100px 32px 100px;
+  text-align:center;
+}
+.shikkaku{
+  font-size:clamp(26px,5vw,40px);
+  font-weight:700;
+  letter-spacing:.15em;
+  line-height:1.9;
+  color:rgba(206,195,168,.35);
+  margin-bottom:60px;
+}
+.shikkaku em{
+  font-style:normal;
+  color:rgba(206,195,168,.7);
+}
+.last-line{
+  font-family:var(--sans);
+  font-size:11px;
+  letter-spacing:.32em;
+  color:rgba(90,80,64,.8);
+  line-height:2.4;
+}
+
+
+/* ==============================
+   V. 後記 — 反転
+   ============================== */
+#ch-postscript{
+  padding:80px 32px 60px;
+  background:rgba(139,26,26,.03);
+  border-top:1px solid rgba(139,26,26,.12);
+}
+.bartender-quote{
+  font-size:clamp(18px,3.5vw,26px);
+  color:#fff;
+  line-height:2;
+  letter-spacing:.06em;
+  margin:40px 0;
+  text-align:center;
+  text-shadow:0 0 30px rgba(139,26,26,.3);
+}
+.bartender-quote cite{
+  display:block;
+  font-style:normal;
+  font-family:var(--sans);
+  font-size:11px;
+  color:var(--faint);
+  letter-spacing:.2em;
+  margin-top:14px;
+}
+.closing{
+  font-size:clamp(14px,2vw,15.5px);
+  color:var(--faint);
+  line-height:2.3;
+  text-align:center;
+  max-width:440px;
+  margin:0 auto;
+}
+.closing strong{ color:var(--ink2); font-weight:500; }
+
+
+/* ==============================
+   フッター
+   ============================== */
+footer{
+  position:relative; z-index:1;
+  border-top:1px solid rgba(139,26,26,.1);
+  padding:48px 32px 72px;
+  text-align:center;
+  font-family:var(--sans);
+  font-size:12px;
+  color:var(--faint);
+  line-height:2.2;
+}
+footer a{ color:var(--ink2); text-decoration:none; }
+footer a:hover{ color:var(--ink); }
+
+
+/* ==============================
+   スクロール出現
+   ============================== */
+.reveal{
+  opacity:0;
+  transform:translateY(32px);
+  transition:opacity 1.2s cubic-bezier(.22,.61,.36,1), transform 1.2s cubic-bezier(.22,.61,.36,1);
+}
+.reveal.slow{ transition-duration:1.8s; }
+.reveal.in{ opacity:1; transform:none; }
+
+@media(max-width:560px){
+  .page{ padding:60px 22px; }
+  .typewriter{ font-size:15px; white-space:normal; width:auto; animation:fadein 1s 1s forwards; opacity:0; border:none; }
+  @keyframes fadein{ to{ opacity:1; } }
+}
+@media(prefers-reduced-motion:reduce){
+  *{ animation:none!important; transition:none!important; }
+  .typewriter{ width:auto; border:none; }
+  .reveal{ opacity:1; transform:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="typewriter">恥の多い生涯を送って来ました。</p>
+  <h1 class="hero-title">人間失格</h1>
+  <p class="hero-author">太宰 治</p>
+  <div class="seal-line"></div>
+</section>
+
+
+<!-- I. 道化 -->
+<article class="page reveal" id="ch-clown">
+  <span class="ch-label">第一の手記 ── 道化</span>
+  <h2 class="ch-heading">笑わせれば、<br>生き延びられる。</h2>
+
+  <div class="omote-ura">
+    <div class="side left">
+      <div class="kanji">笑</div>
+      <span class="side-label">他人に見せる顔</span>
+    </div>
+    <div class="divider"></div>
+    <div class="side right">
+      <div class="kanji">笑</div>
+      <span class="side-label">内側にあるもの</span>
+    </div>
+  </div>
+
+  <p class="ch-body">
+    主人公・葉蔵は幼い頃から「人間が怖い」と感じていた。
+    でも人間なしでは生きられない。だから笑わせることにした。
+    道化を演じれば、怒られない。嫌われない。
+    誰も傷つけなくて済む。
+  </p>
+
+  <blockquote class="taisetsu">
+    「自分には人間の生活というものが、いまだに不可解なのです。」
+    <cite>── 大庭葉蔵</cite>
+  </blockquote>
+
+  <p class="ch-body">
+    葉蔵は実は誰よりも人間を鋭く観察していた。
+    だからこそ怖かった。
+    その恐怖を隠すための笑いが、彼の処世術だった。
+  </p>
+</article>
+
+
+<!-- II. 恐怖 -->
+<article class="page" id="ch-fear">
+  <div class="fear-word reveal slow">恐怖</div>
+  <div class="fear-body reveal">
+    <span class="ch-label">第二の手記 ── 恐怖</span>
+    <h2 class="ch-heading" style="text-align:center; margin-bottom:48px;">
+      人間が、<br>こわかった。
+    </h2>
+    <p class="ch-body" style="text-align:center;">
+      食事のとき何を考えているのか。<br>
+      なぜ笑うのか。なぜ怒るのか。<br>
+      ひとの気持ちが、わからなかった。<br>
+      わからないから、恐ろしかった。
+    </p>
+    <blockquote class="taisetsu" style="text-align:left; margin-top:44px;">
+      「自分には、人間の営みというものが、<br>
+      今もってわかりません。」
+      <cite>── 大庭葉蔵</cite>
+    </blockquote>
+  </div>
+</article>
+
+
+<!-- III. 崩壊 -->
+<article class="page reveal" id="ch-collapse">
+  <span class="ch-label">第三の手記 ── 崩壊</span>
+  <h2 class="ch-heading">酒で、<br>少しだけ<br>楽になれた。</h2>
+
+  <p class="ch-body">
+    東京に出た。女と酒を覚えた。
+    酔っているあいだは、人間が怖くなかった。
+    笑わなくてもよかった。
+  </p>
+  <div class="collapse-line"></div>
+  <p class="ch-body">
+    女と心中を図り、相手だけが死んだ。
+    薬を覚え、精神病院に入れられた。
+    「廃人」と呼ばれるようになった。
+  </p>
+  <p class="ch-body">
+    それでも彼は誰かを憎まなかった。
+    怒らなかった。
+    ただ、静かに壊れていった。
+  </p>
+  <p class="ch-body">
+    道化を演じる力も、もうなかった。
+  </p>
+
+  <blockquote class="taisetsu">
+    「恥の多い生涯を送って来ました。<br>
+    自分には、人間の生活というものが、<br>
+    見当もつかないのです。」
+    <cite>── 冒頭より</cite>
+  </blockquote>
+</article>
+
+
+<!-- IV. 失格 -->
+<section class="reveal" id="ch-end">
+  <p class="shikkaku">
+    「もはや、自分は、<br>
+    <em>完全に</em>、<br>
+    人間で無くなりました。」
+  </p>
+  <p class="last-line">
+    ── 大庭葉蔵、最後の手記
+  </p>
+</section>
+
+
+<!-- V. 後記 — 反転 -->
+<article class="page reveal" id="ch-postscript">
+  <span class="ch-label">後記 ── 反転</span>
+  <h2 class="ch-heading">でも、知っていた人は<br>こう言った。</h2>
+
+  <p class="bartender-quote reveal slow">
+    「神様みたいな、<br>いい子でした。」
+    <cite>── 葉蔵を知る女性の言葉</cite>
+  </p>
+
+  <p class="closing reveal">
+    「失格」と呼ばれた男を、<br>
+    実際に知る人間は<strong>誰も責めなかった</strong>。<br><br>
+    「人間失格」は堕落した男の話ではない。<br>
+    <strong>人間でいることに、疲れ果てた男の話</strong>だ。<br><br>
+    太宰治はこの作品を書き上げた直後、<br>
+    玉川上水に身を投げた。
+  </p>
+</article>
+
+
+<div style="max-width:720px;margin:40px auto 0;padding:26px 24px 0;text-align:center;border-top:1px solid rgba(178,34,34,.22);">
+  <div style="font-size:12px;letter-spacing:.14em;color:#B22222;margin-bottom:12px;">この告白を読む</div>
+  <a href="https://a.r10.to/h9sRhB" target="_blank" rel="sponsored noopener" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:800;letter-spacing:.04em;background:linear-gradient(135deg,#B22222,#8B1A1A);color:#F0E6D0;padding:14px 30px;border-radius:10px;box-shadow:0 0 22px rgba(178,34,34,.3);">🛒 原作を楽天で読む →</a>
+  <div style="margin-top:11px;font-size:11px;color:#5A5040;">※本リンクは楽天アフィリエイトを含みます（PR）</div>
+</div>
+
+<footer>
+  人間失格 ／ 太宰治（1909–1948）── 1948年発表、作者没後に刊行。日本のパブリックドメイン作品。<br>
+  ※ 要約・解釈はレイ（K' Intelligence）による編集。<br>
+  <a href="index.html">◂ 書架へ戻る</a>
+  &nbsp;·&nbsp;
+  <a href="https://gor565.github.io/kp-lab/">K' Lab</a>
+</footer>
+
+
+<script>
+(function(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  },{threshold:0.08});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+</script>
+
+</body>
+</html>
