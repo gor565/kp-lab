@@ -227,6 +227,9 @@
     .library .lib-txt span { font-size: 13px; color: var(--muted); }
     .library .lib-go { font-size: 13px; font-weight: 700; color: #b9a8ff; display: inline-flex; gap: 6px; transition: gap 0.2s var(--ease); }
     .library:hover .lib-go { gap: 10px; }
+    .library.arcade { background: linear-gradient(120deg, #2a1216, #112230); border-color: #3a2433; margin-top: 14px; }
+    .library.arcade:hover { border-color: #ff6b73; }
+    .library.arcade .lib-go { color: #6fe0a0; }
 
     /* ---------- Footer ---------- */
     .footer {
@@ -365,6 +368,16 @@
         <span>文字とデザインで語るビジュアル・エッセイ集。本棚から一冊を選んでひらく。</span>
       </span>
       <span class="lib-go">書架へ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+    </a>
+
+    <!-- ===== Arcade ===== -->
+    <a class="library arcade" href="games/starfighter.html">
+      <span class="lib-ico">🎮</span>
+      <span class="lib-txt">
+        <b>K' Arcade — STAR FIGHTER</b>
+        <span>スターウォーズ風シューティング。TIEを撃ち、ボスを倒し、武器を強化して生き残れ。</span>
+      </span>
+      <span class="lib-go">遊ぶ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
 
     <!-- ===== Footer ===== -->
