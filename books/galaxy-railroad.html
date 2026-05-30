@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>銀河鉄道の夜 — 宮沢賢治</title>
+<style>
+  :root{
+    --ink:#EAEAF6; --muted:#9AA3C8; --faint:#6E76A0;
+    --gold:#FFD98A; --gold2:#E8B45C; --cyan:#9FD8FF; --rose:#FF9DB0;
+    --line:rgba(159,216,255,0.18);
+    --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP","Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:var(--serif); color:var(--ink); line-height:1.95;
+    background:
+      radial-gradient(1200px 700px at 75% -5%, rgba(70,90,180,0.30), transparent 60%),
+      radial-gradient(900px 600px at 10% 10%, rgba(120,70,160,0.22), transparent 60%),
+      linear-gradient(180deg, #070817 0%, #0b0a22 45%, #0a0818 100%);
+    background-attachment:fixed;
+    min-height:100vh; position:relative; overflow-x:hidden;
+  }
+
+  /* ===== 星空 ===== */
+  .stars,.stars2,.stars3{position:fixed; inset:0; z-index:0; pointer-events:none;}
+  .stars{
+    background-image:
+      radial-gradient(1.5px 1.5px at 20% 30%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 80% 20%, #fff, transparent),
+      radial-gradient(1px 1px at 50% 60%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 35% 80%, #fff, transparent),
+      radial-gradient(1px 1px at 65% 45%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 90% 70%, #fff, transparent),
+      radial-gradient(1px 1px at 12% 65%, #fff, transparent),
+      radial-gradient(1px 1px at 45% 15%, #fff, transparent);
+    background-repeat:repeat; background-size:600px 600px;
+    animation:twinkle 6s ease-in-out infinite, drift 240s linear infinite;
+  }
+  .stars2{
+    background-image:
+      radial-gradient(2px 2px at 15% 50%, var(--gold), transparent),
+      radial-gradient(2px 2px at 70% 35%, #fff, transparent),
+      radial-gradient(2px 2px at 40% 75%, var(--cyan), transparent),
+      radial-gradient(2px 2px at 88% 12%, #fff, transparent),
+      radial-gradient(2px 2px at 25% 22%, var(--gold), transparent);
+    background-repeat:repeat; background-size:480px 480px;
+    animation:twinkle 4.5s ease-in-out infinite alternate, drift 360s linear infinite;
+  }
+  /* 天の川 */
+  .stars3{
+    background:
+      radial-gradient(60% 38% at 50% 50%, rgba(180,200,255,0.10), transparent 70%),
+      radial-gradient(40% 22% at 55% 45%, rgba(255,230,180,0.07), transparent 70%);
+    transform:rotate(-24deg) scale(1.6); filter:blur(6px);
+    animation:sway 30s ease-in-out infinite;
+  }
+  @keyframes twinkle{0%,100%{opacity:.55}50%{opacity:1}}
+  @keyframes drift{to{background-position:600px 600px;}}
+  @keyframes sway{0%,100%{opacity:.8}50%{opacity:1}}
+
+  .wrap{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:0 26px;}
+
+  /* ===== Hero ===== */
+  .hero{min-height:92vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:80px 0 60px;}
+  .eyebrow{font-family:var(--sans); font-size:12px; letter-spacing:.42em; color:var(--cyan); text-transform:uppercase; margin-bottom:30px; opacity:.9;}
+  .title-v{
+    writing-mode:vertical-rl; text-orientation:upright;
+    font-size:clamp(48px,12vw,86px); font-weight:600; letter-spacing:.12em;
+    line-height:1.1; height:auto; margin:0 auto 30px;
+    color:#fff;
+    text-shadow:0 0 24px rgba(159,216,255,.5), 0 0 60px rgba(120,140,255,.35);
+    background:linear-gradient(180deg,#fff, #DCE6FF 60%, var(--cyan));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .author{font-size:17px; color:var(--gold); letter-spacing:.3em; margin-bottom:14px;}
+  .hero .tag{font-family:var(--sans); font-size:13px; color:var(--muted); letter-spacing:.06em;}
+  .scroll-cue{margin-top:54px; font-family:var(--sans); font-size:11px; letter-spacing:.3em; color:var(--faint); animation:float 2.6s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(8px);opacity:1}}
+
+  /* ===== セクション ===== */
+  section{padding:54px 0; border-top:1px solid var(--line);}
+  .label{font-family:var(--sans); font-size:11px; letter-spacing:.3em; color:var(--cyan); text-transform:uppercase; margin-bottom:8px;}
+  .heading{font-size:25px; font-weight:600; letter-spacing:.06em; margin-bottom:26px; color:#fff;}
+  .heading .en{display:block; font-family:var(--sans); font-size:11px; letter-spacing:.24em; color:var(--faint); margin-top:6px; font-weight:400;}
+  .prose p{font-size:16.5px; color:#E0E3F2; margin-bottom:20px; text-align:justify;}
+  .prose p:last-child{margin-bottom:0;}
+  .lead-drop::first-letter{font-size:3.1em; float:left; line-height:.86; padding:6px 12px 0 0; color:var(--gold); text-shadow:0 0 18px rgba(255,217,138,.5);}
+
+  /* ===== 旅の停車場 (timeline) ===== */
+  .stations{list-style:none; position:relative; margin-left:6px;}
+  .stations::before{content:""; position:absolute; left:7px; top:6px; bottom:6px; width:2px;
+    background:linear-gradient(180deg,var(--gold),var(--cyan),transparent);}
+  .station{position:relative; padding:0 0 26px 36px;}
+  .station:last-child{padding-bottom:0;}
+  .station::before{content:""; position:absolute; left:0; top:4px; width:16px; height:16px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff, var(--gold) 60%, var(--gold2));
+    box-shadow:0 0 14px rgba(255,217,138,.8);}
+  .station h4{font-size:17px; font-weight:600; color:#fff; margin-bottom:4px; letter-spacing:.04em;}
+  .station p{font-size:14.5px; color:var(--muted); line-height:1.8;}
+
+  /* ===== 登場人物 ===== */
+  .chars{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:560px){.chars{grid-template-columns:1fr;}}
+  .char{background:linear-gradient(180deg, rgba(30,36,72,.55), rgba(16,18,42,.55));
+    border:1px solid var(--line); border-radius:14px; padding:20px 22px; backdrop-filter:blur(4px);}
+  .char .nm{font-size:18px; font-weight:600; color:var(--gold); margin-bottom:8px; letter-spacing:.05em;}
+  .char .ds{font-size:14px; color:var(--muted); line-height:1.85;}
+
+  /* ===== テーマ ===== */
+  .themes{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px;}
+  .themes span{font-family:var(--sans); font-size:13px; padding:8px 16px; border-radius:999px;
+    border:1px solid var(--line); color:var(--cyan); background:rgba(159,216,255,.06);}
+  .theme-note{font-size:15.5px; color:#DDE0F0;}
+
+  /* ===== 引用 ===== */
+  .quotes{display:flex; flex-direction:column; gap:26px;}
+  .quote{position:relative; padding:6px 0 6px 26px; border-left:2px solid var(--gold);}
+  .quote p{font-size:18px; color:#fff; line-height:1.9; letter-spacing:.03em;
+    text-shadow:0 0 16px rgba(159,216,255,.25);}
+  .quote cite{display:block; font-style:normal; font-family:var(--sans); font-size:12px; color:var(--faint); margin-top:8px; letter-spacing:.08em;}
+
+  .pull{
+    text-align:center; padding:64px 0;
+    font-size:clamp(20px,4.5vw,30px); font-weight:600; letter-spacing:.08em; line-height:1.9; color:#fff;
+    text-shadow:0 0 30px rgba(159,216,255,.45);
+  }
+  .pull .em{color:var(--gold); text-shadow:0 0 26px rgba(255,217,138,.6);}
+
+  /* ===== footer ===== */
+  footer{position:relative; z-index:1; text-align:center; padding:48px 26px 70px; border-top:1px solid var(--line);
+    font-family:var(--sans); font-size:12px; color:var(--faint); line-height:2;}
+  footer a{color:var(--cyan); text-decoration:none;}
+
+  /* canvas 星空（動的レイヤー） */
+  #sky{position:fixed; inset:0; z-index:0; pointer-events:none;}
+
+  /* スクロールで出現 */
+  .reveal{opacity:0; transform:translateY(30px); transition:opacity 1s cubic-bezier(.22,.61,.36,1), transform 1s cubic-bezier(.22,.61,.36,1);}
+  .reveal.in{opacity:1; transform:none;}
+
+  /* 走る汽車 */
+  .railway{position:relative; width:100%; max-width:420px; height:34px; margin:40px auto 0; overflow:hidden;}
+  .railway::before{content:""; position:absolute; left:0; right:0; bottom:9px; height:2px;
+    background:linear-gradient(90deg,transparent,var(--gold) 30%,var(--cyan) 70%,transparent);
+    box-shadow:0 0 12px rgba(255,217,138,.6);}
+  .train{position:absolute; bottom:6px; left:-48px; font-size:24px;
+    filter:drop-shadow(0 0 10px rgba(159,216,255,.8)); animation:run 7s linear infinite;}
+  @keyframes run{to{left:calc(100% + 48px);}}
+
+  @media(prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important;} .reveal{opacity:1; transform:none;}}
+</style>
+</head>
+<body>
+
+<div class="stars"></div>
+<div class="stars2"></div>
+<div class="stars3"></div>
+<canvas id="sky"></canvas>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="eyebrow">幻想四次の物語</div>
+    <h1 class="title-v">銀河鉄道の夜</h1>
+    <div class="author">宮 沢 賢 治</div>
+    <div class="tag">夜の天の川を走る、ふたりきりの旅</div>
+    <div class="railway"><span class="train">🚂</span></div>
+    <div class="scroll-cue">SCROLL ↓</div>
+  </header>
+
+  <!-- あらすじ -->
+  <section>
+    <div class="label">Synopsis</div>
+    <h2 class="heading">あらすじ<span class="en">A boy's journey across the milky way</span></h2>
+    <div class="prose">
+      <p class="lead-drop">孤独な少年ジョバンニは、病の母を抱え、活版所で働きながら学校へ通う。海へ出たまま帰らない父の噂で級友にからかわれ、心を許せるのは親友カムパネルラだけだった。</p>
+      <p>ケンタウル祭の夜、ひとり丘にのぼったジョバンニは、気づくと「銀河ステーション」から走り出す不思議な軽便鉄道に乗っていた。向かいの席には、カムパネルラ。ふたりは天の川に沿って、白鳥の停車場、プリオシン海岸、鷲の停車場へと、星あかりの旅をつづける。</p>
+      <p>道中、彼らは難破船で亡くなった青年と姉弟、鳥を捕る人と出会い、「ほんとうのさいわい（幸い）とは何か」を問いつづける。やがて南十字（サウザンクロス）で多くの乗客が降り、ふと気づくと──隣にいたはずのカムパネルラの姿が、消えている。</p>
+      <p>目を覚ませば、ジョバンニは丘の上にいた。町へ駆け下りると、川に落ちたザネリを助けようとして、カムパネルラが行方知れずになっていた。あの銀河の旅は、親友の死とひそかに重なっていたのだ。ジョバンニは「ほんとうのさいわい」を探す決意を胸に、現実の夜道を歩きだす。</p>
+    </div>
+  </section>
+
+  <!-- 旅の停車場 -->
+  <section>
+    <div class="label">The Route</div>
+    <h2 class="heading">銀河の停車場<span class="en">Stations along the galactic railway</span></h2>
+    <ul class="stations">
+      <li class="station"><h4>銀河ステーション</h4><p>すべてのはじまり。まばゆい光とともに、夜の汽車が走りだす。</p></li>
+      <li class="station"><h4>白鳥（はくちょう）の停車場</h4><p>北十字とアルビレオの観測所。プリオシン海岸で、太古の獣の化石を掘る人々に出会う。</p></li>
+      <li class="station"><h4>鷲（わし）の停車場</h4><p>鳥を捕る人が乗りこむ。命をめぐる、ふしぎでやさしい問答。</p></li>
+      <li class="station"><h4>難破船からの乗客</h4><p>沈んだ船で亡くなった青年と幼い姉弟。天へのぼる途中の、静かな別れ。</p></li>
+      <li class="station"><h4>サウザンクロス（南十字）</h4><p>多くの人が降りてゆく。そしてカムパネルラの席が、空になる。</p></li>
+    </ul>
+  </section>
+
+  <!-- 登場人物 -->
+  <section>
+    <div class="label">Characters</div>
+    <h2 class="heading">登場人物<span class="en">Those aboard the night train</span></h2>
+    <div class="chars">
+      <div class="char"><div class="nm">ジョバンニ</div><div class="ds">主人公の少年。貧しさと孤独のなかで懸命に生きる。「ほんとうのさいわい」を探す旅の語り手。</div></div>
+      <div class="char"><div class="nm">カムパネルラ</div><div class="ds">ジョバンニの親友。優しく聡明。級友ザネリを救おうとして川に身を投じ、命を落とす。</div></div>
+      <div class="char"><div class="nm">ザネリ</div><div class="ds">ジョバンニをからかう級友。川に落ちたところをカムパネルラに助けられる。</div></div>
+      <div class="char"><div class="nm">青年と姉弟</div><div class="ds">難破船で亡くなり、天へ向かう乗客。死と信仰、犠牲の意味を物語に落とす。</div></div>
+      <div class="char"><div class="nm">鳥を捕る人</div><div class="ds">旅の途中で出会う、ふしぎな乗客。素朴さと哀しみをまとう存在。</div></div>
+      <div class="char"><div class="nm">母</div><div class="ds">病の床にあるジョバンニの母。彼が現実へ帰る理由であり、愛のよりどころ。</div></div>
+    </div>
+  </section>
+
+  <!-- 中央プルクオート -->
+  <div class="pull">
+    「<span class="em">ほんとうのさいわい</span>は<br>一体なんだろう。」
+  </div>
+
+  <!-- テーマ -->
+  <section>
+    <div class="label">Themes</div>
+    <h2 class="heading">作品のテーマ<span class="en">What the story reaches for</span></h2>
+    <div class="themes">
+      <span>ほんとうの幸い</span><span>自己犠牲</span><span>生と死</span>
+      <span>孤独と友情</span><span>宇宙的な祈り</span>
+    </div>
+    <p class="theme-note">他者のために自らを差し出す「さそりの火」の願いに象徴されるように、本作は〈みんなの幸福〉と〈個の犠牲〉の関係を問う。夜の銀河という生死の境を旅させることで、賢治は「だれかのために生きる」とはどういうことかを、静かに、そして深く照らし出す。</p>
+  </section>
+
+  <!-- 引用 -->
+  <section>
+    <div class="label">Quotes</div>
+    <h2 class="heading">心に残る一節<span class="en">Lines that stay</span></h2>
+    <div class="quotes">
+      <blockquote class="quote"><p>「僕、もうあのさそりのように、ほんとうにみんなの幸のためなら、僕のからだなんか百ぺん灼いてもかまわない。」</p><cite>── ジョバンニ</cite></blockquote>
+      <blockquote class="quote"><p>「カムパネルラ、また僕たち二人きりになったね。どこまでもどこまでも一緒に行こう。」</p><cite>── ジョバンニ</cite></blockquote>
+      <blockquote class="quote"><p>「けれども、ほんとうのさいわいは一体なんだろう。」</p><cite>── 作中より</cite></blockquote>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  銀河鉄道の夜 ／ 宮沢賢治（1896–1933）── 作者没後の1934年に発表。日本のパブリックドメイン作品。<br>
+  ※ あらすじ・引用はレイ（K' Intelligence）による要約・編集。引用は趣意を含みます。<br>
+  Designed by <a href="https://gor565.github.io/kp-lab/">K' Lab</a> — 思考と実装で、現代を解く
+</footer>
+
+<script>
+(function(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  /* --- スクロールで出現 --- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('section, .pull').forEach(function(el){ el.classList.add('reveal'); io.observe(el); });
+
+  /* --- 星のパララックス --- */
+  var s1 = document.querySelector('.stars'), s2 = document.querySelector('.stars2');
+  addEventListener('scroll', function(){
+    var y = scrollY || 0;
+    if (s1) s1.style.transform = 'translateY(' + (y * 0.08) + 'px)';
+    if (s2) s2.style.transform = 'translateY(' + (y * 0.16) + 'px)';
+  }, { passive: true });
+
+  /* --- canvas: 流れる星 ＋ 流れ星 --- */
+  var c = document.getElementById('sky'), x = c.getContext('2d'), W, H, DPR;
+  function size(){ DPR = Math.min(devicePixelRatio || 1, 2); W = c.width = innerWidth * DPR; H = c.height = innerHeight * DPR; }
+  size(); addEventListener('resize', size, { passive: true });
+
+  var N = 130, stars = [];
+  for (var i = 0; i < N; i++) stars.push({
+    x: Math.random(), y: Math.random(),
+    r: Math.random() * 1.3 + 0.3, sp: Math.random() * 0.05 + 0.015, ph: Math.random() * 6.28
+  });
+
+  var shoots = [], lastShoot = 0, t = 0;
+  function frame(ts){
+    t += 0.016;
+    x.clearRect(0, 0, W, H);
+
+    for (var i = 0; i < N; i++){
+      var s = stars[i];
+      s.y += s.sp / 100; if (s.y > 1.02){ s.y = -0.02; s.x = Math.random(); }
+      var a = 0.45 + 0.55 * Math.sin(t * 1.8 + s.ph);
+      x.globalAlpha = a * 0.9;
+      x.fillStyle = (i % 7 === 0) ? '#FFD98A' : (i % 5 === 0 ? '#9FD8FF' : '#ffffff');
+      x.beginPath(); x.arc(s.x * W, s.y * H, s.r * DPR, 0, 6.2832); x.fill();
+    }
+    x.globalAlpha = 1;
+
+    if (ts - lastShoot > 2600 + Math.random() * 3600){
+      shoots.push({ x: Math.random() * 0.85 + 0.05, y: Math.random() * 0.35, life: 0, max: 46 + Math.random() * 34, ang: Math.PI * (0.14 + Math.random() * 0.1) });
+      lastShoot = ts;
+    }
+    for (var j = shoots.length - 1; j >= 0; j--){
+      var sh = shoots[j]; sh.life++;
+      var dx = Math.cos(sh.ang), dy = Math.sin(sh.ang), tail = 90 * DPR;
+      var hx = sh.x * W + dx * sh.life * 7 * DPR, hy = sh.y * H + dy * sh.life * 7 * DPR;
+      var fade = sh.life > sh.max - 12 ? Math.max(0, (sh.max - sh.life) / 12) : 1;
+      var g = x.createLinearGradient(hx, hy, hx - dx * tail, hy - dy * tail);
+      g.addColorStop(0, 'rgba(255,255,255,' + (0.95 * fade) + ')');
+      g.addColorStop(1, 'rgba(159,216,255,0)');
+      x.strokeStyle = g; x.lineWidth = 2 * DPR; x.lineCap = 'round';
+      x.beginPath(); x.moveTo(hx, hy); x.lineTo(hx - dx * tail, hy - dy * tail); x.stroke();
+      if (sh.life > sh.max) shoots.splice(j, 1);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>

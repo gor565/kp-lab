@@ -211,6 +211,23 @@
     .empty.show { display: block; }
     .empty strong { display: block; color: var(--light); font-size: 16px; margin-bottom: 6px; }
 
+    /* ---------- Library banner ---------- */
+    .library {
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+      margin-top: 32px; padding: 26px 28px; border-radius: var(--radius);
+      text-decoration: none; color: inherit;
+      background: linear-gradient(120deg, #1a1530, #14223a);
+      border: 1px solid #2c2750;
+      transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+    }
+    .library:hover { transform: translateY(-3px); border-color: #6a5acf; box-shadow: 0 14px 38px rgba(0,0,0,.4); }
+    .library .lib-ico { font-size: 30px; line-height: 1; }
+    .library .lib-txt { flex: 1; min-width: 200px; }
+    .library .lib-txt b { display: block; font-size: 16px; font-weight: 700; letter-spacing: .02em; }
+    .library .lib-txt span { font-size: 13px; color: var(--muted); }
+    .library .lib-go { font-size: 13px; font-weight: 700; color: #b9a8ff; display: inline-flex; gap: 6px; transition: gap 0.2s var(--ease); }
+    .library:hover .lib-go { gap: 10px; }
+
     /* ---------- Footer ---------- */
     .footer {
       margin-top: 72px; padding: 32px 0 64px;
@@ -339,6 +356,16 @@
       <strong>該当するツールがありません</strong>
       別のキーワードやカテゴリで試してください。
     </div>
+
+    <!-- ===== Library ===== -->
+    <a class="library" href="books/index.html">
+      <span class="lib-ico">📚</span>
+      <span class="lib-txt">
+        <b>K' Library — 書架</b>
+        <span>文字とデザインで語るビジュアル・エッセイ集。本棚から一冊を選んでひらく。</span>
+      </span>
+      <span class="lib-go">書架へ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+    </a>
 
     <!-- ===== Footer ===== -->
     <footer class="footer">

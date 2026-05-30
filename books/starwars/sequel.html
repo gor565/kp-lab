@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAR WARS 評論 — シークエル三部作 (VII–IX)</title>
+<style>
+  :root{
+    --bg:#070709; --panel:#0E0F13; --red:#FF2D34; --red2:#B01018; --blue:#4FB0FF;
+    --ink:#EEF1F6; --muted:#8790A0; --faint:#535C6C; --white:#fff;
+    --sans:"Helvetica Neue",-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--sans); color:var(--ink); line-height:1.85; position:relative; overflow-x:hidden;
+    background:
+      radial-gradient(800px 600px at 18% 8%, rgba(255,45,52,.18), transparent 55%),
+      radial-gradient(800px 600px at 85% 30%, rgba(79,176,255,.12), transparent 55%),
+      linear-gradient(180deg,#070709,#0b0c10 60%,#060608);}
+  /* 砕けたガラスの背景線 */
+  .crack{position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;}
+  .crack path{stroke:rgba(255,45,52,.5); stroke-width:1; fill:none; filter:drop-shadow(0 0 4px rgba(255,45,52,.5));
+    stroke-dasharray:1400; stroke-dashoffset:1400; animation:draw 3s ease-out forwards;}
+  .crack path:nth-child(2){animation-delay:.3s; stroke:rgba(79,176,255,.4);}
+  .crack path:nth-child(3){animation-delay:.6s;}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+
+  .nav{position:sticky; top:0; z-index:20; display:flex; justify-content:center; gap:6px; padding:12px;
+    background:rgba(7,7,9,.74); backdrop-filter:blur(10px); border-bottom:1px solid rgba(255,45,52,.2);}
+  .nav a{font-size:12px; letter-spacing:.16em; color:var(--muted); text-decoration:none; padding:6px 14px; border:1px solid transparent; border-radius:6px;}
+  .nav a:hover{color:var(--ink);} .nav a.on{color:var(--red); border-color:var(--red);}
+
+  .wrap{position:relative; z-index:1; max-width:880px; margin:0 auto; padding:0 24px;}
+
+  .hero{min-height:90vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
+  .kick{font-size:12px; letter-spacing:.4em; color:var(--blue); text-transform:uppercase; margin-bottom:24px;}
+  h1{font-weight:800; font-size:clamp(40px,12vw,104px); letter-spacing:.02em; line-height:.92; color:var(--white); position:relative;
+    text-shadow:0 0 40px rgba(255,45,52,.3);}
+  h1 .glitch{position:relative; display:inline-block; animation:glitch 4.5s steps(1) infinite;}
+  @keyframes glitch{0%,92%,100%{text-shadow:0 0 40px rgba(255,45,52,.3);}93%{text-shadow:3px 0 var(--red),-3px 0 var(--blue);}96%{text-shadow:-3px 0 var(--red),3px 0 var(--blue);}}
+  .era{font-size:14px; letter-spacing:.34em; color:var(--red); margin-top:18px;}
+  .dyad{display:flex; align-items:center; gap:0; margin:30px 0 0; font-size:40px; line-height:1;}
+  .dyad .b{color:var(--blue); filter:drop-shadow(0 0 16px var(--blue));}
+  .dyad .r{color:var(--red); filter:drop-shadow(0 0 16px var(--red)); margin-left:-6px;}
+  .tagline{font-size:16px; color:var(--muted); max-width:580px; margin:26px auto 0;}
+
+  section{padding:50px 0; border-top:1px solid rgba(255,45,52,.16);}
+  .sec-h{font-size:12px; letter-spacing:.34em; color:var(--red); text-transform:uppercase; text-align:center; margin-bottom:30px;}
+
+  .film{display:grid; grid-template-columns:78px 1fr; gap:24px; align-items:start; background:linear-gradient(135deg,#101116,#0a0a0d);
+    border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:26px 28px; margin-bottom:18px; position:relative; overflow:hidden;
+    transition:border-color .2s, transform .2s;}
+  .film:hover{border-color:rgba(255,45,52,.5); transform:translateY(-3px);}
+  .film::after{content:""; position:absolute; right:-40px; top:-40px; width:120px; height:120px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,45,52,.18), transparent 70%);}
+  .film .ep{font-size:12px; letter-spacing:.2em; color:var(--blue);}
+  .film .num{font-size:46px; font-weight:800; color:var(--white); line-height:.9; letter-spacing:-.02em;}
+  .film h3{font-size:21px; color:#fff; margin-bottom:2px; font-weight:700;}
+  .film .yr{font-size:12px; color:var(--faint); letter-spacing:.12em; margin-bottom:10px;}
+  .stars{font-size:16px; letter-spacing:2px; color:var(--red);}
+  .stars .n{font-size:12px; color:var(--muted); letter-spacing:0; margin-left:8px;}
+  .film .rev{font-size:15px; color:var(--ink); line-height:1.85; margin-top:10px;}
+
+  .themes{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
+  .themes span{font-size:14px; color:var(--red); border:1px solid rgba(255,45,52,.45); border-radius:6px; padding:8px 18px; letter-spacing:.04em;}
+
+  .verdict{text-align:center;}
+  .verdict .big{font-size:clamp(20px,4vw,30px); color:#fff; line-height:1.75; max-width:700px; margin:0 auto; font-weight:600;}
+  .verdict .big .r{color:var(--red);}
+  .verdict .overall{font-size:24px; color:var(--red); letter-spacing:3px; margin-top:24px;}
+  .verdict .lead{font-size:12px; letter-spacing:.24em; color:var(--muted); margin-top:8px;}
+
+  footer{position:relative; z-index:1; text-align:center; padding:46px 24px 70px; border-top:1px solid rgba(255,45,52,.16);
+    font-size:11px; color:var(--faint); letter-spacing:.12em; line-height:2;}
+  footer a{color:var(--red); text-decoration:none;}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;} .crack path{stroke-dashoffset:0;}}
+  @media(max-width:560px){.film{grid-template-columns:1fr; gap:6px;}}
+</style>
+</head>
+<body>
+<svg class="crack" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
+  <path d="M500 0 L520 240 L460 430 L540 600 L480 800 L510 1000"/>
+  <path d="M520 240 L760 300 L900 200 M520 240 L300 360 L120 300"/>
+  <path d="M540 600 L820 660 L1000 760 M480 800 L240 740 L40 820"/>
+</svg>
+
+<div class="nav">
+  <a href="prequel.html">I–III</a>
+  <a href="original.html">IV–VI</a>
+  <a href="sequel.html" class="on">VII–IX</a>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="kick">K' CINEMA — 映画評論</div>
+    <h1><span class="glitch">SEQUEL</span></h1>
+    <div class="era">EPISODE VII – IX ／ 2015 – 2019</div>
+    <div class="dyad"><span class="b">▌</span><span class="r">▐</span></div>
+    <p class="tagline">継承か、断絶か。光と闇のあいだで揺れた、設計図なきリレー。</p>
+  </header>
+
+  <section>
+    <div class="sec-h">The Films</div>
+
+    <div class="film">
+      <div><div class="ep">EP</div><div class="num">VII</div></div>
+      <div>
+        <h3>フォースの覚醒</h3>
+        <div class="yr">THE FORCE AWAKENS · 2015</div>
+        <div class="stars">★★★★☆<span class="n">4.0 / 5</span></div>
+        <p class="rev">郷愁という名の再起動。レイ、フィン、カイロ・レン——新しい顔ぶれは確かに魅力的だ。だが骨格はエピソード4の精巧な反復。橋の上の一撃が、新時代の代償を突きつける。</p>
+      </div>
+    </div>
+
+    <div class="film">
+      <div><div class="ep">EP</div><div class="num">VIII</div></div>
+      <div>
+        <h3>最後のジェダイ</h3>
+        <div class="yr">THE LAST JEDI · 2017</div>
+        <div class="stars">★★★★☆<span class="n">3.8 / 5</span></div>
+        <p class="rev">最も挑発的で、最も分断を生んだ一本。英雄を神話から引きずり下ろし、「血筋ではなく誰でもなれる」と言い切る。賛否は激しいが、三部作で唯一、本気で何かを賭けた作品だ。</p>
+      </div>
+    </div>
+
+    <div class="film">
+      <div><div class="ep">EP</div><div class="num">IX</div></div>
+      <div>
+        <h3>スカイウォーカーの夜明け</h3>
+        <div class="yr">THE RISE OF SKYWALKER · 2019</div>
+        <div class="stars">★★☆☆☆<span class="n">2.5 / 5</span></div>
+        <p class="rev">答え合わせと火消しに追われた終幕。皇帝の唐突な復活、詰め込まれた展開、奉仕過多のファンサービス。前作が開いた問いを慌てて閉じ、構想の不在がついに露呈した。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">Themes</div>
+    <div class="themes"><span>継承</span><span>過去との決別と回帰</span><span>光と闇の二項</span><span>誰が英雄になれるのか</span></div>
+  </section>
+
+  <section>
+    <div class="verdict">
+      <div class="sec-h">Critic's Verdict</div>
+      <p class="big">設計図なきリレー。<span class="r">輝く断片はあれど</span>、三部作としての背骨を欠いた。各監督の才は本物だが、全体を貫く一本の意志が、ついに最後まで現れなかった。</p>
+      <div class="overall">★★★☆☆</div>
+      <div class="lead">TRILOGY SCORE 3.0 / 5</div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  STAR WARS — Sequel Trilogy ／ Lucasfilm · Disney<br>
+  K' CINEMA 映画評論シリーズ ／ <a href="original.html">◂ IV–VI</a> · <a href="prequel.html">I–III</a><br>
+  <a href="https://gor565.github.io/kp-lab/">K' Lab</a> — 思考と実装で、現代を解く
+</footer>
+
+</body>
+</html>

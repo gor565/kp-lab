@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K' Library — 書架</title>
+<meta name="description" content="K'が作る、文字とデザインで語るビジュアル・エッセイの書架。背表紙を選ぶと作品へ。">
+<style>
+  :root{
+    --room:#1C140E; --room2:#120C08; --wood:#5A3A22; --wood2:#3E2716; --wood3:#6E4A2C;
+    --shelf:#2A1B10; --ink:#EFE4D2; --muted:#A89378; --gold:#E0B95E;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;
+    --serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:var(--sans); color:var(--ink); min-height:100vh; padding:48px 20px 80px;
+    background:
+      radial-gradient(900px 500px at 50% -8%, rgba(224,185,94,.16), transparent 60%),
+      radial-gradient(700px 500px at 50% 120%, rgba(0,0,0,.5), transparent 60%),
+      linear-gradient(180deg,#1C140E,#140d08);
+  }
+  .head{text-align:center; max-width:720px; margin:0 auto 44px;}
+  .eyebrow{font-size:11px; letter-spacing:.4em; color:var(--gold); text-transform:uppercase; margin-bottom:14px;}
+  .head h1{font-family:var(--serif); font-size:clamp(30px,6vw,48px); font-weight:700; letter-spacing:.14em; color:#fff;
+    text-shadow:0 0 30px rgba(224,185,94,.25);}
+  .head p{font-size:14px; color:var(--muted); margin-top:14px; line-height:1.8;}
+
+  /* 本棚 */
+  .bookcase{max-width:860px; margin:0 auto; padding:14px; border-radius:10px;
+    background:linear-gradient(180deg,var(--wood3),var(--wood2));
+    box-shadow:0 30px 70px rgba(0,0,0,.6), inset 0 0 0 2px rgba(0,0,0,.25), inset 0 0 40px rgba(0,0,0,.5);}
+  .shelf{position:relative; background:linear-gradient(180deg,#241710,#1a110a); border-radius:5px; margin-bottom:14px;
+    padding:26px 22px 0; box-shadow:inset 0 8px 24px rgba(0,0,0,.6);}
+  .shelf:last-child{margin-bottom:0;}
+  .shelf .cat{position:absolute; top:8px; left:16px; font-size:10px; letter-spacing:.24em; color:var(--muted); text-transform:uppercase;}
+  .row{display:flex; align-items:flex-end; justify-content:center; gap:12px; flex-wrap:wrap; min-height:262px;}
+  /* 棚板 */
+  .plank{height:16px; border-radius:0 0 5px 5px; margin:0 -22px;
+    background:linear-gradient(180deg,var(--wood3),var(--wood),var(--wood2));
+    box-shadow:0 10px 18px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,220,180,.18);}
+
+  /* 背表紙 */
+  .book{position:relative; text-decoration:none; display:flex; flex-direction:column; justify-content:space-between;
+    align-items:center; border-radius:3px 3px 2px 2px; padding:18px 0 12px; color:#fff; cursor:pointer;
+    box-shadow:2px 0 0 rgba(0,0,0,.3), inset -6px 0 12px rgba(0,0,0,.35), inset 6px 0 10px rgba(255,255,255,.06);
+    transition:transform .28s cubic-bezier(.2,.8,.3,1), box-shadow .28s, filter .28s;
+    transform-origin:bottom center;}
+  .book:hover{transform:translateY(-22px) rotate(-1deg); box-shadow:0 18px 30px rgba(0,0,0,.6), inset -6px 0 12px rgba(0,0,0,.35);}
+  .book:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+  .book.pull{transform:translateY(-60px) scale(1.04); filter:brightness(1.15);}
+  .book .ttl{writing-mode:vertical-rl; text-orientation:mixed; font-family:var(--serif); font-weight:700; letter-spacing:.06em;
+    line-height:1.25; text-shadow:0 1px 2px rgba(0,0,0,.5); flex:1;}
+  .book .label{font-size:9px; letter-spacing:.08em; padding:4px 4px; opacity:.85; writing-mode:horizontal-tb; text-align:center;
+    border-top:1px solid rgba(255,255,255,.25); width:78%;}
+  .book .top{font-size:9px; letter-spacing:.1em; opacity:.7; writing-mode:horizontal-tb; border-bottom:1px solid rgba(255,255,255,.25); width:78%; text-align:center; padding-bottom:4px;}
+
+  /* 各巻の装い */
+  .b-galaxy {background:linear-gradient(90deg,#0a1430,#16224a,#0a1430); width:52px; height:256px;}
+  .b-galaxy .ttl, .b-galaxy .label, .b-galaxy .top{color:#DCE6FF;}
+  .b-holmes {background:linear-gradient(90deg,#14130f,#272219,#14130f); width:50px; height:240px;}
+  .b-holmes .ttl, .b-holmes .label, .b-holmes .top{color:#E0A94E;}
+  .b-nichiyu{background:linear-gradient(90deg,#cabf9f,#e7dec6,#cabf9f); width:56px; height:248px; color:#2A2620;}
+  .b-nichiyu .ttl{color:#2A2620;} .b-nichiyu .label,.b-nichiyu .top{color:#7A1D17; border-color:rgba(120,30,20,.35);}
+  .b-pre   {background:linear-gradient(90deg,#5a0d14,#8A1620,#5a0d14); width:50px; height:262px;}
+  .b-pre .ttl,.b-pre .label,.b-pre .top{color:#D9B65A;}
+  .b-org   {background:linear-gradient(90deg,#070707,#1d150a,#070707); width:54px; height:250px;}
+  .b-org .ttl,.b-org .label,.b-org .top{color:#FFB23E;}
+  .b-seq   {background:linear-gradient(90deg,#0a0a0d,#1a1014,#0a0a0d); width:48px; height:236px;}
+  .b-seq .ttl,.b-seq .label,.b-seq .top{color:#FF2D34;}
+
+  .tip{text-align:center; color:var(--muted); font-size:12px; letter-spacing:.06em; margin:30px 0 0;}
+  footer{text-align:center; margin-top:40px; font-size:11px; color:#7a6c54; letter-spacing:.1em; line-height:2;}
+  footer a{color:var(--gold); text-decoration:none;}
+
+  @media(max-width:560px){ .row{gap:9px; min-height:0; padding-bottom:6px;} .book{padding-top:14px;} }
+  @media(prefers-reduced-motion:reduce){ .book{transition:none;} .book:hover{transform:translateY(-10px);} }
+</style>
+</head>
+<body>
+
+  <div class="head">
+    <div class="eyebrow">K' Library</div>
+    <h1>書 架</h1>
+    <p>文字とデザインで語る、ビジュアル・エッセイの蔵書。<br>背表紙を選ぶと、その一冊がひらく。</p>
+  </div>
+
+  <div class="bookcase">
+    <div class="shelf">
+      <span class="cat">物語 と 探究 / Tales &amp; Inquiry</span>
+      <div class="row">
+        <a class="book b-galaxy" href="galaxy-railroad.html">
+          <span class="top">宮沢賢治</span><span class="ttl">銀河鉄道の夜</span><span class="label">幻想</span>
+        </a>
+        <a class="book b-holmes" href="sherlock.html">
+          <span class="top">A.C.ドイル</span><span class="ttl">シャーロック・ホームズ</span><span class="label">探偵</span>
+        </a>
+        <a class="book b-nichiyu" href="nichiyu.html">
+          <span class="top">検証ファイル</span><span class="ttl">日ユ同祖論</span><span class="label">仮説</span>
+        </a>
+      </div>
+      <div class="plank"></div>
+    </div>
+
+    <div class="shelf">
+      <span class="cat">映画評論 / Cinema</span>
+      <div class="row">
+        <a class="book b-pre" href="starwars/prequel.html">
+          <span class="top">STAR WARS</span><span class="ttl">プリクエル I–III</span><span class="label">★★★</span>
+        </a>
+        <a class="book b-org" href="starwars/original.html">
+          <span class="top">STAR WARS</span><span class="ttl">オリジナル IV–VI</span><span class="label">★★★★★</span>
+        </a>
+        <a class="book b-seq" href="starwars/sequel.html">
+          <span class="top">STAR WARS</span><span class="ttl">シークエル VII–IX</span><span class="label">★★★</span>
+        </a>
+      </div>
+      <div class="plank"></div>
+    </div>
+  </div>
+
+  <p class="tip">▸ 背表紙をクリックすると、その作品ページへ</p>
+
+  <footer>
+    K' Library — 書架 ／ ビジュアル・エッセイ集<br>
+    <a href="../index.html">◂ K' Lab（ツール一覧）へ戻る</a> · <a href="https://gor565.github.io/kp-lab/">K' Lab</a>
+  </footer>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('.book').forEach(function(b){
+    b.addEventListener('click', function(e){
+      if(reduce) return; // そのまま遷移
+      e.preventDefault();
+      var href=b.getAttribute('href');
+      b.classList.add('pull');
+      setTimeout(function(){ location.href=href; }, 300);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
