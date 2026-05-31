@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>変身 — フランツ・カフカ | K' Library</title>
+<meta name="description" content="目覚めたら虫になっていた。なぜ？カフカは一切説明しない。これは変身の話ではない。役に立たなくなった人間が、家族からどう消えていくかの話だ。">
+<style>
+/* ── 基本 ── */
+:root {
+  --bg: #0d0b08;
+  --ink: #e8e0d0;
+  --dim: #6b6355;
+  --amber: #c8a96e;
+  --amber-dark: #8a6c3a;
+  --serif: "Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+  --sans: -apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans",sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  overflow-x: hidden;
+}
+
+/* ── スクロールで幅が縮む仕掛け ── */
+/* JS側で --room-squeeze (0→1) を更新 */
+.squeeze-wrap {
+  max-width: calc(760px - var(--squeeze, 0px));
+  margin: 0 auto;
+  padding: 0 max(20px, calc(20px + var(--squeeze, 0px) * 0.3));
+  transition: max-width 0.1s linear, padding 0.1s linear;
+}
+
+/* ── ドアの隙間（固定） ── */
+.crack {
+  position: fixed;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 100vh;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    var(--amber) 25%,
+    #fff5d8 50%,
+    var(--amber) 75%,
+    transparent 100%);
+  opacity: 0.12;
+  filter: blur(1px);
+  z-index: 0;
+  pointer-events: none;
+  animation: flicker 10s ease-in-out infinite;
+}
+@keyframes flicker {
+  0%,100%{ opacity:.12; }
+  40%{ opacity:.08; }
+  70%{ opacity:.16; }
+}
+
+/* ── セクション共通 ── */
+section {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+/* ── reveal アニメーション ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .crack { animation: none; }
+  .hero-title { animation: none; opacity: 1; }
+}
+
+/* ══ ① HERO ══ */
+.s-hero {
+  background: radial-gradient(ellipse 80% 60% at 50% 40%, #1a140c, var(--bg));
+  flex-direction: column;
+  text-align: center;
+  gap: 0;
+}
+.hero-eyebrow {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: .4em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.hero-title {
+  font-size: clamp(72px, 18vw, 140px);
+  font-weight: 700;
+  line-height: .88;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  text-shadow: 0 0 100px rgba(200,169,110,.2);
+  animation: fade-up 1.2s ease both;
+}
+@keyframes fade-up {
+  from { opacity:0; transform:translateY(30px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.hero-sub {
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: .2em;
+  color: var(--dim);
+  margin-top: 20px;
+  animation: fade-up 1.2s ease .3s both;
+}
+.hero-scroll {
+  margin-top: 60px;
+  width: 1px;
+  height: 64px;
+  background: linear-gradient(to bottom, var(--amber), transparent);
+  animation: grow-line 1.5s ease .8s both;
+}
+@keyframes grow-line {
+  from { height: 0; opacity: 0; }
+  to   { height: 64px; opacity: 1; }
+}
+
+/* ══ ② 冒頭の一文 ══ */
+.s-opening {
+  background: var(--bg);
+}
+.opening-inner {
+  text-align: center;
+  max-width: 600px;
+}
+.opening-quote {
+  font-size: clamp(16px, 3vw, 22px);
+  line-height: 2.4;
+  font-weight: 300;
+  letter-spacing: .06em;
+  color: var(--ink);
+}
+.opening-quote em {
+  font-style: normal;
+  color: var(--amber);
+  border-bottom: 1px solid rgba(200,169,110,.4);
+}
+.opening-note {
+  margin-top: 28px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: .1em;
+}
+
+/* ══ ③ 部屋（SVG） ══ */
+.s-room {
+  background: #09070505;
+  flex-direction: column;
+  gap: 32px;
+}
+.room-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: .3em;
+  color: var(--dim);
+  text-transform: uppercase;
+  text-align: center;
+}
+.room-svg-wrap {
+  width: min(460px, 90vw);
+}
+.room-caption {
+  max-width: 400px;
+  text-align: center;
+  font-size: 15px;
+  line-height: 2;
+  color: var(--dim);
+  letter-spacing: .04em;
+}
+
+/* ══ ④ 核心 ══ */
+.s-core {
+  background: linear-gradient(180deg, #09070504, #13100c);
+}
+.core-inner {
+  max-width: 680px;
+  text-align: center;
+}
+.core-not {
+  font-size: clamp(14px, 2.5vw, 18px);
+  color: var(--dim);
+  line-height: 2;
+  font-weight: 300;
+  text-decoration: line-through;
+  text-decoration-color: rgba(107,99,85,.35);
+  margin-bottom: 16px;
+}
+.core-is {
+  font-size: clamp(18px, 4vw, 28px);
+  color: var(--ink);
+  line-height: 1.9;
+  font-weight: 400;
+  letter-spacing: .03em;
+}
+.core-is strong { color: var(--amber); }
+
+/* ══ ⑤ 家族の言葉が冷えていく ══ */
+.s-voices {
+  background: var(--bg);
+  flex-direction: column;
+  gap: 40px;
+  padding: 100px 0;
+}
+.voices-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: .35em;
+  color: var(--dim);
+  text-transform: uppercase;
+  text-align: center;
+}
+.voices-sub {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--dim);
+  text-align: center;
+  opacity: .5;
+  margin-top: -28px;
+}
+.voice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  border: 1px solid #1e1a14;
+}
+.voice-col {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #1e1a14;
+}
+.voice-col:last-child { border-right: none; }
+.voice-who {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: .3em;
+  color: var(--dim);
+  text-transform: uppercase;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #1e1a14;
+}
+.voice-card {
+  padding: 16px 18px;
+  border-bottom: 1px solid #1e1a14;
+  position: relative;
+}
+.voice-card:last-child { border-bottom: none; }
+.voice-temp {
+  display: block;
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.voice-card.warm .voice-temp { color: #c8a96e; }
+.voice-card.cool .voice-temp { color: #7a8fa6; }
+.voice-card.cold .voice-temp { color: #3a4050; }
+.voice-quote {
+  font-size: clamp(12px, 1.8vw, 14px);
+  line-height: 1.9;
+  font-weight: 300;
+}
+.voice-card.warm .voice-quote { color: #c8b99a; }
+.voice-card.cool .voice-quote { color: #7a8a9a; }
+.voice-card.cold .voice-quote { color: #3a4050; }
+/* 温度バー */
+.voice-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+}
+.voice-card.warm::before { background: #c8a96e; }
+.voice-card.cool::before { background: #4a6a8a; }
+.voice-card.cold::before { background: #1e2028; }
+
+@media (max-width: 600px) {
+  .voice-grid { grid-template-columns: 1fr; }
+  .voice-col { border-right: none; border-bottom: 1px solid #1e1a14; }
+  .voice-col:last-child { border-bottom: none; }
+}
+
+/* ══ ⑥ 終幕 ══ */
+.s-end {
+  background: radial-gradient(ellipse 70% 50% at 50% 80%, #1a120a, var(--bg));
+  flex-direction: column;
+  text-align: center;
+  gap: 48px;
+}
+.end-text {
+  max-width: 480px;
+  font-size: clamp(15px, 2.5vw, 19px);
+  line-height: 2.4;
+  font-weight: 300;
+  letter-spacing: .05em;
+}
+.end-text em { font-style: normal; color: var(--amber); }
+.end-note {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: .12em;
+  line-height: 2;
+  max-width: 360px;
+}
+
+/* ══ アフィリエイトCTA ══ */
+.cta-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 0;
+  text-align: center;
+  border-top: 1px solid rgba(200,169,110,.18);
+  position: relative; z-index: 1;
+}
+.cta-lead {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: .14em;
+  color: var(--amber);
+  margin-bottom: 14px;
+}
+.cta-btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.btn-rakuten {
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; font-family: var(--sans); font-weight: 800; font-size: 14px;
+  background: linear-gradient(135deg, #c8a96e, #8a6c3a);
+  color: #16120a; padding: 14px 28px; border-radius: 10px;
+  transition: filter .2s;
+}
+.btn-rakuten:hover { filter: brightness(1.1); }
+.btn-amazon {
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; font-family: var(--sans); font-weight: 800; font-size: 14px;
+  background: linear-gradient(135deg, #FF9900, #E47911);
+  color: #16120a; padding: 14px 26px; border-radius: 10px;
+  transition: filter .2s;
+}
+.btn-amazon:hover { filter: brightness(1.1); }
+.cta-pr {
+  margin-top: 12px;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--dim);
+}
+
+/* ══ フッター ══ */
+.page-footer {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 40px 20px 60px;
+}
+.page-footer a {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: .2em;
+  color: var(--dim);
+  text-decoration: none;
+  border-bottom: 1px solid var(--dim);
+  padding-bottom: 2px;
+  transition: color .3s, border-color .3s;
+}
+.page-footer a:hover { color: var(--amber); border-color: var(--amber); }
+</style>
+</head>
+<body>
+
+<!-- ドアの隙間 -->
+<div class="crack" aria-hidden="true"></div>
+
+<!-- ① HERO -->
+<section class="s-hero">
+  <p class="hero-eyebrow">K' Library &nbsp;·&nbsp; Visual Essay</p>
+  <h1 class="hero-title">変身</h1>
+  <p class="hero-sub">Die Verwandlung &nbsp;/&nbsp; Franz Kafka &nbsp;·&nbsp; 1915</p>
+  <div class="hero-scroll" aria-hidden="true"></div>
+</section>
+
+<!-- ② 冒頭の一文 -->
+<section class="s-opening">
+  <div class="squeeze-wrap">
+    <div class="opening-inner reveal">
+      <p class="opening-quote">
+        ある朝、グレゴール・ザムザが<em>不安な夢</em>から目覚めると、<br>
+        ベッドの中で自分が<em>一匹の巨大な虫</em>に変わっているのに気がついた。
+      </p>
+      <p class="opening-note">— 冒頭より。カフカはこの後、なぜかを一切説明しない。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ③ 部屋 -->
+<section class="s-room">
+  <div class="squeeze-wrap">
+    <p class="room-label reveal">His Room · The World Shrinks</p>
+    <div class="room-svg-wrap reveal">
+      <svg viewBox="0 0 460 360" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="薄暗い部屋のイラスト。ドアの右端から細い光が漏れている。">
+        <!-- 奥壁 -->
+        <rect width="460" height="360" fill="#0a0806"/>
+        <rect width="460" height="240" fill="#111009"/>
+        <!-- 左の消失線 -->
+        <line x1="0" y1="0" x2="70" y2="240" stroke="#1a1712" stroke-width="1"/>
+        <line x1="0" y1="120" x2="460" y2="120" stroke="#1a1712" stroke-width=".5"/>
+        <!-- ドア -->
+        <rect x="174" y="48" width="112" height="192" rx="2" fill="#0d0b08" stroke="#221d16" stroke-width="1.5"/>
+        <rect x="183" y="57" width="43" height="82" rx="1" fill="#111009" stroke="#1c1812" stroke-width="1"/>
+        <rect x="234" y="57" width="43" height="82" rx="1" fill="#111009" stroke="#1c1812" stroke-width="1"/>
+        <rect x="183" y="148" width="43" height="78" rx="1" fill="#111009" stroke="#1c1812" stroke-width="1"/>
+        <rect x="234" y="148" width="43" height="78" rx="1" fill="#111009" stroke="#1c1812" stroke-width="1"/>
+        <circle cx="270" cy="156" r="5" fill="#2a2318"/>
+        <!-- 光の隙間（右端） -->
+        <line x1="286" y1="50" x2="286" y2="239" stroke="#c8a96e" stroke-width="2" opacity="0.7"/>
+        <rect x="286" y="50" width="10" height="189" fill="url(#lg)" opacity="0.25"/>
+        <!-- 窓（左） -->
+        <rect x="28" y="52" width="100" height="128" rx="2" fill="#090a0c" stroke="#1c1812" stroke-width="1.5"/>
+        <line x1="78" y1="52" x2="78" y2="180" stroke="#1c1812" stroke-width="1"/>
+        <line x1="28" y1="116" x2="128" y2="116" stroke="#1c1812" stroke-width="1"/>
+        <!-- ベッド（右） -->
+        <rect x="336" y="168" width="110" height="72" rx="3" fill="#130f0c" stroke="#1c1812" stroke-width="1"/>
+        <rect x="336" y="168" width="110" height="18" rx="3" fill="#1a1410"/>
+        <rect x="346" y="172" width="38" height="12" rx="2" fill="#1e1b16"/>
+        <!-- 床 -->
+        <rect x="0" y="240" width="460" height="120" fill="#0d0b08"/>
+        <line x1="70" y1="240" x2="0" y2="360" stroke="#1a1712" stroke-width=".5"/>
+        <line x1="390" y1="240" x2="460" y2="360" stroke="#1a1712" stroke-width=".5"/>
+        <defs>
+          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#c8a96e"/>
+            <stop offset="100%" stop-color="transparent"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <p class="room-caption reveal">
+      部屋の広さは変わらない。<br>
+      しかし彼が虫になるほど、<br>扉はどんどん遠くなる。
+    </p>
+  </div>
+</section>
+
+<!-- ④ 核心 -->
+<section class="s-core">
+  <div class="squeeze-wrap">
+    <div class="core-inner reveal">
+      <p class="core-not">これは、変身の話ではない。</p>
+      <p class="core-is">
+        役に立たなくなった人間が、<br>
+        <strong>家族からどう消えていくか</strong>——<br>
+        その静かな過程の話だ。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ⑤ 家族の言葉が冷えていく -->
+<section class="s-voices">
+  <div class="squeeze-wrap" style="max-width:900px;">
+    <p class="voices-label reveal">家族の言葉が、冷えていく</p>
+    <p class="voices-sub reveal">同じ一人の人間について語っている</p>
+    <div class="voice-grid reveal">
+      <!-- 母 -->
+      <div class="voice-col">
+        <p class="voice-who">母</p>
+        <div class="voice-card warm">
+          <span class="voice-temp">心配</span>
+          <p class="voice-quote">「グレゴール、大丈夫？早く出てきなさい」</p>
+        </div>
+        <div class="voice-card cool">
+          <span class="voice-temp">距離</span>
+          <p class="voice-quote">「あの子の部屋には入れないわ、もう」</p>
+        </div>
+        <div class="voice-card cold">
+          <span class="voice-temp">忘却</span>
+          <p class="voice-quote" style="color:#2a3038;">……<br><span style="font-size:11px;font-family:var(--sans);">（ページから消える）</span></p>
+        </div>
+      </div>
+      <!-- 父 -->
+      <div class="voice-col">
+        <p class="voice-who">父</p>
+        <div class="voice-card warm">
+          <span class="voice-temp">狼狽</span>
+          <p class="voice-quote">「これは……いったい何なんだ」</p>
+        </div>
+        <div class="voice-card cool">
+          <span class="voice-temp">嫌悪</span>
+          <p class="voice-quote">「出てくるな。部屋にいろ」</p>
+        </div>
+        <div class="voice-card cold">
+          <span class="voice-temp">暴力</span>
+          <p class="voice-quote">林檎を投げつける。<br>言葉はもういらない。</p>
+        </div>
+      </div>
+      <!-- 妹 -->
+      <div class="voice-col">
+        <p class="voice-who">妹グレーテ</p>
+        <div class="voice-card warm">
+          <span class="voice-temp">献身</span>
+          <p class="voice-quote">「お兄さんが好きそうなものを持ってきたわ」</p>
+        </div>
+        <div class="voice-card cool">
+          <span class="voice-temp">疲弊</span>
+          <p class="voice-quote">「もう世話できない。誰かがやらなきゃ」</p>
+        </div>
+        <div class="voice-card cold">
+          <span class="voice-temp">宣告</span>
+          <p class="voice-quote">「あれはお兄さんじゃない。いなくなってもらわないと」</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ⑥ 終幕 -->
+<section class="s-end">
+  <div class="squeeze-wrap">
+    <p class="end-text reveal">
+      その夜、グレゴールは静かに死んだ。<br><br>
+      翌朝、家族は<em>遠足に出かけた</em>。<br>
+      誰も泣かなかった。<br>
+      窓の外には、春の光があった。
+    </p>
+    <p class="end-note reveal">
+      カフカはこの小説の表紙に虫の絵を描くことを禁じた。<br>
+      「これは虫の話ではないから」と。
+    </p>
+  </div>
+</section>
+
+<!-- アフィリエイトCTA -->
+<div class="cta-wrap reveal">
+  <p class="cta-lead">この作品にふれる</p>
+  <div class="cta-btns">
+    <a class="btn-rakuten"
+       href="https://a.r10.to/hPdyyb"
+       target="_blank" rel="sponsored noopener">
+      🛒 楽天で読む →
+    </a>
+    <a class="btn-amazon"
+       href="https://www.amazon.co.jp/s?k=%E5%A4%89%E8%BA%AB+%E3%82%AB%E3%83%95%E3%82%AB&tag=kplab-22"
+       target="_blank" rel="sponsored noopener">
+      🛒 Amazonで読む →
+    </a>
+  </div>
+  <p class="cta-pr">※本リンクは楽天・Amazonアフィリエイトを含みます（PR）</p>
+</div>
+
+<!-- フッター -->
+<footer class="page-footer">
+  <div style="font-size:12px;color:var(--dim);line-height:1.9;margin-bottom:14px;">
+    変身 ／ フランツ・カフカ（1883–1924）── 1915年発表。パブリックドメイン作品。<br>
+    ※ 要約・解釈はレイ（K' Intelligence）による編集。
+  </div>
+  <a href="index.html">◂ 書架へ戻る</a>
+  &nbsp;·&nbsp;
+  <a href="https://gor565.github.io/kp-lab/">K' Lab</a>
+</footer>
+
+<script>
+(function(){
+  // ── IntersectionObserver で .reveal に .in を付与 ──
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  }
+
+  // ── スクロールで部屋が縮む ──
+  if (!reduce) {
+    var total = function(){ return document.body.scrollHeight - window.innerHeight; };
+    var wraps = document.querySelectorAll('.squeeze-wrap');
+    window.addEventListener('scroll', function(){
+      var p = Math.min(window.scrollY / total(), 1);
+      // 最大240px縮む（スクロール後半で加速）
+      var sq = Math.pow(p, 1.6) * 240;
+      wraps.forEach(function(w){ w.style.setProperty('--squeeze', sq + 'px'); });
+    }, { passive: true });
+  }
+})();
+</script>
+
+</body>
+</html>
