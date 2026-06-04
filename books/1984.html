@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1984年 — K' Library</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Share+Tech+Mono&display=swap');
+
+    :root {
+      --red: #cc0000;
+      --dim-red: #660000;
+      --white: #e8e8e8;
+      --gray: #aaaaaa;
+      --dark: #080808;
+      --darker: #030303;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--darker);
+      color: var(--white);
+      font-family: 'Noto Serif JP', serif;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* ── SCANLINE ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.07) 2px,
+        rgba(0,0,0,0.07) 4px
+      );
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    /* ── HEADER ── */
+    header {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .eye {
+      width: 180px;
+      height: 90px;
+      border: 2px solid var(--red);
+      border-radius: 50%;
+      position: relative;
+      margin-bottom: 3rem;
+      animation: eyeblink 6s ease-in-out infinite;
+    }
+
+    .eye::before {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: var(--red);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pupil 8s ease-in-out infinite;
+    }
+
+    .eye::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: var(--darker);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes eyeblink {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.05); }
+    }
+
+    @keyframes pupil {
+      0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+      25% { transform: translate(-50%, -50%) translateX(20px); }
+      75% { transform: translate(-50%, -50%) translateX(-20px); }
+    }
+
+    .big-brother {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: clamp(0.7rem, 1.5vw, 1rem);
+      letter-spacing: 0.4em;
+      color: var(--dim-red);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: clamp(4rem, 12vw, 9rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+
+    h1 span {
+      color: var(--red);
+      display: block;
+    }
+
+    .author {
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--gray);
+      letter-spacing: 0.3em;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 3rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--dim-red);
+      letter-spacing: 0.3em;
+      animation: blink 2s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 8rem 2rem;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.9s ease, transform 0.9s ease;
+    }
+
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--dim-red);
+    }
+
+    /* ── ENTRY ── */
+    .entry-text {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    .entry-text em {
+      color: var(--red);
+      font-style: normal;
+    }
+
+    /* ── CORE ── */
+    .core-block {
+      border-left: 3px solid var(--red);
+      padding: 2rem 2.5rem;
+      margin: 2rem 0;
+      background: rgba(204,0,0,0.04);
+    }
+
+    .core-block p {
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      line-height: 1.9;
+      color: var(--gray);
+    }
+
+    .core-block strong {
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    /* ── DOUBLETHINK ── */
+    .doublethink {
+      text-align: center;
+      padding: 8rem 2rem;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    .doublethink.visible {
+      opacity: 1;
+    }
+
+    .dt-word {
+      font-size: clamp(2.5rem, 8vw, 6rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      position: relative;
+      display: inline-block;
+      cursor: default;
+    }
+
+    .dt-word::after {
+      content: attr(data-alt);
+      position: absolute;
+      inset: 0;
+      color: var(--red);
+      clip-path: inset(0 100% 0 0);
+      transition: clip-path 0.6s ease;
+    }
+
+    .dt-word:hover::after {
+      clip-path: inset(0 0% 0 0);
+    }
+
+    .dt-caption {
+      margin-top: 2rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--dim-red);
+      letter-spacing: 0.3em;
+    }
+
+    /* ── NEWSPEAK ── */
+    .newspeak-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--dim-red);
+      border: 1px solid var(--dim-red);
+      margin: 2rem 0;
+    }
+
+    .ns-cell {
+      background: var(--darker);
+      padding: 1.5rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .ns-cell .original {
+      color: var(--gray);
+      text-decoration: line-through;
+      margin-bottom: 0.5rem;
+    }
+
+    .ns-cell .newspeak {
+      color: var(--red);
+      font-size: 1rem;
+    }
+
+    /* ── QUOTE WALL ── */
+    .quote-wall {
+      background: rgba(204,0,0,0.05);
+      border: 1px solid var(--dim-red);
+      padding: 3rem;
+      margin: 2rem 0;
+      position: relative;
+    }
+
+    .quote-wall::before {
+      content: '"';
+      position: absolute;
+      top: -1rem;
+      left: 2rem;
+      font-size: 6rem;
+      color: var(--red);
+      line-height: 1;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .quote-wall p {
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+      line-height: 1.9;
+      color: var(--white);
+    }
+
+    .quote-wall .quote-src {
+      margin-top: 1.5rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--dim-red);
+      letter-spacing: 0.3em;
+    }
+
+    /* ── MINISTRIES ── */
+    .ministry-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin: 2rem 0;
+    }
+
+    .ministry {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 1.2rem 0;
+      border-bottom: 1px solid #111;
+      gap: 2rem;
+    }
+
+    .ministry-name {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--red);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+
+    .ministry-desc {
+      color: var(--gray);
+      font-size: 0.9rem;
+      text-align: right;
+      line-height: 1.5;
+    }
+
+    /* ── GLITCH TEXT ── */
+    .glitch-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      position: relative;
+      display: inline-block;
+      color: var(--white);
+    }
+
+    .glitch-text::before,
+    .glitch-text::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+    }
+
+    .glitch-text::before {
+      color: var(--red);
+      animation: glitch1 3s infinite;
+      clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+    }
+
+    .glitch-text::after {
+      color: #006688;
+      animation: glitch2 3s infinite;
+      clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+    }
+
+    @keyframes glitch1 {
+      0%, 90%, 100% { transform: translateX(0); }
+      92% { transform: translateX(-4px); }
+      94% { transform: translateX(4px); }
+      96% { transform: translateX(-2px); }
+    }
+
+    @keyframes glitch2 {
+      0%, 88%, 100% { transform: translateX(0); }
+      90% { transform: translateX(3px); }
+      93% { transform: translateX(-3px); }
+    }
+
+    /* ── WHY NOW ── */
+    .why-now {
+      text-align: center;
+      padding: 6rem 2rem;
+    }
+
+    .why-now p {
+      font-size: clamp(1rem, 2vw, 1.3rem);
+      line-height: 2.2;
+      color: var(--gray);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .why-now em {
+      color: var(--white);
+      font-style: normal;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--dim-red), transparent);
+      margin: 2rem 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 4rem 2rem 6rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: #333;
+      letter-spacing: 0.3em;
+    }
+
+    footer a {
+      color: var(--dim-red);
+      text-decoration: none;
+    }
+
+    /* ── PROGRESS BAR ── */
+    #progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--red);
+      z-index: 10000;
+      transition: width 0.1s;
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="eye"></div>
+  <div class="big-brother">ビッグ・ブラザーはあなたを見ている</div>
+  <h1>
+    19<span>84</span>
+  </h1>
+  <div class="author">GEORGE ORWELL — 1949</div>
+  <div class="scroll-hint">▼ SCROLL ▼</div>
+</header>
+
+<!-- SECTION 1: 入口 -->
+<section class="reveal">
+  <div class="label">01 — 入口</div>
+  <p class="entry-text">
+    フィクションとして読んでいたはずが、<br>
+    いつから<em>これは設計図だ</em>と気づいたか。
+  </p>
+  <div class="divider"></div>
+  <p class="entry-text" style="margin-top: 2rem; font-size: clamp(1rem, 2vw, 1.3rem); color: var(--gray);">
+    1948年、オーウェルは病床でこの小説を書いた。<br>
+    タイトルは西暦の末尾2桁をひっくり返しただけ——<br>
+    つまり「今」の物語として書かれた。
+  </p>
+</section>
+
+<!-- SECTION 2: 核心 -->
+<section class="reveal">
+  <div class="label">02 — 核心</div>
+  <div class="core-block">
+    <p>
+      これは<strong>独裁国家の話ではない。</strong><br><br>
+      「<strong>言語を支配することで、<br>思考そのものを消せるか</strong>」という<br>
+      実験の記録だ。
+    </p>
+  </div>
+  <p style="color: var(--gray); line-height: 1.9; margin-top: 2rem;">
+    ニュースピーク（Newspeak）——党が設計した言語。
+    単語を減らすほど、人が考えられることも減っていく。
+    「自由」という言葉がなければ、自由を欲しいとも思えない。
+  </p>
+</section>
+
+<!-- NEWSPEAK TABLE -->
+<section class="reveal">
+  <div class="label">03 — ニュースピーク辞典</div>
+  <div class="newspeak-grid">
+    <div class="ns-cell">
+      <div class="original">自由（freedom）</div>
+      <div class="newspeak">→ 削除</div>
+    </div>
+    <div class="ns-cell">
+      <div class="original">反乱（rebellion）</div>
+      <div class="newspeak">→ 削除</div>
+    </div>
+    <div class="ns-cell">
+      <div class="original">すばらしい（excellent）</div>
+      <div class="newspeak">→ plusgood</div>
+    </div>
+    <div class="ns-cell">
+      <div class="original">最悪（terrible）</div>
+      <div class="newspeak">→ doubleplusungood</div>
+    </div>
+    <div class="ns-cell">
+      <div class="original">考える（to think critically）</div>
+      <div class="newspeak">→ 削除</div>
+    </div>
+    <div class="ns-cell">
+      <div class="original">愛する（to love privately）</div>
+      <div class="newspeak">→ 削除</div>
+    </div>
+  </div>
+  <p style="color: var(--gray); font-size: 0.85rem; font-family: 'Share Tech Mono', monospace; letter-spacing: 0.1em;">
+    「言語の目的は思想を表現することではなく、思想を不可能にすることだ」
+  </p>
+</section>
+
+<!-- DOUBLETHINK -->
+<div class="doublethink reveal" style="padding: 8rem 2rem; text-align: center;">
+  <div class="label" style="max-width: 780px; margin: 0 auto 3rem;">04 — 二重思考</div>
+  <div class="dt-word" data-alt="戦争は平和だ">戦争は平和だ</div><br>
+  <div class="dt-word" data-alt="自由は隷従だ">自由は隷従だ</div><br>
+  <div class="dt-word" data-alt="無知は力だ">無知は力だ</div>
+  <div class="dt-caption" style="margin-top: 3rem;">ホバーで真実を見る / hover to reveal</div>
+</div>
+
+<!-- SECTION: 4省 -->
+<section class="reveal">
+  <div class="label">05 — 4つの省</div>
+  <div class="ministry-list">
+    <div class="ministry">
+      <span class="ministry-name">真理省 / Minitrue</span>
+      <span class="ministry-desc">歴史を改ざんし、<br>過去を現在に合わせて書き換える</span>
+    </div>
+    <div class="ministry">
+      <span class="ministry-name">平和省 / Minipax</span>
+      <span class="ministry-desc">戦争を永続させ、<br>国民の恐怖を維持する</span>
+    </div>
+    <div class="ministry">
+      <span class="ministry-name">愛情省 / Miniluv</span>
+      <span class="ministry-desc">拷問と再教育。<br>最後には党を愛することになる</span>
+    </div>
+    <div class="ministry">
+      <span class="ministry-name">潤沢省 / Miniplenty</span>
+      <span class="ministry-desc">欠乏を管理し、<br>少ないことを豊かと呼ぶ</span>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="reveal">
+  <div class="label">06 — 言葉</div>
+  <div class="quote-wall">
+    <p>
+      過去を支配する者は未来を支配する。<br>
+      現在を支配する者は過去を支配する。
+    </p>
+    <div class="quote-src">— 党のスローガン, 1984年</div>
+  </div>
+  <div class="quote-wall" style="margin-top: 1.5rem;">
+    <p>
+      戦争が終わらないのは、勝てないからではない。<br>
+      終わらせてはならないからだ。
+    </p>
+    <div class="quote-src">— オブライエン, 1984年</div>
+  </div>
+</section>
+
+<!-- GLITCH / WHY NOW -->
+<div class="why-now reveal" style="max-width: 780px; margin: 0 auto; padding: 6rem 2rem;">
+  <div class="label">07 — なぜ今、読むか</div>
+  <div style="margin-bottom: 3rem; text-align: center;">
+    <span class="glitch-text" data-text="YOU ARE BEING WATCHED">YOU ARE BEING WATCHED</span>
+  </div>
+  <p>
+    <em>監視カメラ</em>は街に当たり前にある。<br>
+    <em>アルゴリズム</em>はあなたの次の行動を予測する。<br>
+    <em>プラットフォーム</em>は言葉の届く範囲を決める。<br><br>
+    オーウェルが恐れたのはテクノロジーではなく、<br>
+    <em>それを使う人間の意志</em>だった。<br><br>
+    1984年は過去の話ではない——<br>
+    <em>まだ起きていない未来の警告でもない。</em><br>
+    これは進行形の問いだ。
+  </p>
+</div>
+
+<footer>
+  <div style="margin-bottom: 1rem;">K' Library — ビジュアル・エッセイ書架</div>
+  <div style="margin-bottom: 1.5rem;">George Orwell, <em>Nineteen Eighty-Four</em>, 1949 / Secker & Warburg</div>
+  <div>
+    <a href="index.html">◂ 書架へ戻る</a>
+    &nbsp;·&nbsp;
+    <a href="https://gor565.github.io/kp-lab/">K' Lab</a>
+  </div>
+</footer>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

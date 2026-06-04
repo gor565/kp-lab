@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>百年の孤独 — ガルシア＝マルケス</title>
+<meta name="description" content="忘却と反復が一族を滅ぼすまで。ガブリエル・ガルシア＝マルケス『百年の孤独』ビジュアル・エッセイ。">
+<style>
+:root{
+  --bg:#0D160D;
+  --jungle:#0A1A0A;
+  --green1:#1A3A1A;
+  --green2:#2A5A2A;
+  --ochre:#B8860B;
+  --ochre2:#D4A017;
+  --ochre3:#E8C84A;
+  --sand:#C8A96E;
+  --dust:#9A7A45;
+  --ink:#EDE0C4;
+  --ink2:#C4A87A;
+  --faint:rgba(200,169,110,0.15);
+  --faint2:rgba(200,169,110,0.07);
+  --serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.9;
+  overflow-x:hidden;
+}
+
+/* 熱帯の葉脈 — 背景テクスチャ */
+body::before{
+  content:"";
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 800px 600px at 0% 30%, rgba(20,60,20,0.6), transparent 60%),
+    radial-gradient(ellipse 600px 800px at 100% 70%, rgba(40,80,10,0.4), transparent 60%),
+    radial-gradient(ellipse 900px 400px at 50% 100%, rgba(100,70,10,0.3), transparent 60%);
+  opacity:1;
+}
+
+/* ==============================
+   HERO
+   ============================== */
+.hero{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  z-index:1;
+  padding:80px 24px 60px;
+  text-align:center;
+  overflow:hidden;
+}
+
+/* 熱帯の霧 */
+.hero::before{
+  content:"";
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 700px 400px at 50% 40%, rgba(30,80,20,0.45), transparent 65%),
+    radial-gradient(ellipse 400px 300px at 20% 80%, rgba(100,70,20,0.3), transparent 55%),
+    radial-gradient(ellipse 500px 200px at 80% 20%, rgba(20,50,10,0.35), transparent 55%);
+}
+
+.hero-eyebrow{
+  position:relative;z-index:1;
+  font-family:var(--sans);
+  font-size:11px;letter-spacing:.4em;
+  color:var(--ochre2);text-transform:uppercase;
+  margin-bottom:28px;
+  opacity:0;animation:fadeUp .8s ease .2s forwards;
+}
+
+.hero-title{
+  position:relative;z-index:1;
+  font-size:clamp(36px,9vw,80px);
+  font-weight:700;
+  letter-spacing:.12em;
+  line-height:1.15;
+  color:#fff;
+  text-shadow:0 0 80px rgba(184,134,11,0.4), 0 2px 8px rgba(0,0,0,0.8);
+  margin-bottom:12px;
+  opacity:0;animation:fadeUp .9s ease .5s forwards;
+}
+
+.hero-subtitle{
+  position:relative;z-index:1;
+  font-size:clamp(13px,2vw,16px);
+  color:var(--ink2);letter-spacing:.2em;
+  margin-bottom:48px;
+  opacity:0;animation:fadeUp .9s ease .8s forwards;
+}
+
+.hero-hook{
+  position:relative;z-index:1;
+  font-size:clamp(16px,3vw,22px);
+  color:var(--ink);
+  max-width:640px;margin:0 auto;
+  line-height:2;
+  border-left:3px solid var(--ochre);
+  padding-left:24px;
+  text-align:left;
+  opacity:0;animation:fadeUp 1s ease 1.2s forwards;
+}
+
+.scroll-hint{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  z-index:1;
+  font-family:var(--sans);font-size:11px;letter-spacing:.3em;
+  color:var(--ochre);text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  opacity:0;animation:fadeIn 1s ease 2.5s forwards;
+}
+.scroll-hint .arrow{
+  width:1px;height:40px;background:linear-gradient(180deg,var(--ochre),transparent);
+  animation:scrollArrow 1.6s ease-in-out infinite;
+}
+@keyframes scrollArrow{0%,100%{opacity:.3;transform:scaleY(1);}50%{opacity:1;transform:scaleY(1.3);}}
+
+/* ==============================
+   SECTION — 共通
+   ============================== */
+.section{
+  position:relative;z-index:1;
+  max-width:800px;margin:0 auto;
+  padding:80px 28px;
+}
+.section-label{
+  font-family:var(--sans);font-size:10px;letter-spacing:.4em;
+  color:var(--ochre2);text-transform:uppercase;margin-bottom:16px;
+}
+.section h2{
+  font-size:clamp(22px,4vw,36px);font-weight:700;
+  letter-spacing:.06em;line-height:1.4;
+  color:#fff;margin-bottom:28px;
+}
+.section p{
+  font-size:clamp(15px,2.2vw,18px);
+  color:var(--ink);line-height:2.1;margin-bottom:24px;
+}
+.section p em{
+  color:var(--ochre3);font-style:normal;font-weight:700;
+}
+
+/* ==============================
+   DIVIDER
+   ============================== */
+.divider{
+  position:relative;z-index:1;
+  height:2px;max-width:200px;margin:0 auto;
+  background:linear-gradient(90deg,transparent,var(--ochre),transparent);
+  opacity:.5;
+}
+
+/* ==============================
+   名前の螺旋 — NAMES SECTION
+   ============================== */
+.names-section{
+  position:relative;z-index:1;
+  padding:80px 0;
+  overflow:hidden;
+}
+.names-title{
+  text-align:center;
+  font-family:var(--sans);font-size:11px;letter-spacing:.4em;
+  color:var(--ochre2);text-transform:uppercase;
+  margin-bottom:40px;
+}
+.names-grid{
+  max-width:860px;margin:0 auto;padding:0 24px;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:0;
+}
+.name-col{
+  display:flex;flex-direction:column;gap:0;
+  border-right:1px solid rgba(200,169,110,0.2);
+  padding:0 20px;
+}
+.name-col:last-child{border-right:none;}
+
+.name-item{
+  padding:14px 0;
+  border-bottom:1px solid rgba(200,169,110,0.1);
+  transition:all .3s;
+}
+.name-item .gen{
+  font-family:var(--sans);font-size:9px;letter-spacing:.2em;
+  color:var(--dust);margin-bottom:4px;
+}
+.name-item .name{
+  font-size:clamp(13px,2vw,16px);
+  color:var(--ink2);
+  letter-spacing:.04em;
+  transition:all .3s;
+}
+/* 世代が深まるほど文字が歪む */
+.name-item[data-gen="1"] .name{color:#fff;font-size:18px;}
+.name-item[data-gen="2"] .name{color:var(--ink);letter-spacing:.06em;}
+.name-item[data-gen="3"] .name{color:var(--ink2);letter-spacing:.08em;transform:skewX(-1deg);display:inline-block;}
+.name-item[data-gen="4"] .name{color:var(--sand);letter-spacing:.1em;transform:skewX(-2deg);display:inline-block;opacity:.9;}
+.name-item[data-gen="5"] .name{color:var(--dust);letter-spacing:.14em;transform:skewX(-3deg) scaleX(.97);display:inline-block;opacity:.8;}
+.name-item[data-gen="6"] .name{color:var(--ochre);letter-spacing:.18em;transform:skewX(-5deg) scaleX(.94);display:inline-block;opacity:.65;filter:blur(.4px);}
+.name-item[data-gen="7"] .name{color:rgba(184,134,11,0.5);letter-spacing:.24em;transform:skewX(-8deg) scaleX(.9);display:inline-block;opacity:.45;filter:blur(1px);}
+
+.names-caption{
+  text-align:center;max-width:600px;margin:36px auto 0;
+  padding:0 24px;
+  font-size:14px;color:var(--dust);line-height:1.9;
+  font-family:var(--sans);
+}
+
+/* ==============================
+   核心 — CORE STATEMENT
+   ============================== */
+.core{
+  position:relative;z-index:1;
+  padding:100px 24px;
+  text-align:center;
+  background:linear-gradient(180deg,transparent,rgba(10,30,10,0.6),transparent);
+}
+.core-not{
+  font-size:clamp(14px,2.5vw,18px);
+  color:var(--dust);letter-spacing:.12em;
+  margin-bottom:20px;
+  text-decoration:line-through;
+  text-decoration-color:rgba(154,122,69,0.5);
+}
+.core-is{
+  font-size:clamp(22px,5vw,42px);
+  font-weight:700;color:#fff;letter-spacing:.08em;
+  line-height:1.5;
+  text-shadow:0 0 60px rgba(184,134,11,0.5);
+  max-width:720px;margin:0 auto;
+}
+.core-is em{
+  color:var(--ochre3);font-style:normal;
+  display:inline-block;
+  animation:pulse 3s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{text-shadow:0 0 20px rgba(232,200,74,0.3);}50%{text-shadow:0 0 40px rgba(232,200,74,0.8);}}
+
+/* ==============================
+   タイムライン — GENERATIONS
+   ============================== */
+.timeline{
+  position:relative;z-index:1;
+  max-width:800px;margin:0 auto;
+  padding:60px 24px 80px;
+}
+.timeline-title{
+  font-family:var(--sans);font-size:11px;letter-spacing:.4em;
+  color:var(--ochre2);text-transform:uppercase;
+  margin-bottom:60px;text-align:center;
+}
+.timeline-line{
+  position:absolute;
+  left:50%;top:120px;bottom:80px;
+  width:1px;
+  background:linear-gradient(180deg,var(--ochre),rgba(184,134,11,0.2));
+  transform:translateX(-50%);
+}
+.tl-item{
+  display:grid;
+  grid-template-columns:1fr 40px 1fr;
+  gap:0 16px;
+  margin-bottom:48px;
+  align-items:start;
+}
+.tl-item:nth-child(odd) .tl-left{text-align:right;}
+.tl-item:nth-child(odd) .tl-right{opacity:0;}
+.tl-item:nth-child(even) .tl-left{opacity:0;}
+.tl-item:nth-child(even) .tl-right{text-align:left;}
+
+.tl-dot{
+  width:12px;height:12px;border-radius:50%;
+  background:var(--ochre);
+  margin:6px auto;
+  position:relative;z-index:2;
+  box-shadow:0 0 12px rgba(184,134,11,0.6);
+  transition:transform .3s;
+}
+.tl-dot.hollow{
+  background:transparent;
+  border:2px solid var(--dust);
+  box-shadow:none;
+}
+.tl-content{padding-bottom:4px;}
+.tl-gen{
+  font-family:var(--sans);font-size:9px;letter-spacing:.2em;
+  color:var(--dust);margin-bottom:4px;
+  text-transform:uppercase;
+}
+.tl-name{
+  font-size:clamp(15px,2.5vw,20px);
+  font-weight:700;color:var(--ink);
+  margin-bottom:6px;letter-spacing:.04em;
+}
+.tl-desc{
+  font-size:13px;color:var(--dust);
+  line-height:1.7;font-family:var(--sans);
+}
+
+/* ==============================
+   ESSAY BODY
+   ============================== */
+.essay{
+  position:relative;z-index:1;
+  max-width:720px;margin:0 auto;
+  padding:40px 28px 80px;
+  border-left:2px solid rgba(200,169,110,0.2);
+  margin-left:auto;margin-right:auto;
+}
+.essay p{
+  font-size:clamp(15px,2.2vw,18px);
+  color:var(--ink);line-height:2.2;
+  margin-bottom:32px;
+}
+.essay p .highlight{
+  color:var(--ochre3);font-weight:700;
+}
+.essay blockquote{
+  border-left:3px solid var(--ochre);
+  padding:16px 24px;
+  margin:32px 0;
+  background:rgba(184,134,11,0.06);
+  border-radius:0 6px 6px 0;
+}
+.essay blockquote p{
+  font-size:clamp(14px,2vw,17px);
+  color:var(--ink2);font-style:italic;
+  margin:0;
+}
+
+/* ==============================
+   SAND FINALE
+   ============================== */
+.finale{
+  position:relative;z-index:1;
+  min-height:80vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:80px 24px;
+  text-align:center;
+  overflow:hidden;
+}
+.finale-bg{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 0%,rgba(100,70,20,0.15) 40%,rgba(150,100,30,0.3) 70%,rgba(80,50,10,0.6) 100%);
+}
+#sandCanvas{
+  position:absolute;inset:0;z-index:0;
+  pointer-events:none;
+  opacity:.7;
+}
+.finale-text{
+  position:relative;z-index:1;
+  font-size:clamp(18px,3.5vw,28px);
+  font-weight:700;
+  color:#fff;letter-spacing:.12em;line-height:1.8;
+  text-shadow:0 0 40px rgba(0,0,0,0.8);
+  max-width:620px;
+}
+.finale-sub{
+  position:relative;z-index:1;
+  margin-top:28px;
+  font-family:var(--sans);font-size:13px;
+  color:var(--dust);letter-spacing:.15em;
+  line-height:2;
+}
+
+/* ==============================
+   FOOTER
+   ============================== */
+.footer{
+  position:relative;z-index:1;
+  text-align:center;padding:40px 20px 64px;
+  font-family:var(--sans);font-size:11px;letter-spacing:.1em;
+  color:var(--dust);line-height:2;
+  border-top:1px solid rgba(200,169,110,0.15);
+}
+.footer a{color:var(--ochre);text-decoration:none;}
+
+/* アニメーション */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes fadeIn{
+  from{opacity:0;}to{opacity:1;}
+}
+
+/* スクロール出現 */
+.reveal{
+  opacity:0;transform:translateY(28px);
+  transition:opacity .9s ease, transform .9s ease;
+}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+@media(max-width:600px){
+  .names-grid{grid-template-columns:1fr;}
+  .name-col{border-right:none;border-bottom:1px solid rgba(200,169,110,0.15);}
+  .timeline-line{display:none;}
+  .tl-item{grid-template-columns:1fr;gap:4px;}
+  .tl-item:nth-child(odd) .tl-left,.tl-item:nth-child(even) .tl-right{text-align:left;}
+  .tl-item .tl-right,.tl-item .tl-left:not(:first-child){opacity:1!important;}
+  .tl-dot{margin:0 0 8px;}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;}
+  .reveal{opacity:1;transform:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ==============================
+     HERO
+     ============================== -->
+<section class="hero">
+  <div class="hero-eyebrow">K' Library — ビジュアル・エッセイ</div>
+  <h1 class="hero-title">百年の孤独</h1>
+  <p class="hero-subtitle">Gabriel García Márquez ／ 1967</p>
+  <p class="hero-hook">
+    同じ名前が七世代続く一族——<br>
+    「誰が誰だかわからない」という<wbr>混乱そのものが、<br>
+    この小説の主題になっている。
+  </p>
+  <div class="scroll-hint">
+    <span>scroll</span>
+    <span class="arrow"></span>
+  </div>
+</section>
+
+<!-- ==============================
+     SECTION 1 — マコンドへの入口
+     ============================== -->
+<div class="section reveal">
+  <div class="section-label">I. Arrival</div>
+  <h2>世界が生まれたばかりのとき</h2>
+  <p>
+    物語は、いまだ<em>名前すら持たないものたちに満ちた</em>、新しい村から始まる。
+    ホセ・アルカディオ・ブエンディアは妻ウルスラと一族を連れ、密林を切り拓いて
+    マコンドを建てた。
+    磁石、拡大鏡、錬金術——外から来る発明のたびに彼は狂喜し、夜を徹して実験する。
+  </p>
+  <p>
+    その熱狂は一世代で冷める。
+    しかし<em>息子も、孫も、同じ熱狂を繰り返す。</em>
+    名前が変わらないように、人間の性質も変わらない。
+  </p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==============================
+     NAMES SECTION — 名の螺旋
+     ============================== -->
+<div class="names-section">
+  <div class="names-title reveal">— 七世代を貫く三つの名前 —</div>
+
+  <div class="names-grid reveal">
+    <div class="name-col">
+      <div class="name-item" data-gen="1"><div class="gen">第1世代</div><div class="name">ホセ・アルカディオ</div></div>
+      <div class="name-item" data-gen="2"><div class="gen">第2世代</div><div class="name">ホセ・アルカディオ</div></div>
+      <div class="name-item" data-gen="3"><div class="gen">第3世代</div><div class="name">ホセ・アルカディオ</div></div>
+      <div class="name-item" data-gen="4"><div class="gen">第4世代</div><div class="name">ホセ・アルカディオ</div></div>
+      <div class="name-item" data-gen="5"><div class="gen">第5世代</div><div class="name">ホセ・アルカディオ</div></div>
+      <div class="name-item" data-gen="6"><div class="gen">第6世代</div><div class="name">ホセ・アルカディオ</div></div>
+      <div class="name-item" data-gen="7"><div class="gen">第7世代</div><div class="name">ホセ・アルカディオ</div></div>
+    </div>
+    <div class="name-col">
+      <div class="name-item" data-gen="1"><div class="gen">第1世代</div><div class="name">アウレリャノ</div></div>
+      <div class="name-item" data-gen="2"><div class="gen">第2世代</div><div class="name">アウレリャノ</div></div>
+      <div class="name-item" data-gen="3"><div class="gen">第3世代</div><div class="name">アウレリャノ</div></div>
+      <div class="name-item" data-gen="4"><div class="gen">第4世代</div><div class="name">アウレリャノ</div></div>
+      <div class="name-item" data-gen="5"><div class="gen">第5世代</div><div class="name">アウレリャノ</div></div>
+      <div class="name-item" data-gen="6"><div class="gen">第6世代</div><div class="name">アウレリャノ</div></div>
+      <div class="name-item" data-gen="7"><div class="gen">第7世代</div><div class="name">アウレリャノ</div></div>
+    </div>
+    <div class="name-col">
+      <div class="name-item" data-gen="1"><div class="gen">第1世代</div><div class="name">ウルスラ</div></div>
+      <div class="name-item" data-gen="2"><div class="gen">第2世代</div><div class="name">ウルスラ</div></div>
+      <div class="name-item" data-gen="3"><div class="gen">第3世代</div><div class="name">ウルスラ</div></div>
+      <div class="name-item" data-gen="4"><div class="gen">第4世代</div><div class="name">ウルスラ</div></div>
+      <div class="name-item" data-gen="5"><div class="gen">第5世代</div><div class="name">ウルスラ</div></div>
+      <div class="name-item" data-gen="6"><div class="gen">第6世代</div><div class="name">ウルスラ</div></div>
+      <div class="name-item" data-gen="7"><div class="gen">第7世代</div><div class="name">ウルスラ</div></div>
+    </div>
+  </div>
+
+  <p class="names-caption reveal">
+    世代を重ねるほど、名前は同じまま、中身が薄れていく。<br>
+    読者が「これは誰の話だったか」と迷うのは、<em>作者の失敗ではない</em>。<br>
+    その迷いこそが、この小説の設計だ。
+  </p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==============================
+     SECTION 2 — 核心
+     ============================== -->
+<div class="core reveal">
+  <div class="core-not">家族の歴史の話ではない</div>
+  <div class="core-is">
+    「<em>忘却</em>」と「<em>反復</em>」が<br>
+    人間をどう滅ぼすかの話だ。
+  </div>
+</div>
+
+<!-- ==============================
+     TIMELINE — 七世代の落下
+     ============================== -->
+<div class="timeline reveal">
+  <div class="timeline-title">— 七世代、マコンドの興亡 —</div>
+  <div class="timeline-line"></div>
+
+  <div class="tl-item">
+    <div class="tl-left tl-content">
+      <div class="tl-gen">第一世代 / Foundation</div>
+      <div class="tl-name">ホセ・アルカディオ・ブエンディア</div>
+      <div class="tl-desc">密林に理想の村を建てる。錬金術に溺れ、最後はマロニエの木に縛られて死ぬ。</div>
+    </div>
+    <div class="tl-dot"></div>
+    <div class="tl-right"></div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-left"></div>
+    <div class="tl-dot"></div>
+    <div class="tl-right tl-content">
+      <div class="tl-gen">第二世代 / War</div>
+      <div class="tl-name">アウレリャノ・ブエンディア大佐</div>
+      <div class="tl-desc">17回の反乱を起こし、17回敗れる。晩年は小さな金魚を作っては溶かして繰り返す。</div>
+    </div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-left tl-content">
+      <div class="tl-gen">第三世代 / Growth</div>
+      <div class="tl-name">ホセ・アルカディオ（二世）</div>
+      <div class="tl-desc">バナナ会社の繁栄。マコンドに文明が押し寄せる。</div>
+    </div>
+    <div class="tl-dot"></div>
+    <div class="tl-right"></div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-left"></div>
+    <div class="tl-dot"></div>
+    <div class="tl-right tl-content">
+      <div class="tl-gen">第四世代 / Decline</div>
+      <div class="tl-name">アウレリャノ・セグンド</div>
+      <div class="tl-desc">宴と浪費の人生。双子の兄弟と人生が入れ替わる。</div>
+    </div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-left tl-content">
+      <div class="tl-gen">第五世代 / Ruin</div>
+      <div class="tl-name">ホセ・アルカディオ（五世）</div>
+      <div class="tl-desc">バナナ会社が去り、村が朽ちていく。雨が四年間降り続ける。</div>
+    </div>
+    <div class="tl-dot hollow"></div>
+    <div class="tl-right"></div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-left"></div>
+    <div class="tl-dot hollow"></div>
+    <div class="tl-right tl-content">
+      <div class="tl-gen">第六世代 / Memory</div>
+      <div class="tl-name">アウレリャノ・ブエンディア（六世）</div>
+      <div class="tl-desc">羊皮紙の解読に没頭する。外の世界と完全に切り離される。</div>
+    </div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-left tl-content">
+      <div class="tl-gen">第七世代 / End</div>
+      <div class="tl-name">アウレリャノ（最後の一人）</div>
+      <div class="tl-desc">予言書が解読された瞬間、マコンドは地上から消える。</div>
+    </div>
+    <div class="tl-dot hollow" style="border-color:rgba(154,122,69,0.4);opacity:.5;"></div>
+    <div class="tl-right"></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==============================
+     ESSAY — 本文
+     ============================== -->
+<div class="essay reveal">
+  <p>
+    この小説には「進歩」がない。
+    一族は七世代をかけて、<span class="highlight">同じ過ちを、同じ情熱で、同じように繰り返す。</span>
+    戦争、愛、錬金術、孤立——何も学ばれず、何も伝わらない。
+  </p>
+
+  <blockquote>
+    <p>
+      「マコンドの人々は、羊皮紙に書かれていたことを、
+      もう一度生きなおしているのだと気づかなかった」
+    </p>
+  </blockquote>
+
+  <p>
+    ここで問われているのは、一つの家族の悲劇ではない。
+    <span class="highlight">人間の集団記憶がなぜ機能しないか</span>、だ。
+    歴史は繰り返すと言うが、マルケスはもっと残酷な真実を描いた——
+    繰り返しているという自覚すら、また失われる、と。
+  </p>
+
+  <p>
+    ウルスラだけが例外だった。
+    百年を超えて生き続け、「これは以前にも起きた」と知っていた。
+    だが彼女の死とともに、その記憶も一族から消える。
+    <span class="highlight">目撃者がいなくなった歴史は、歴史でなくなる。</span>
+  </p>
+
+  <p>
+    ガルシア＝マルケスが「マジック・リアリズム」と呼ばれる手法——
+    死者が歩き回り、血が路地を流れ、空から黄色い花びらが降り続ける——を使うのは、
+    単なる技巧ではない。
+    現実に起きた暴力と狂気が、あまりに大きすぎて
+    <span class="highlight">写実的な散文では入りきらない</span>からだ。
+  </p>
+
+  <p>
+    1967年、コロンビア。ラテンアメリカ文学が世界に届いた瞬間。
+    この小説は「百年」をかけて、今もまだ読み続けられている。
+  </p>
+</div>
+
+<!-- ==============================
+     FINALE — 砂に飲まれる
+     ============================== -->
+<div class="finale">
+  <div class="finale-bg"></div>
+  <canvas id="sandCanvas"></canvas>
+  <div class="finale-text reveal">
+    予言は完結し、マコンドは消えた。<br>
+    繰り返しを知っていた者も、もういない。
+  </div>
+  <div class="finale-sub reveal">
+    ガブリエル・ガルシア＝マルケス<br>
+    『百年の孤独』<br>
+    1967年 / スペイン語原題 Cien años de soledad
+  </div>
+</div>
+
+<!-- ==============================
+     FOOTER
+     ============================== -->
+<footer class="footer">
+  K' Library — ビジュアル・エッセイ<br>
+  <a href="index.html">◂ 書架に戻る</a> ·
+  <a href="../index.html">K' Lab へ</a>
+</footer>
+
+<script>
+(function(){
+
+  /* ---- スクロール出現 ---- */
+  var reveals = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  },{threshold:.12});
+  reveals.forEach(function(el){ io.observe(el); });
+
+  /* ---- 砂のパーティクル ---- */
+  var canvas = document.getElementById('sandCanvas');
+  var ctx = canvas.getContext('2d');
+  var particles = [];
+  var animId;
+  var running = false;
+
+  function resize(){
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+
+  function Particle(){
+    this.x = Math.random() * canvas.width;
+    this.y = -10 - Math.random() * 200;
+    this.size  = .5 + Math.random() * 2.5;
+    this.speed = .4 + Math.random() * 1.4;
+    this.drift = (Math.random()-.5) * .6;
+    this.alpha = .2 + Math.random() * .6;
+    this.color = ['#B8860B','#C8A96E','#9A7A45','#D4A017','#E8C84A'][Math.floor(Math.random()*5)];
+  }
+
+  function spawnBatch(){
+    for(var i=0;i<6;i++) particles.push(new Particle());
+  }
+
+  function tick(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(var i=particles.length-1;i>=0;i--){
+      var p=particles[i];
+      p.y += p.speed;
+      p.x += p.drift + Math.sin(p.y*.03)*.4;
+      p.alpha -= .0015;
+      if(p.y > canvas.height+20 || p.alpha<=0){ particles.splice(i,1); continue; }
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+    if(running) animId = requestAnimationFrame(tick);
+  }
+
+  var spawnInterval;
+  var finaleIO = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting && !running){
+        running = true;
+        resize();
+        spawnInterval = setInterval(spawnBatch, 80);
+        tick();
+      } else if(!e.isIntersecting && running){
+        running = false;
+        clearInterval(spawnInterval);
+        cancelAnimationFrame(animId);
+        particles = [];
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+      }
+    });
+  },{threshold:.1});
+
+  var finaleEl = document.querySelector('.finale');
+  if(finaleEl){ finaleIO.observe(finaleEl); }
+  window.addEventListener('resize', resize);
+
+})();
+</script>
+</body>
+</html>

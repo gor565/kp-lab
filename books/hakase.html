@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>博士の愛した数式 — 小川洋子 | K' Library</title>
+<meta name="description" content="記憶が80分しか持たない数学者。彼が最初に尋ねるのはいつも「靴のサイズはいくつですか？」だった。これは記憶喪失の話ではない。数式という永遠の言語が、消えゆく人間をどう繋ぎとめるかの話だ。">
+<style>
+/* ── 基本 ── */
+:root {
+  --paper: #f0ebe0;
+  --paper2: #e8e1d2;
+  --ink: #1a1610;
+  --ink-dim: #7a7060;
+  --pencil: #4a4030;
+  --blue: #3a5a7a;
+  --blue-light: #6a8aaa;
+  --serif: "Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+  --sans: -apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans",sans-serif;
+  --mono: "Courier New",Courier,monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  overflow-x: hidden;
+}
+
+/* ── 罫線の背景テクスチャ ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 31px,
+    rgba(58,90,122,.08) 31px,
+    rgba(58,90,122,.08) 32px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── セクション共通 ── */
+section {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+}
+
+/* ── reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .ticker { animation: none !important; }
+  .eq-draw { animation: none !important; stroke-dashoffset: 0 !important; }
+}
+
+/* ══ ① HERO ══ */
+.s-hero {
+  flex-direction: column;
+  text-align: center;
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper2) 100%);
+  min-height: 100vh;
+}
+.hero-eyebrow {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: .4em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.hero-title {
+  font-size: clamp(38px, 9vw, 80px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: .06em;
+  color: var(--ink);
+  animation: fade-in 1s ease both;
+}
+@keyframes fade-in {
+  from { opacity:0; transform: translateY(16px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.hero-author {
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: .2em;
+  color: var(--ink-dim);
+  margin-top: 12px;
+  animation: fade-in 1s ease .3s both;
+}
+
+/* 80分カウンター */
+.ticker-wrap {
+  margin-top: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: fade-in 1s ease .6s both;
+}
+.ticker-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: .3em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+}
+.ticker {
+  font-family: var(--mono);
+  font-size: clamp(48px, 10vw, 80px);
+  font-weight: 400;
+  color: var(--blue);
+  letter-spacing: .05em;
+  line-height: 1;
+  animation: count-down 80s steps(80, end) both;
+}
+@keyframes count-down {
+  from { content: "80:00"; }
+}
+.ticker-sub {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: .1em;
+}
+
+/* ══ ② 入口 ══ */
+.s-entry {
+  background: var(--paper);
+}
+.entry-inner {
+  max-width: 580px;
+  text-align: center;
+}
+.entry-question {
+  font-size: clamp(18px, 3.5vw, 26px);
+  line-height: 2.2;
+  font-weight: 400;
+  letter-spacing: .05em;
+  color: var(--ink);
+  margin-bottom: 28px;
+}
+.entry-question em {
+  font-style: normal;
+  color: var(--blue);
+  border-bottom: 2px solid rgba(58,90,122,.3);
+  padding-bottom: 1px;
+}
+.entry-note {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--ink-dim);
+  letter-spacing: .1em;
+  line-height: 1.8;
+}
+
+/* ══ ③ オイラーの等式 ══ */
+.s-euler {
+  background: var(--paper2);
+  flex-direction: column;
+  gap: 40px;
+}
+.euler-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: .35em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  text-align: center;
+}
+.euler-card {
+  background: #fff;
+  border: 1px solid rgba(58,90,122,.15);
+  border-radius: 4px;
+  padding: 48px 60px;
+  max-width: 560px;
+  width: 90vw;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.04);
+  position: relative;
+  text-align: center;
+}
+/* 折り目 */
+.euler-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 24px; height: 24px;
+  background: linear-gradient(225deg, var(--paper2) 50%, transparent 50%);
+}
+.euler-eq {
+  font-family: var(--mono);
+  font-size: clamp(28px, 7vw, 52px);
+  color: var(--blue);
+  letter-spacing: .05em;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+.euler-name {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: .25em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.euler-decode {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  border-top: 1px solid rgba(58,90,122,.1);
+  padding-top: 20px;
+}
+.euler-term {
+  text-align: center;
+}
+.euler-sym {
+  font-family: var(--mono);
+  font-size: 20px;
+  color: var(--blue);
+  display: block;
+  margin-bottom: 4px;
+}
+.euler-desc {
+  font-family: var(--sans);
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: .05em;
+  line-height: 1.6;
+}
+.euler-caption {
+  max-width: 480px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 2;
+  color: var(--ink-dim);
+}
+
+/* ══ ④ 核心 ══ */
+.s-core {
+  background: var(--paper);
+}
+.core-inner {
+  max-width: 640px;
+  text-align: center;
+}
+.core-not {
+  font-size: clamp(14px, 2.5vw, 18px);
+  color: var(--ink-dim);
+  line-height: 2;
+  font-weight: 400;
+  text-decoration: line-through;
+  text-decoration-color: rgba(58,90,122,.3);
+  margin-bottom: 20px;
+}
+.core-is {
+  font-size: clamp(18px, 4vw, 28px);
+  color: var(--ink);
+  line-height: 1.9;
+  font-weight: 400;
+  letter-spacing: .03em;
+}
+.core-is strong { color: var(--blue); }
+
+/* ══ ⑤ 80分の意味 ══ */
+.s-eighty {
+  background: var(--paper2);
+  flex-direction: column;
+  gap: 0;
+  padding: 100px 20px;
+}
+.eighty-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: .35em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 48px;
+}
+.eighty-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 600px;
+  width: 100%;
+}
+.eighty-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0;
+  border-bottom: 1px solid rgba(58,90,122,.1);
+  padding: 24px 0;
+  align-items: start;
+}
+.eighty-item:first-child { border-top: 1px solid rgba(58,90,122,.1); }
+.eighty-num {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--blue-light);
+  letter-spacing: .1em;
+  padding-top: 3px;
+}
+.eighty-text {
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--ink);
+  font-weight: 300;
+}
+.eighty-text em {
+  font-style: normal;
+  color: var(--blue);
+}
+
+/* ══ ⑥ 終幕 ══ */
+.s-end {
+  background: var(--paper);
+  flex-direction: column;
+  text-align: center;
+  gap: 40px;
+}
+.end-text {
+  max-width: 480px;
+  font-size: clamp(15px, 2.5vw, 19px);
+  line-height: 2.4;
+  font-weight: 400;
+  letter-spacing: .04em;
+  color: var(--ink);
+}
+.end-text em {
+  font-style: normal;
+  color: var(--blue);
+}
+.end-eq {
+  font-family: var(--mono);
+  font-size: clamp(20px, 4vw, 32px);
+  color: rgba(58,90,122,.25);
+  letter-spacing: .1em;
+}
+
+/* ══ アフィリエイトCTA ══ */
+.cta-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 36px 24px 0;
+  text-align: center;
+  border-top: 1px solid rgba(58,90,122,.15);
+  position: relative; z-index: 1;
+}
+.cta-lead {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: .14em;
+  color: var(--blue);
+  margin-bottom: 16px;
+}
+.cta-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.btn-rakuten {
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; font-family: var(--sans); font-weight: 800; font-size: 14px;
+  background: linear-gradient(135deg, #3a5a7a, #1e3a5a);
+  color: #fff; padding: 14px 28px; border-radius: 10px;
+  transition: filter .2s;
+}
+.btn-rakuten:hover { filter: brightness(1.15); }
+.btn-amazon {
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; font-family: var(--sans); font-weight: 800; font-size: 14px;
+  background: linear-gradient(135deg, #FF9900, #E47911);
+  color: #16120a; padding: 14px 26px; border-radius: 10px;
+  transition: filter .2s;
+}
+.btn-amazon:hover { filter: brightness(1.1); }
+.cta-pr {
+  margin-top: 12px;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--ink-dim);
+}
+
+/* ══ フッター ══ */
+.page-footer {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 40px 20px 60px;
+  background: var(--paper);
+}
+.page-footer a {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: .2em;
+  color: var(--ink-dim);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink-dim);
+  padding-bottom: 2px;
+  transition: color .3s, border-color .3s;
+}
+.page-footer a:hover { color: var(--blue); border-color: var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- ① HERO -->
+<section class="s-hero">
+  <p class="hero-eyebrow">K' Library &nbsp;·&nbsp; Visual Essay</p>
+  <h1 class="hero-title">博士の愛した数式</h1>
+  <p class="hero-author">小川洋子 &nbsp;·&nbsp; 2003</p>
+
+  <div class="ticker-wrap">
+    <p class="ticker-label">記憶の持続時間</p>
+    <p class="ticker" id="ticker">80:00</p>
+    <p class="ticker-sub">博士の記憶はこの時間でリセットされる</p>
+  </div>
+</section>
+
+<!-- ② 入口 -->
+<section class="s-entry">
+  <div class="entry-inner reveal">
+    <p class="entry-question">
+      博士が誰に会っても<br>
+      最初に尋ねることがある。<br><br>
+      <em>「靴のサイズはいくつですか？」</em>
+    </p>
+    <p class="entry-note">
+      それは挨拶ではない。<br>
+      昨日の記憶がないから、毎朝あなたは見知らぬ人なのだ。<br>
+      でも数字は、いつでも美しく正確に、そこにある。
+    </p>
+  </div>
+</section>
+
+<!-- ③ オイラーの等式 -->
+<section class="s-euler">
+  <p class="euler-label reveal">The Most Beautiful Equation</p>
+  <div class="euler-card reveal">
+    <p class="euler-name">オイラーの等式</p>
+    <p class="euler-eq">e<sup style="font-size:.6em;">iπ</sup> + 1 = 0</p>
+    <div class="euler-decode">
+      <div class="euler-term">
+        <span class="euler-sym">e</span>
+        <span class="euler-desc">自然対数の底<br>成長の数</span>
+      </div>
+      <div class="euler-term">
+        <span class="euler-sym">π</span>
+        <span class="euler-desc">円周率<br>形の数</span>
+      </div>
+      <div class="euler-term">
+        <span class="euler-sym">i</span>
+        <span class="euler-desc">虚数単位<br>存在しない数</span>
+      </div>
+    </div>
+  </div>
+  <p class="euler-caption reveal">
+    まったく異なる三つの数が、<br>
+    ただ一行の式で繋がる。<br>
+    博士はこれを「神の手紙」と呼んだ。
+  </p>
+</section>
+
+<!-- ④ 核心 -->
+<section class="s-core">
+  <div class="core-inner reveal">
+    <p class="core-not">これは、記憶喪失の話ではない。</p>
+    <p class="core-is">
+      数式という<strong>永遠の言語</strong>が、<br>
+      消えゆく人間を<br>
+      どう繋ぎとめるかの話だ。
+    </p>
+  </div>
+</section>
+
+<!-- ⑤ 80分の意味 -->
+<section class="s-eighty">
+  <p class="eighty-label reveal">80分でリセットされる世界</p>
+  <div class="eighty-items">
+    <div class="eighty-item reveal">
+      <p class="eighty-num">00:00</p>
+      <p class="eighty-text">朝、目覚める。スーツの袖に貼りつけたメモが今日の「記憶」のすべてだ。</p>
+    </div>
+    <div class="eighty-item reveal">
+      <p class="eighty-num">00:01</p>
+      <p class="eighty-text">家政婦の私に尋ねる。<em>「靴のサイズはいくつですか？」</em>——28年間の記憶は、今日も持ち越せない。</p>
+    </div>
+    <div class="eighty-item reveal">
+      <p class="eighty-num">40:00</p>
+      <p class="eighty-text">数の話が始まると、博士の目が変わる。220と284が「友愛数」であることを教えてくれる。永遠に変わらない事実として。</p>
+    </div>
+    <div class="eighty-item reveal">
+      <p class="eighty-num">80:00</p>
+      <p class="eighty-text">リセット。また明日、私は見知らぬ人になる。それでも彼は同じ問いから始める——<em>数字は、消えない。</em></p>
+    </div>
+  </div>
+</section>
+
+<!-- ⑥ 終幕 -->
+<section class="s-end">
+  <p class="end-text reveal">
+    博士が死ぬ場面は<br>
+    この小説に<em>ない</em>。<br><br>
+    記憶は消えても、<br>
+    数式は残る。<br>
+    それで十分だった。
+  </p>
+  <p class="end-eq reveal">e<sup style="font-size:.6em;">iπ</sup> + 1 = 0</p>
+</section>
+
+<!-- アフィリエイトCTA -->
+<div class="cta-wrap reveal">
+  <p class="cta-lead">この作品にふれる</p>
+  <div class="cta-btns">
+    <!-- 楽天リンク：a.r10.toリンクに後で差し替え -->
+    <a class="btn-rakuten"
+       href="https://search.rakuten.co.jp/search/mall/%E5%8D%9A%E5%A3%AB%E3%81%AE%E6%84%9B%E3%81%97%E3%81%9F%E6%95%B0%E5%BC%8F+%E5%B0%8F%E5%B7%9D%E6%B4%8B%E5%AD%90/"
+       target="_blank" rel="sponsored noopener">
+      🛒 楽天で読む →
+    </a>
+    <a class="btn-amazon"
+       href="https://www.amazon.co.jp/s?k=%E5%8D%9A%E5%A3%AB%E3%81%AE%E6%84%9B%E3%81%97%E3%81%9F%E6%95%B0%E5%BC%8F+%E5%B0%8F%E5%B7%9D%E6%B4%8B%E5%AD%90&tag=kplab-22"
+       target="_blank" rel="sponsored noopener">
+      🛒 Amazonで読む →
+    </a>
+  </div>
+  <p class="cta-pr">※本リンクは楽天・Amazonアフィリエイトを含みます（PR）</p>
+</div>
+
+<!-- フッター -->
+<footer class="page-footer">
+  <a href="index.html">◂ 書架へ戻る</a>
+</footer>
+
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── IntersectionObserver ──
+  if (!reduce) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  }
+
+  // ── 80分カウンダウン ──
+  if (!reduce) {
+    var el = document.getElementById('ticker');
+    var total = 80 * 60; // 秒
+    var start = Date.now();
+    function update() {
+      var elapsed = Math.floor((Date.now() - start) / 1000);
+      var remaining = Math.max(0, total - elapsed);
+      var m = Math.floor(remaining / 60);
+      var s = remaining % 60;
+      el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+      if (remaining > 0) requestAnimationFrame(update);
+      else el.style.opacity = '0.2';
+    }
+    requestAnimationFrame(update);
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>伝奇集 — K' Library</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
+    :root {
+      --sepia-dark: #1a1208;
+      --sepia-mid: #2e1f0a;
+      --sepia-warm: #4a3010;
+      --gold: #c8a84b;
+      --gold-pale: #e8d49a;
+      --parchment: #f0e6c8;
+      --text: #f5edd8;
+      --text-dim: #a89070;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--sepia-dark);
+      color: var(--text);
+      font-family: 'Noto Serif JP', serif;
+      overflow-x: hidden;
+    }
+
+    /* ── HEX GRID BACKGROUND ── */
+    .hex-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 0 L56 16 L56 48 L28 64 L0 48 L0 16 Z' fill='none' stroke='%23c8a84b' stroke-width='0.8'/%3E%3Cpath d='M28 64 L56 80 L56 100' fill='none' stroke='%23c8a84b' stroke-width='0.8'/%3E%3Cpath d='M28 64 L0 80 L0 100' fill='none' stroke='%23c8a84b' stroke-width='0.8'/%3E%3C/svg%3E");
+      background-size: 56px 100px;
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 24px;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      text-align: center;
+      gap: 32px;
+    }
+
+    .kl-label {
+      font-family: 'EB Garamond', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 10vw, 7rem);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--gold-pale);
+      text-shadow: 0 0 60px rgba(200,168,75,0.3);
+    }
+
+    .hero-sub {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      font-style: italic;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .hero-author {
+      font-size: 0.9rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      color: var(--text-dim);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    /* ── ENTRANCE ── */
+    #entrance {
+      background: radial-gradient(ellipse at center, var(--sepia-mid) 0%, var(--sepia-dark) 70%);
+    }
+
+    .card {
+      max-width: 680px;
+      width: 100%;
+    }
+
+    .card-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .card-body {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-style: italic;
+      line-height: 1.7;
+      color: var(--parchment);
+      border-left: 2px solid var(--gold);
+      padding-left: 32px;
+    }
+
+    /* ── ESSENCE ── */
+    #essence {
+      background: linear-gradient(180deg, var(--sepia-dark) 0%, var(--sepia-warm) 50%, var(--sepia-dark) 100%);
+    }
+
+    .essence-not {
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-decoration: line-through;
+      text-decoration-color: rgba(200,168,75,0.4);
+      margin-bottom: 12px;
+    }
+
+    .essence-is {
+      font-size: clamp(1.3rem, 4vw, 1.8rem);
+      font-weight: 700;
+      color: var(--gold-pale);
+      line-height: 1.6;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .essence-is em {
+      color: var(--gold);
+      font-style: normal;
+    }
+
+    /* ── LABYRINTH ── */
+    #labyrinth {
+      flex-direction: column;
+      gap: 60px;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .shelf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2px;
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .shelf-item {
+      background: var(--sepia-mid);
+      border: 1px solid rgba(200,168,75,0.15);
+      padding: 28px 24px;
+      transition: border-color 0.3s, background 0.3s;
+      cursor: default;
+    }
+
+    .shelf-item:hover {
+      border-color: var(--gold);
+      background: var(--sepia-warm);
+    }
+
+    .shelf-item-num {
+      font-family: 'EB Garamond', serif;
+      font-size: 0.8rem;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .shelf-item-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--parchment);
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .shelf-item-desc {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ── QUOTE ── */
+    #quote {
+      background: var(--sepia-dark);
+    }
+
+    .quote-block {
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .quote-text {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      font-style: italic;
+      line-height: 1.9;
+      color: var(--parchment);
+      margin-bottom: 24px;
+    }
+
+    .quote-source {
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+    }
+
+    /* ── INFINITE ── */
+    #infinite {
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 50%, var(--sepia-warm) 0%, var(--sepia-dark) 80%);
+    }
+
+    .rings {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      margin-bottom: 48px;
+    }
+
+    .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid var(--gold);
+      transform: scale(0.2);
+      opacity: 0;
+      animation: expand 4s ease-out infinite;
+    }
+
+    .ring:nth-child(2) { animation-delay: 1s; }
+    .ring:nth-child(3) { animation-delay: 2s; }
+    .ring:nth-child(4) { animation-delay: 3s; }
+
+    @keyframes expand {
+      0%   { transform: scale(0.1); opacity: 0.8; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    .infinite-label {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+      font-style: italic;
+      color: var(--text-dim);
+      text-align: center;
+      max-width: 480px;
+      line-height: 1.8;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px 24px 60px;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: var(--text-dim);
+      border-top: 1px solid rgba(200,168,75,0.15);
+    }
+
+    footer span { color: var(--gold); }
+    footer a { color: var(--gold); text-decoration: none; }
+    footer .nav { margin-top: 18px; }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<div class="hex-bg"></div>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="kl-label reveal">K' Library</p>
+  <h1 class="hero-title reveal">伝奇集</h1>
+  <p class="hero-sub reveal">Ficciones</p>
+  <p class="hero-author reveal">ホルヘ・ルイス・ボルヘス　1944</p>
+  <p class="scroll-hint">↓ scroll</p>
+</section>
+
+<!-- ENTRANCE -->
+<section id="entrance">
+  <div class="card reveal">
+    <p class="card-label">入口</p>
+    <p class="card-body">
+      図書館は宇宙であり、宇宙は図書館である――<br>
+      アルゼンチンの盲目の司書が書いた、<br>
+      読書についての最も狂気的な本。
+    </p>
+  </div>
+</section>
+
+<!-- ESSENCE -->
+<section id="essence">
+  <p class="essence-not reveal">これは短編小説集の話ではない。</p>
+  <p class="essence-is reveal">「無限」を人間が認識しようとするとき<br>に起きる、<em>正気と狂気の境界</em>の話だ。</p>
+</section>
+
+<!-- LABYRINTH -->
+<section id="labyrinth">
+  <p class="section-title reveal">迷宮の構造</p>
+  <div class="shelf-grid">
+    <div class="shelf-item reveal">
+      <p class="shelf-item-num">I</p>
+      <p class="shelf-item-title">バベルの図書館</p>
+      <p class="shelf-item-desc">すべての可能な書物を収めた無限の六角形の回廊。神は図書館であり、司書は神である。</p>
+    </div>
+    <div class="shelf-item reveal">
+      <p class="shelf-item-num">II</p>
+      <p class="shelf-item-title">砂の本</p>
+      <p class="shelf-item-desc">同じページが二度と見つからない本。持てば持つほど持ち主を侵食していく。</p>
+    </div>
+    <div class="shelf-item reveal">
+      <p class="shelf-item-num">III</p>
+      <p class="shelf-item-title">分岐する小径の庭</p>
+      <p class="shelf-item-desc">すべての選択が同時に起きる迷宮小説。時間は一本の線ではなく、無限に枝分かれする網だ。</p>
+    </div>
+    <div class="shelf-item reveal">
+      <p class="shelf-item-num">IV</p>
+      <p class="shelf-item-title">トレーン、ウクバール、オルビス・テルティウス</p>
+      <p class="shelf-item-desc">架空の百科事典が現実世界を書き換え始める。フィクションは現実を侵略できるか。</p>
+    </div>
+    <div class="shelf-item reveal">
+      <p class="shelf-item-num">V</p>
+      <p class="shelf-item-title">記憶の人、フネス</p>
+      <p class="shelf-item-desc">何一つ忘れられない男。完全な記憶は祝福か、それとも最悪の地獄か。</p>
+    </div>
+    <div class="shelf-item reveal">
+      <p class="shelf-item-num">VI</p>
+      <p class="shelf-item-title">アレフ</p>
+      <p class="shelf-item-desc">宇宙のすべての点が同時に見える一点。それを見た者は何を語ることができるか。</p>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section id="quote">
+  <div class="quote-block reveal">
+    <p class="quote-text">
+      「宇宙（ある者たちは図書館と呼ぶ）は、<br>
+      無限の数の六角形の回廊から成り立っている。」
+    </p>
+    <p class="quote-source">— バベルの図書館　冒頭</p>
+  </div>
+</section>
+
+<!-- INFINITE -->
+<section id="infinite">
+  <div class="rings">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+  </div>
+  <p class="infinite-label reveal">
+    ボルヘスを読むとは、<br>
+    終わりのない廊下に一歩踏み込むことだ。<br>
+    出口は、ない。
+  </p>
+</section>
+
+<footer>
+  <span>K' Library</span> &nbsp;／&nbsp; ビジュアル書架 &nbsp;／&nbsp; 伝奇集 © J.L. Borges
+  <div class="nav">
+    <a href="index.html">◂ 書架へ戻る</a>
+    &nbsp;·&nbsp;
+    <a href="https://gor565.github.io/kp-lab/">K' Lab</a>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
