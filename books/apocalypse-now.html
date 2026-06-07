@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>地獄の黙示録 — フランシス・フォード・コッポラ</title>
+<meta name="description" content="川を遡るほど文明が剥がれていく。コッポラ『地獄の黙示録』ビジュアル・エッセイ。">
+<style>
+:root{
+  --bg:#050808;
+  --river:#080F10;
+  --dark1:#0A1215;
+  --dark2:#101820;
+  --ember:#C04010;
+  --ember2:#E05020;
+  --ember3:#F07030;
+  --gold:#C88020;
+  --gold2:#E0A030;
+  --mist:rgba(255,160,80,0.12);
+  --ink:#D8CCBA;
+  --ink2:#A09080;
+  --faint:rgba(200,128,32,0.15);
+  --serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.9;
+  overflow-x:hidden;
+}
+
+/* 川面の揺らぎ — 背景 */
+body::before{
+  content:"";
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 900px 500px at 0% 60%, rgba(20,8,4,0.8), transparent 65%),
+    radial-gradient(ellipse 700px 700px at 100% 30%, rgba(12,6,2,0.6), transparent 60%),
+    radial-gradient(ellipse 1000px 300px at 50% 100%, rgba(60,20,5,0.4), transparent 55%);
+}
+
+/* ==============================
+   RIVER LINE — 左端を流れる川
+   ============================== */
+.river-line{
+  position:fixed;left:0;top:0;bottom:0;z-index:2;
+  width:3px;
+  background:linear-gradient(180deg,
+    transparent 0%,
+    rgba(192,64,16,0.2) 10%,
+    rgba(192,64,16,0.5) 40%,
+    rgba(192,64,16,0.3) 70%,
+    transparent 100%
+  );
+  pointer-events:none;
+}
+
+/* ==============================
+   HERO
+   ============================== */
+.hero{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  z-index:1;
+  padding:80px 24px 60px;
+  text-align:center;
+  overflow:hidden;
+}
+
+/* 炎の残光 */
+.hero::before{
+  content:"";
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 600px 300px at 50% 55%, rgba(160,50,10,0.35), transparent 65%),
+    radial-gradient(ellipse 400px 400px at 15% 75%, rgba(80,30,5,0.4), transparent 55%),
+    radial-gradient(ellipse 500px 200px at 85% 25%, rgba(40,15,3,0.3), transparent 55%);
+}
+
+.hero-eyebrow{
+  position:relative;z-index:1;
+  font-family:var(--sans);
+  font-size:11px;letter-spacing:.4em;
+  color:var(--gold);text-transform:uppercase;
+  margin-bottom:28px;
+  opacity:0;animation:fadeUp .8s ease .2s forwards;
+}
+
+.hero-title{
+  position:relative;z-index:1;
+  font-size:clamp(32px,8vw,72px);
+  font-weight:700;
+  letter-spacing:.14em;
+  line-height:1.2;
+  color:#fff;
+  text-shadow:0 0 100px rgba(192,64,16,0.6), 0 2px 12px rgba(0,0,0,0.9);
+  margin-bottom:14px;
+  opacity:0;animation:fadeUp .9s ease .5s forwards;
+}
+
+.hero-subtitle{
+  position:relative;z-index:1;
+  font-size:clamp(12px,2vw,15px);
+  color:var(--ink2);letter-spacing:.25em;
+  margin-bottom:50px;
+  opacity:0;animation:fadeUp .9s ease .8s forwards;
+}
+
+.hero-hook{
+  position:relative;z-index:1;
+  font-size:clamp(15px,2.5vw,20px);
+  color:var(--ink);
+  max-width:600px;margin:0 auto;
+  line-height:2.1;
+  border-left:2px solid var(--ember);
+  padding-left:24px;
+  text-align:left;
+  opacity:0;animation:fadeUp 1s ease 1.2s forwards;
+}
+
+.hero-hook em{color:var(--ember3);font-style:normal;font-weight:700;}
+
+.scroll-hint{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  z-index:1;
+  font-family:var(--sans);font-size:10px;letter-spacing:.3em;
+  color:var(--ember);text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  opacity:0;animation:fadeIn 1s ease 2.5s forwards;
+}
+.scroll-hint .arrow{
+  width:1px;height:40px;
+  background:linear-gradient(180deg,var(--ember),transparent);
+  animation:scrollArrow 1.8s ease-in-out infinite;
+}
+@keyframes scrollArrow{0%,100%{opacity:.3;transform:scaleY(1);}50%{opacity:1;transform:scaleY(1.3);}}
+
+/* ==============================
+   SECTION — 共通
+   ============================== */
+.section{
+  position:relative;z-index:1;
+  max-width:800px;margin:0 auto;
+  padding:80px 28px;
+}
+.section-label{
+  font-family:var(--sans);font-size:10px;letter-spacing:.4em;
+  color:var(--gold);text-transform:uppercase;margin-bottom:16px;
+}
+.section h2{
+  font-size:clamp(20px,3.5vw,32px);font-weight:700;
+  letter-spacing:.06em;line-height:1.4;
+  color:#fff;margin-bottom:28px;
+}
+.section p{
+  font-size:clamp(15px,2.2vw,18px);
+  color:var(--ink);line-height:2.1;margin-bottom:24px;
+}
+.section p em{
+  color:var(--ember3);font-style:normal;font-weight:700;
+}
+
+/* ==============================
+   DIVIDER
+   ============================== */
+.divider{
+  position:relative;z-index:1;
+  height:1px;max-width:240px;margin:0 auto;
+  background:linear-gradient(90deg,transparent,var(--ember),transparent);
+  opacity:.4;
+}
+
+/* ==============================
+   川を遡る — RIVER MAP
+   ============================== */
+.river-map{
+  position:relative;z-index:1;
+  max-width:760px;margin:0 auto;
+  padding:60px 24px 80px;
+}
+.river-map-title{
+  text-align:center;
+  font-family:var(--sans);font-size:11px;letter-spacing:.4em;
+  color:var(--gold);text-transform:uppercase;
+  margin-bottom:60px;
+}
+.river-map-line{
+  position:absolute;
+  left:50%;top:140px;bottom:80px;
+  width:2px;
+  background:linear-gradient(180deg,
+    rgba(192,64,16,0.6),
+    rgba(80,20,5,0.3) 60%,
+    rgba(20,5,2,0.1)
+  );
+  transform:translateX(-50%);
+}
+
+.rm-item{
+  display:grid;
+  grid-template-columns:1fr 60px 1fr;
+  gap:0 8px;
+  margin-bottom:52px;
+  align-items:start;
+}
+.rm-item:nth-child(odd) .rm-left{text-align:right;}
+.rm-item:nth-child(odd) .rm-right{opacity:0;pointer-events:none;}
+.rm-item:nth-child(even) .rm-left{opacity:0;pointer-events:none;}
+.rm-item:nth-child(even) .rm-right{text-align:left;}
+
+.rm-node{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  position:relative;z-index:2;
+  padding-top:4px;
+}
+.rm-dot{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--ember);
+  box-shadow:0 0 16px rgba(192,64,16,0.7), 0 0 40px rgba(192,64,16,0.3);
+  transition:transform .3s;
+  flex-shrink:0;
+}
+.rm-dot.dim{
+  background:transparent;
+  border:2px solid rgba(192,64,16,0.4);
+  box-shadow:none;
+}
+.rm-km{
+  font-family:var(--sans);font-size:9px;letter-spacing:.1em;
+  color:var(--ember);
+}
+
+.rm-content{padding-bottom:4px;}
+.rm-stage{
+  font-family:var(--sans);font-size:9px;letter-spacing:.2em;
+  color:var(--gold);margin-bottom:5px;text-transform:uppercase;
+}
+.rm-place{
+  font-size:clamp(14px,2.2vw,18px);
+  font-weight:700;color:var(--ink);
+  margin-bottom:6px;letter-spacing:.04em;
+}
+.rm-desc{
+  font-size:13px;color:var(--ink2);
+  line-height:1.8;font-family:var(--sans);
+}
+
+/* 遡るほど暗くなる */
+.rm-item:nth-child(1) .rm-place{color:#fff;}
+.rm-item:nth-child(2) .rm-place{color:var(--ink);}
+.rm-item:nth-child(3) .rm-place{color:rgba(216,204,186,0.85);}
+.rm-item:nth-child(4) .rm-place{color:rgba(216,204,186,0.65);filter:blur(.2px);}
+.rm-item:nth-child(5) .rm-place{color:rgba(216,204,186,0.45);filter:blur(.5px);}
+
+/* ==============================
+   核心 — CORE STATEMENT
+   ============================== */
+.core{
+  position:relative;z-index:1;
+  padding:100px 24px;
+  text-align:center;
+  background:linear-gradient(180deg,transparent,rgba(40,10,3,0.5),transparent);
+}
+.core-not{
+  font-size:clamp(13px,2vw,17px);
+  color:var(--ink2);letter-spacing:.1em;
+  margin-bottom:20px;
+  text-decoration:line-through;
+  text-decoration-color:rgba(160,144,128,0.5);
+}
+.core-is{
+  font-size:clamp(20px,4.5vw,38px);
+  font-weight:700;color:#fff;letter-spacing:.08em;
+  line-height:1.6;
+  text-shadow:0 0 60px rgba(192,64,16,0.5);
+  max-width:700px;margin:0 auto;
+}
+.core-is em{
+  color:var(--ember3);font-style:normal;
+  display:inline-block;
+  animation:ember 3s ease-in-out infinite;
+}
+@keyframes ember{
+  0%,100%{text-shadow:0 0 20px rgba(240,112,48,0.3);}
+  50%{text-shadow:0 0 50px rgba(240,112,48,0.9);}
+}
+
+/* ==============================
+   カーツの言葉 — QUOTES
+   ============================== */
+.quotes{
+  position:relative;z-index:1;
+  max-width:680px;margin:0 auto;
+  padding:60px 28px 80px;
+}
+.quote-block{
+  border-left:2px solid var(--ember);
+  padding:20px 28px;
+  margin-bottom:40px;
+  background:rgba(192,64,16,0.05);
+  border-radius:0 4px 4px 0;
+  transition:border-color .4s;
+}
+.quote-block:hover{border-color:var(--ember3);}
+.quote-block p{
+  font-size:clamp(14px,2.2vw,18px);
+  color:var(--ink);font-style:italic;
+  line-height:2;margin-bottom:10px;
+}
+.quote-block .attr{
+  font-family:var(--sans);font-size:11px;letter-spacing:.2em;
+  color:var(--gold);text-transform:uppercase;
+}
+
+/* ==============================
+   ESSAY BODY
+   ============================== */
+.essay{
+  position:relative;z-index:1;
+  max-width:720px;margin:0 auto;
+  padding:40px 28px 80px;
+  border-left:1px solid rgba(192,64,16,0.2);
+}
+.essay p{
+  font-size:clamp(15px,2.2vw,18px);
+  color:var(--ink);line-height:2.2;
+  margin-bottom:32px;
+}
+.essay p .hi{color:var(--ember3);font-weight:700;}
+
+/* ==============================
+   DARKNESS METER — 闇の深度
+   ============================== */
+.darkness{
+  position:relative;z-index:1;
+  max-width:680px;margin:0 auto;
+  padding:60px 28px;
+}
+.darkness-title{
+  font-family:var(--sans);font-size:11px;letter-spacing:.4em;
+  color:var(--gold);text-transform:uppercase;
+  margin-bottom:40px;text-align:center;
+}
+.d-item{
+  display:flex;align-items:center;gap:20px;
+  margin-bottom:28px;
+}
+.d-label{
+  font-family:var(--sans);font-size:12px;letter-spacing:.08em;
+  color:var(--ink2);min-width:140px;flex-shrink:0;
+}
+.d-bar-wrap{
+  flex:1;height:4px;background:rgba(255,255,255,0.06);
+  border-radius:2px;overflow:hidden;
+}
+.d-bar{
+  height:100%;border-radius:2px;
+  background:linear-gradient(90deg,var(--ember),var(--ember3));
+  width:0;
+  transition:width 1.2s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 8px rgba(192,64,16,0.5);
+}
+.d-val{
+  font-family:var(--sans);font-size:11px;color:var(--ember);
+  min-width:36px;text-align:right;flex-shrink:0;
+}
+
+/* ==============================
+   FINALE — 闇の中のカーツ
+   ============================== */
+.finale{
+  position:relative;z-index:1;
+  min-height:90vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:80px 24px;
+  text-align:center;
+  overflow:hidden;
+}
+.finale-bg{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,
+    transparent 0%,
+    rgba(30,8,2,0.3) 30%,
+    rgba(10,3,1,0.7) 70%,
+    rgba(3,1,0,0.95) 100%
+  );
+}
+#fireCanvas{
+  position:absolute;inset:0;z-index:0;
+  pointer-events:none;opacity:.8;
+}
+.finale-quote{
+  position:relative;z-index:1;
+  font-size:clamp(18px,3.5vw,30px);
+  font-weight:700;
+  color:#fff;letter-spacing:.1em;line-height:1.9;
+  text-shadow:0 0 60px rgba(0,0,0,0.9);
+  max-width:640px;
+  margin-bottom:32px;
+}
+.finale-quote em{
+  color:var(--ember3);font-style:normal;
+  animation:ember 2.5s ease-in-out infinite;
+}
+.finale-sub{
+  position:relative;z-index:1;
+  font-family:var(--sans);font-size:12px;
+  color:var(--ink2);letter-spacing:.18em;
+  line-height:2.2;
+}
+
+/* ==============================
+   FOOTER
+   ============================== */
+.footer{
+  position:relative;z-index:1;
+  text-align:center;padding:40px 20px 64px;
+  font-family:var(--sans);font-size:11px;letter-spacing:.1em;
+  color:var(--ink2);line-height:2;
+  border-top:1px solid rgba(192,64,16,0.15);
+}
+.footer a{color:var(--gold);text-decoration:none;}
+
+/* アニメーション */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+.reveal{
+  opacity:0;transform:translateY(28px);
+  transition:opacity .9s ease, transform .9s ease;
+}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+@media(max-width:600px){
+  .river-map-line{display:none;}
+  .rm-item{grid-template-columns:1fr;gap:4px;}
+  .rm-item:nth-child(odd) .rm-left,
+  .rm-item:nth-child(even) .rm-right{text-align:left;}
+  .rm-item .rm-right,
+  .rm-item .rm-left:not(:first-child){opacity:1!important;}
+  .rm-node{flex-direction:row;justify-content:flex-start;}
+  .d-label{min-width:100px;font-size:11px;}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;}
+  .reveal{opacity:1;transform:none;}
+  .d-bar{width:var(--target-w)!important;}
+}
+</style>
+</head>
+<body>
+
+<div class="river-line"></div>
+
+<!-- ==============================
+     HERO
+     ============================== -->
+<section class="hero">
+  <div class="hero-eyebrow">K' Library — ビジュアル・エッセイ</div>
+  <h1 class="hero-title">地獄の黙示録</h1>
+  <p class="hero-subtitle">Francis Ford Coppola ／ 1979</p>
+  <p class="hero-hook">
+    ベトナム戦争を舞台にしながら、<br>
+    戦闘シーンがほぼない戦争映画。<br>
+    <em>これは戦場の話ではない。</em>
+  </p>
+  <div class="scroll-hint">
+    <span>upstream</span>
+    <span class="arrow"></span>
+  </div>
+</section>
+
+<!-- ==============================
+     SECTION 1 — 任務
+     ============================== -->
+<div class="section reveal">
+  <div class="section-label">I. Mission</div>
+  <h2>ウィラード大尉に命令が下る</h2>
+  <p>
+    サイゴン。ウィラード大尉は薄暗いホテルの部屋で酒を飲んでいた。
+    ある朝、軍の将校たちが現れ、一枚の写真を見せる——
+    <em>カーツ大佐</em>。
+    かつてグリーンベレーの精鋭で、理想的な軍人だった男が、
+    カンボジアの奥地で「神」として君臨しているという。
+  </p>
+  <p>
+    任務は単純だ。川を遡り、カーツを「処理」せよ。
+    ウィラードは承諾する。しかし彼はすでに知っている——
+    <em>川の先に待つのは、もう一人の自分かもしれない</em>ということを。
+  </p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==============================
+     RIVER MAP — 川を遡る
+     ============================== -->
+<div class="river-map">
+  <div class="river-map-title reveal">— ヌン川、上流へ —</div>
+  <div class="river-map-line"></div>
+
+  <div class="rm-item reveal">
+    <div class="rm-left rm-content">
+      <div class="rm-stage">出発 / Departure</div>
+      <div class="rm-place">サイゴン</div>
+      <div class="rm-desc">文明の残骸。将校たちは冷房の効いた部屋でロブスターを食べながら命令を出す。</div>
+    </div>
+    <div class="rm-node">
+      <div class="rm-dot"></div>
+      <div class="rm-km">0 km</div>
+    </div>
+    <div class="rm-right"></div>
+  </div>
+
+  <div class="rm-item reveal">
+    <div class="rm-left"></div>
+    <div class="rm-node">
+      <div class="rm-dot"></div>
+      <div class="rm-km">↑</div>
+    </div>
+    <div class="rm-right rm-content">
+      <div class="rm-stage">狂気の前線 / Insanity</div>
+      <div class="rm-place">ドゥロン橋</div>
+      <div class="rm-desc">誰が指揮しているのか誰も知らない最前線。ヘリが炎を吐き、兵士たちは目的を失っている。</div>
+    </div>
+  </div>
+
+  <div class="rm-item reveal">
+    <div class="rm-left rm-content">
+      <div class="rm-stage">野蛮の影 / Shadow</div>
+      <div class="rm-place">フランス人農園の廃墟</div>
+      <div class="rm-desc">植民地の残骸。かつての支配者が幽霊のように暮らしている。文明の終わりが始まる。</div>
+    </div>
+    <div class="rm-node">
+      <div class="rm-dot dim"></div>
+      <div class="rm-km">↑</div>
+    </div>
+    <div class="rm-right"></div>
+  </div>
+
+  <div class="rm-item reveal">
+    <div class="rm-left"></div>
+    <div class="rm-node">
+      <div class="rm-dot dim"></div>
+      <div class="rm-km">↑</div>
+    </div>
+    <div class="rm-right rm-content">
+      <div class="rm-stage">深淵 / Abyss</div>
+      <div class="rm-place">カーツの王国</div>
+      <div class="rm-desc">首が並ぶ。崇拝する部族。「野蛮」と呼ぶべき何かが、秩序として機能している。</div>
+    </div>
+  </div>
+
+  <div class="rm-item reveal">
+    <div class="rm-left rm-content">
+      <div class="rm-stage">終点 / End</div>
+      <div class="rm-place">カーツ大佐</div>
+      <div class="rm-desc">「恐怖には顔がある。恐怖と友人にならなければならない」。彼はすでに答えを持っていた。</div>
+    </div>
+    <div class="rm-node">
+      <div class="rm-dot dim" style="border-color:rgba(192,64,16,0.25);opacity:.5;"></div>
+      <div class="rm-km">深</div>
+    </div>
+    <div class="rm-right"></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==============================
+     CORE STATEMENT
+     ============================== -->
+<div class="core reveal">
+  <div class="core-not">戦争映画ではない</div>
+  <div class="core-is">
+    <em>文明</em>が自分自身を<br>
+    恐れ始める話だ。
+  </div>
+</div>
+
+<!-- ==============================
+     DARKNESS METER
+     ============================== -->
+<div class="darkness reveal">
+  <div class="darkness-title">— 川を遡るほど失われるもの —</div>
+
+  <div class="d-item">
+    <div class="d-label">命令系統</div>
+    <div class="d-bar-wrap"><div class="d-bar" data-w="88"></div></div>
+    <div class="d-val">消滅</div>
+  </div>
+  <div class="d-item">
+    <div class="d-label">善悪の区別</div>
+    <div class="d-bar-wrap"><div class="d-bar" data-w="78"></div></div>
+    <div class="d-val">溶解</div>
+  </div>
+  <div class="d-item">
+    <div class="d-label">任務の意味</div>
+    <div class="d-bar-wrap"><div class="d-bar" data-w="92"></div></div>
+    <div class="d-val">消失</div>
+  </div>
+  <div class="d-item">
+    <div class="d-label">文明への信頼</div>
+    <div class="d-bar-wrap"><div class="d-bar" data-w="96"></div></div>
+    <div class="d-val">崩壊</div>
+  </div>
+  <div class="d-item">
+    <div class="d-label">自分が誰か</div>
+    <div class="d-bar-wrap"><div class="d-bar" data-w="70"></div></div>
+    <div class="d-val">不明</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ==============================
+     QUOTES — カーツの言葉
+     ============================== -->
+<div class="quotes reveal">
+  <div class="section-label" style="text-align:center;margin-bottom:36px;">— カーツ大佐の言葉 —</div>
+
+  <div class="quote-block">
+    <p>「恐怖には顔がある。そして恐怖と友人にならなければならない」</p>
+    <div class="attr">Kurtz — on fear</div>
+  </div>
+
+  <div class="quote-block">
+    <p>「私はダイヤモンドの弾丸で悪を撃つ夢を見た。最高の人間を使って。だが彼らは僕を殺そうとしている」</p>
+    <div class="attr">Kurtz — on civilization's betrayal</div>
+  </div>
+
+  <div class="quote-block">
+    <p>「The horror... The horror...」</p>
+    <div class="attr">Kurtz — last words</div>
+  </div>
+</div>
+
+<!-- ==============================
+     ESSAY
+     ============================== -->
+<div class="essay reveal">
+  <p>
+    コッポラはジョセフ・コンラッドの小説『闇の奥』（1899）を原作にした。
+    コンラッドが描いたのはアフリカのコンゴ川。コッポラが選んだのはベトナムのジャングル。
+    場所は変わっても、問いは同じだ——
+    <span class="hi">「文明人」が「野蛮」と呼ぶものは、実は何なのか。</span>
+  </p>
+
+  <p>
+    カーツ大佐はかつて完璧な軍人だった。
+    知性、勇気、使命感——すべてを持っていた。
+    だが戦場で彼は気づいてしまった。
+    自分たちが行っていることは、「文明」の名のもとに、
+    <span class="hi">野蛮よりも残酷な暴力</span>を振るっているのだということを。
+  </p>
+
+  <p>
+    だから彼は「真の野蛮」へと踏み出した。
+    嘘のない暴力。仮面のない支配。
+    村人たちは彼を神として崇める——なぜなら彼だけが、
+    自分の行為に正直だからだ。
+  </p>
+
+  <p>
+    ウィラードは川を遡るほど、この論理に引きずられていく。
+    「カーツを殺せ」という命令が、だんだん意味を失う。
+    <span class="hi">誰が正気で、誰が狂っているのか。</span>
+    川の上流には、その問いへの答えがある。
+    だがその答えは、帰り道を消す。
+  </p>
+
+  <p>
+    映画史上最も長い撮影、制作の崩壊、監督の精神的危機——
+    コッポラ自身がカーツに近づいていった制作過程は、
+    映画の主題と完全に重なる。
+    <span class="hi">「これは映画ではない。これはベトナムだ」</span>
+    と彼はカンヌで語った。
+  </p>
+</div>
+
+<!-- ==============================
+     FINALE
+     ============================== -->
+<div class="finale">
+  <div class="finale-bg"></div>
+  <canvas id="fireCanvas"></canvas>
+  <div class="finale-quote reveal">
+    文明が野蛮を定義する。<br>
+    野蛮が文明を<em>暴く</em>。
+  </div>
+  <div class="finale-sub reveal">
+    Francis Ford Coppola<br>
+    『地獄の黙示録』Apocalypse Now<br>
+    1979年 ／ 原作：ジョセフ・コンラッド『闇の奥』
+  </div>
+</div>
+
+<!-- ==============================
+     FOOTER
+     ============================== -->
+<footer class="footer">
+  K' Library — ビジュアル・エッセイ<br>
+  <a href="index.html">◂ 書架に戻る</a> ·
+  <a href="../index.html">K' Lab へ</a>
+</footer>
+
+<script>
+(function(){
+
+  /* ---- スクロール出現 ---- */
+  var reveals = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  },{threshold:.1});
+  reveals.forEach(function(el){ io.observe(el); });
+
+  /* ---- ダークネスバー ---- */
+  var bars = document.querySelectorAll('.d-bar');
+  var barIO = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        var w = e.target.getAttribute('data-w');
+        e.target.style.width = w + '%';
+        barIO.unobserve(e.target);
+      }
+    });
+  },{threshold:.5});
+  bars.forEach(function(b){ barIO.observe(b); });
+
+  /* ---- 火の粉パーティクル ---- */
+  var canvas = document.getElementById('fireCanvas');
+  var ctx = canvas.getContext('2d');
+  var sparks = [];
+  var running = false;
+  var animId, spawnInterval;
+
+  function resize(){
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+
+  function Spark(){
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height + 10;
+    this.size  = .3 + Math.random() * 2;
+    this.speed = .6 + Math.random() * 2;
+    this.drift = (Math.random() - .5) * 1.2;
+    this.alpha = .1 + Math.random() * .7;
+    var hue = 10 + Math.random() * 30;
+    var sat = 80 + Math.random() * 20;
+    var lum = 45 + Math.random() * 30;
+    this.color = 'hsl(' + hue + ',' + sat + '%,' + lum + '%)';
+  }
+
+  function spawnBatch(){
+    for(var i = 0; i < 5; i++) sparks.push(new Spark());
+  }
+
+  function tick(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for(var i = sparks.length - 1; i >= 0; i--){
+      var s = sparks[i];
+      s.y -= s.speed;
+      s.x += s.drift + Math.sin(s.y * .04) * .5;
+      s.alpha -= .003;
+      if(s.y < -10 || s.alpha <= 0){ sparks.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = s.alpha;
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    if(running) animId = requestAnimationFrame(tick);
+  }
+
+  var finaleIO = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting && !running){
+        running = true;
+        resize();
+        spawnInterval = setInterval(spawnBatch, 100);
+        tick();
+      } else if(!e.isIntersecting && running){
+        running = false;
+        clearInterval(spawnInterval);
+        cancelAnimationFrame(animId);
+        sparks = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    });
+  },{threshold:.05});
+
+  var finaleEl = document.querySelector('.finale');
+  if(finaleEl) finaleIO.observe(finaleEl);
+  window.addEventListener('resize', resize);
+
+})();
+</script>
+</body>
+</html>

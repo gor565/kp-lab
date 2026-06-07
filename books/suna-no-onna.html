@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>砂の女 — K' Library</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&display=swap');
+
+  :root {
+    --sand: #c9b99a;
+    --sand-dark: #8b7355;
+    --sand-light: #e8dcc8;
+    --brown: #5c3d1e;
+    --blue-pale: #a8b5c2;
+    --bg: #1a1410;
+    --text: #e0d4c0;
+    --text-dim: #8a7a6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif JP', serif;
+    overflow-x: hidden;
+  }
+
+  /* ── GRAIN OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ── FALLING SAND ── */
+  #sand-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  /* ── COVER ── */
+  #cover {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #cover::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 30vh;
+    background: linear-gradient(to bottom, transparent, var(--bg));
+    z-index: 2;
+  }
+
+  .sand-dune {
+    position: absolute;
+    bottom: 0; left: -10%;
+    width: 120%;
+    height: 45%;
+    background: var(--sand-dark);
+    border-radius: 80% 80% 0 0 / 40% 40% 0 0;
+    opacity: 0.25;
+  }
+
+  .sand-dune-2 {
+    position: absolute;
+    bottom: 0; left: -5%;
+    width: 110%;
+    height: 35%;
+    background: var(--sand);
+    border-radius: 70% 70% 0 0 / 30% 30% 0 0;
+    opacity: 0.15;
+  }
+
+  .cover-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.4em;
+    color: var(--sand);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    position: relative; z-index: 3;
+  }
+
+  .cover-title {
+    font-size: clamp(3.5rem, 10vw, 7rem);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--sand-light);
+    position: relative; z-index: 3;
+    text-shadow: 0 4px 40px rgba(201,185,154,0.2);
+  }
+
+  .cover-sub {
+    font-size: 1rem;
+    color: var(--text-dim);
+    letter-spacing: 0.3em;
+    margin-top: 1.2rem;
+    position: relative; z-index: 3;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 10%;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    animation: pulse 2s infinite;
+    z-index: 3;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 8vh 2rem;
+    position: relative;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.5em;
+    color: var(--sand);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--sand-dark), transparent);
+  }
+
+  h2 {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--sand-light);
+    margin-bottom: 2rem;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 2;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── SAND ACCUMULATION EFFECT ── */
+  .sand-fill {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sand-fill::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: var(--fill, 0%);
+    background: linear-gradient(to top,
+      rgba(139,115,85,0.6) 0%,
+      rgba(201,185,154,0.3) 70%,
+      transparent 100%
+    );
+    transition: height 0.4s ease-out;
+    pointer-events: none;
+  }
+
+  /* ── SPLIT VIEW ── */
+  #split {
+    padding: 10vh 0;
+    background: linear-gradient(to bottom, var(--bg), #0f0c09, var(--bg));
+  }
+
+  .split-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    gap: 0;
+  }
+
+  .split-side {
+    padding: 4rem 3rem;
+    position: relative;
+  }
+
+  .split-side.man {
+    border-right: 1px solid rgba(201,185,154,0.15);
+  }
+
+  .split-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.5em;
+    margin-bottom: 2rem;
+    display: block;
+  }
+
+  .split-label.man-label { color: var(--blue-pale); }
+  .split-label.sand-label { color: var(--sand); }
+
+  .split-text {
+    font-size: 0.92rem;
+    line-height: 2;
+    color: var(--text-dim);
+  }
+
+  .split-text strong {
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .split-divider {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 60%;
+    background: linear-gradient(to bottom, transparent, var(--sand-dark), transparent);
+  }
+
+  /* ── QUOTE BLOCK ── */
+  .quote-block {
+    margin: 6vh 0;
+    padding: 3rem 2rem;
+    border-left: 2px solid var(--sand-dark);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quote-block::before {
+    content: '＂';
+    position: absolute;
+    top: -1rem; left: 1rem;
+    font-size: 6rem;
+    color: rgba(201,185,154,0.08);
+    font-family: serif;
+    line-height: 1;
+  }
+
+  .quote-text {
+    font-size: 1.1rem;
+    line-height: 2;
+    color: var(--text);
+    font-style: normal;
+  }
+
+  .quote-source {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    margin-top: 1.2rem;
+  }
+
+  /* ── BURIED TEXT ── */
+  .buried-section {
+    position: relative;
+    padding: 8vh 2rem;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .buried-text {
+    font-size: 1rem;
+    line-height: 2;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: clip-path 0.3s;
+  }
+
+  /* ── CLOSING ── */
+  #closing {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #closing::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -10%; right: -10%; bottom: 0;
+    background: radial-gradient(ellipse at center, rgba(139,115,85,0.12) 0%, transparent 70%);
+  }
+
+  .closing-text {
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 300;
+    line-height: 2;
+    text-align: center;
+    color: var(--sand-light);
+    max-width: 500px;
+    padding: 0 2rem;
+    position: relative; z-index: 1;
+  }
+
+  .closing-note {
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    margin-top: 3rem;
+    position: relative; z-index: 1;
+  }
+
+  /* ── SAND PARTICLES IN CLOSING ── */
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: var(--sand);
+    opacity: 0;
+    animation: fall linear infinite;
+  }
+
+  @keyframes fall {
+    0% { transform: translateY(-10px); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(100vh); opacity: 0; }
+  }
+
+  /* ── SCROLL PROGRESS SAND ── */
+  #scroll-sand {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: transparent;
+    z-index: 998;
+  }
+
+  #scroll-sand-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, var(--brown), var(--sand), var(--sand-light));
+    transition: width 0.1s;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 600px) {
+    .split-container { grid-template-columns: 1fr; }
+    .split-side.man { border-right: none; border-bottom: 1px solid rgba(201,185,154,0.15); }
+  }
+</style>
+</head>
+<body>
+
+<div id="scroll-sand"><div id="scroll-sand-bar"></div></div>
+
+<!-- COVER -->
+<section id="cover">
+  <div class="sand-dune"></div>
+  <div class="sand-dune-2"></div>
+  <p class="cover-label">K' Library — Visual Essay</p>
+  <h1 class="cover-title">砂の女</h1>
+  <p class="cover-sub">安部公房　1962</p>
+  <p class="scroll-hint">↓ scroll</p>
+</section>
+
+<!-- OPENING -->
+<section class="section sand-fill" id="s1">
+  <p class="section-label">入口</p>
+  <h2>昆虫採集に来た男が、<br>砂穴の底の家に閉じ込められたまま<br>帰れなくなる。</h2>
+  <p>理由は説明されない。なぜ穴があるのか。なぜ女はそこに住んでいるのか。なぜ村人たちは男を逃がさないのか。この小説は「なぜ」を答えない。答えない代わりに、読者を砂の中に少しずつ埋めていく。</p>
+  <p>砂は1日に何センチか降り積もる。掘っても掘っても、翌朝にはまた元に戻っている。男はひたすら砂を掻き出し続ける。それ以外にすることがないから。</p>
+</section>
+
+<!-- QUOTE -->
+<section class="section">
+  <div class="quote-block">
+    <p class="quote-text">「砂は、流れる石だ。石は、流れを止めた砂だ。」</p>
+    <p class="quote-source">── 安部公房『砂の女』</p>
+  </div>
+</section>
+
+<!-- SPLIT VIEW -->
+<div id="split">
+  <div class="split-container">
+    <div class="split-side man">
+      <span class="split-label man-label">男の視点</span>
+      <p class="split-text">ここは<strong>異常</strong>だ。自分は閉じ込められている。必ず逃げ出せる。外の世界には仕事があり、家があり、日常がある。この穴は<strong>例外</strong>だ。早く戻らなければ。</p>
+    </div>
+    <div class="split-side">
+      <span class="split-label sand-label">砂の視点</span>
+      <p class="split-text">外も、内も、<strong>同じ穴</strong>だ。どこにいても人は砂を掻き続ける。会社、家族、社会という名の穴を。男はただ、<strong>自分が穴にいることに気づいていなかった</strong>だけだ。</p>
+    </div>
+  </div>
+</div>
+
+<!-- CORE -->
+<section class="section sand-fill" id="s2">
+  <p class="section-label">核心</p>
+  <h2>これは監禁の話ではない。<br>「自由だと思っていた日常」こそが<br>砂の穴だったという話だ。</h2>
+  <p>男はやがて逃げることをやめる。正確には、逃げようとしなくなる。脱出の機会が訪れたとき、男はそこに留まることを選ぶ。なぜか。</p>
+  <p>答えは描かれない。ただ、砂穴の中に「水を集める方法」を発見したことだけが記される。どこにいても人は意味を見つける。あるいは意味を作る。それが生きることかもしれない、と小説は呟く。</p>
+</section>
+
+<!-- BURIED SECTION -->
+<div class="buried-section">
+  <p class="section-label" style="max-width:680px;margin:0 auto 2rem;">深部</p>
+  <p class="buried-text" id="b1">安部公房はこの小説で「実存主義」を語ったとよく言われる。人間の不条理、逃げられない状況、意味の不在——サルトルやカミュと並べて語られる。</p>
+  <p class="buried-text" id="b2" style="color: var(--text-dim); filter: blur(0.3px);">しかし安部公房が描いたのは、もっと身体的な恐怖だ。砂の重さ、摩擦、温度、匂い。砂は比喩でありながら、圧倒的に物質的だ。</p>
+  <p class="buried-text" id="b3" style="color: rgba(138,122,106,0.6); filter: blur(0.8px);">読み終えたとき、日常のあらゆる「当たり前」が、砂に見えてくる。通勤、会議、習慣、人間関係。どれも少しずつ、静かに積もっている。</p>
+</div>
+
+<!-- CLOSING -->
+<section id="closing">
+  <!-- Particles injected by JS -->
+  <p class="closing-text">「脱出できない」のではなく、<br>「脱出する理由を失った」——<br>それが、この物語の終わりだ。</p>
+  <p class="closing-note">安部公房　砂の女　1962年</p>
+</section>
+
+<!-- FOOTER -->
+<footer style="text-align:center; padding:6vh 2rem 8vh; font-size:0.8rem; letter-spacing:0.1em; color:var(--text-dim); line-height:2; position:relative; z-index:1;">
+  <div style="margin-bottom:1rem;">K' Library — ビジュアル・エッセイ書架</div>
+  <div style="margin-bottom:1.5rem;">安部公房『砂の女』 1962 ／ 新潮社</div>
+  <div>
+    <a href="index.html" style="color:var(--sand); text-decoration:none;">◂ 書架へ戻る</a>
+    &nbsp;·&nbsp;
+    <a href="https://gor565.github.io/kp-lab/" style="color:var(--sand); text-decoration:none;">K' Lab</a>
+  </div>
+</footer>
+
+<script>
+  // ── Scroll progress bar ──
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+    document.getElementById('scroll-sand-bar').style.width = pct + '%';
+  });
+
+  // ── Sand fill on sections ──
+  const fills = document.querySelectorAll('.sand-fill');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const ratio = e.intersectionRatio;
+        e.target.style.setProperty('--fill', (ratio * 60) + '%');
+      }
+    });
+  }, { threshold: Array.from({length: 20}, (_, i) => i / 20) });
+  fills.forEach(el => obs.observe(el));
+
+  // ── Buried text deepening ──
+  function handleBuried() {
+    const scrollPct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    const b2 = document.getElementById('b2');
+    const b3 = document.getElementById('b3');
+    if (scrollPct > 0.45) {
+      const depth = Math.min(1, (scrollPct - 0.45) / 0.2);
+      b2.style.opacity = 1 - depth * 0.4;
+      b3.style.opacity = 1 - depth * 0.7;
+      b3.style.filter = `blur(${depth * 1.5}px)`;
+    }
+  }
+  window.addEventListener('scroll', handleBuried);
+
+  // ── Falling particles in closing ──
+  const closing = document.getElementById('closing');
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top: ${Math.random() * -10}%;
+      animation-duration: ${3 + Math.random() * 5}s;
+      animation-delay: ${Math.random() * 4}s;
+      opacity: ${0.2 + Math.random() * 0.5};
+      width: ${1 + Math.random() * 2}px;
+      height: ${1 + Math.random() * 2}px;
+      background: ${Math.random() > 0.5 ? '#c9b99a' : '#8b7355'};
+    `;
+    closing.appendChild(p);
+  }
+
+  // ── Cover parallax ──
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const dunes = document.querySelectorAll('.sand-dune, .sand-dune-2');
+    dunes.forEach((d, i) => {
+      d.style.transform = `translateY(${y * (0.15 + i * 0.05)}px)`;
+    });
+  });
+</script>
+</body>
+</html>
