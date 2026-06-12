@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>STAR FIGHTER — K' Arcade</title>
 <style>
-  :root{ --red:#FF2D34; --blue:#4FB0FF; --green:#46E36B; --amber:#E0B95E; --ink:#EAF0F8; --muted:#8590A4; }
+  :root{ --red:#FF2D34; --blue:#4FB0FF; --green:#46E36B; --amber:#E0B95E; --crawl:#FFD75E; --ink:#EAF0F8; --muted:#8590A4; }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{height:100%;}
   body{ background:radial-gradient(800px 600px at 50% -10%, rgba(79,176,255,.12), transparent 60%), #05060A;
@@ -28,12 +28,42 @@
   .btn{margin-top:6px; font-size:14px; font-weight:800; letter-spacing:.14em; color:#04040A;
     background:linear-gradient(135deg,var(--blue),#2f7fd0); border:none; border-radius:10px; padding:14px 30px; cursor:pointer;
     box-shadow:0 0 22px rgba(79,176,255,.5); animation:pulse 1.6s ease-in-out infinite;}
+  .btn.ghost{background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,.2); box-shadow:none; animation:none; font-weight:600;}
   @keyframes pulse{0%,100%{box-shadow:0 0 16px rgba(79,176,255,.4);}50%{box-shadow:0 0 30px rgba(79,176,255,.9);}}
   .score-final{font-size:34px; font-weight:800; color:var(--green); text-shadow:0 0 20px rgba(70,227,107,.5);}
-  .mute{position:absolute; top:8px; right:10px; z-index:6; background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.15);
+  .medal{font-size:44px; line-height:1; filter:drop-shadow(0 0 14px rgba(224,185,94,.7));}
+  .mute{position:absolute; top:8px; right:10px; z-index:8; background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.15);
     color:var(--ink); border-radius:8px; width:34px; height:34px; cursor:pointer; font-size:15px;}
   .hint{font-size:11px; color:var(--muted); letter-spacing:.08em;}
-  @media(prefers-reduced-motion:reduce){.btn{animation:none;}}
+  .best{font-size:11px; color:var(--amber); letter-spacing:.14em;}
+
+  /* ── オープニングクロール ── */
+  .crawlWrap{position:absolute; inset:0; z-index:7; background:#04040A; overflow:hidden; display:flex;
+    align-items:center; justify-content:center; perspective:320px; cursor:pointer;}
+  .crawlWrap.hidden{display:none;}
+  .crawlStars{position:absolute; inset:0; background-image:
+    radial-gradient(1px 1px at 12% 22%, #cfe0ff 50%, transparent 51%),
+    radial-gradient(1px 1px at 68% 9%,  #cfe0ff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 84% 41%, #9fb4dd 50%, transparent 51%),
+    radial-gradient(1px 1px at 32% 64%, #cfe0ff 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 84%, #8aa0cc 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 7% 88%, #cfe0ff 50%, transparent 51%),
+    radial-gradient(1px 1px at 91% 72%, #cfe0ff 50%, transparent 51%),
+    radial-gradient(1px 1px at 44% 36%, #b9cdf2 50%, transparent 51%);}
+  .crawlPre{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--blue); font-size:15px; letter-spacing:.08em; line-height:2;
+    animation:preFade 3.2s ease forwards;}
+  @keyframes preFade{0%{opacity:0;} 18%{opacity:1;} 82%{opacity:1;} 100%{opacity:0; visibility:hidden;}}
+  .crawlText{position:absolute; bottom:-20%; width:84%; transform-origin:50% 100%;
+    transform:rotateX(58deg); color:var(--crawl); text-align:center; font-weight:700;
+    animation:crawl 26s linear 3s forwards; opacity:0;}
+  .crawlText h2{font-size:26px; letter-spacing:.18em; margin-bottom:6px;}
+  .crawlText h3{font-size:15px; letter-spacing:.3em; margin-bottom:28px; color:var(--crawl);}
+  .crawlText p{font-size:17px; line-height:2.1; letter-spacing:.1em; text-align:justify; text-align-last:center; margin-bottom:24px;}
+  @keyframes crawl{0%{bottom:-20%; opacity:1;} 88%{opacity:1;} 100%{bottom:120%; opacity:0;}}
+  .crawlSkip{position:absolute; bottom:12px; right:14px; color:var(--muted); font-size:11px; letter-spacing:.12em;
+    border:1px solid rgba(255,255,255,.18); border-radius:8px; padding:6px 12px; background:rgba(0,0,0,.4);}
+  @media(prefers-reduced-motion:reduce){.btn{animation:none;} .crawlText{animation-duration:14s;}}
 </style>
 </head>
 <body>
@@ -43,29 +73,61 @@
     <canvas id="cv"></canvas>
     <button class="mute" id="mute" title="サウンド">🔊</button>
 
+    <!-- タイトル -->
     <div class="overlay" id="startScr">
       <div class="title">STAR <b>FIGHTER</b></div>
-      <div class="sub">X-wingを操り、迫りくるTIEファイターを撃て。<br>シールドが尽きる前に、どこまで生き残れるか。</div>
+      <div class="sub">反乱同盟軍のX-wingパイロットとなり、<br>帝国の要塞〈デス・スター〉破壊作戦に挑め。<br>全6ミッションのストーリーモード。</div>
       <div class="sub" style="color:#aeb8ca;">操作 — マウス / 指でなぞって移動<br>（PCは ← → / A D でも可）<br>射撃は自動</div>
       <button class="btn" id="startBtn">▶ 出撃する</button>
+      <div class="best" id="bestLine"></div>
     </div>
 
+    <!-- オープニングクロール（書き下ろし） -->
+    <div class="crawlWrap hidden" id="crawlWrap">
+      <div class="crawlStars"></div>
+      <div class="crawlPre">遠い昔、はるか彼方の銀河系で……</div>
+      <div class="crawlText" id="crawlText">
+        <h2>STAR FIGHTER</h2>
+        <h3>最後の希望</h3>
+        <p>銀河は内戦のさなかにある。隠れ基地から出撃した反乱軍の宇宙船は、邪悪な銀河帝国に対し初めての勝利を収めた。</p>
+        <p>戦いの最中、反乱軍の密偵は帝国の究極兵器〈デス・スター〉——惑星をもひとつ砕く装甲宇宙要塞——の設計図を奪い取ることに成功する。</p>
+        <p>解析の結果、巨大要塞にはただひとつの弱点が見つかった。狭い溝の奥に隠された、小さな熱排気口である。</p>
+        <p>レッド中隊の新人パイロットであるあなたに、その最後の希望が託された——</p>
+      </div>
+      <div class="crawlSkip">タップでスキップ ▸</div>
+    </div>
+
+    <!-- ゲームオーバー -->
     <div class="overlay hidden" id="overScr">
       <div class="big">MISSION FAILED</div>
       <div class="score-final" id="finalScore">0</div>
       <div class="sub" id="overMsg">撃墜数 —</div>
       <button class="btn" id="retryBtn">↻ 再出撃</button>
     </div>
+
+    <!-- 勝利（デス・スター破壊） -->
+    <div class="overlay hidden" id="winScr">
+      <div class="medal">🎖</div>
+      <div class="big">DEATH STAR DESTROYED</div>
+      <div class="score-final" id="winScore">0</div>
+      <div class="sub" id="winMsg">基地は歓喜に沸き、あなたの胸に勲章が輝く。<br>だが帝国の艦隊は、まだ銀河に残っている——</div>
+      <button class="btn" id="endlessBtn">▶ 戦い続ける（エンドレス）</button>
+      <button class="btn ghost" id="restartBtn">↻ 最初から</button>
+    </div>
   </div>
-  <div class="hint">▸ なぞって回避・自動射撃 ／ TIEを撃墜してスコアを稼ぐ</div>
+  <div class="hint">▸ なぞって回避・自動射撃 ／ ミッションを進めてデス・スターを破壊せよ</div>
 
 <script>
 (function(){
   var cv=document.getElementById('cv'), x=cv.getContext('2d');
   var stage=document.getElementById('stage');
-  var startScr=document.getElementById('startScr'), overScr=document.getElementById('overScr');
+  var startScr=document.getElementById('startScr'), overScr=document.getElementById('overScr'), winScr=document.getElementById('winScr');
+  var crawlWrap=document.getElementById('crawlWrap'), crawlText=document.getElementById('crawlText');
   var startBtn=document.getElementById('startBtn'), retryBtn=document.getElementById('retryBtn');
+  var endlessBtn=document.getElementById('endlessBtn'), restartBtn=document.getElementById('restartBtn');
   var finalScore=document.getElementById('finalScore'), overMsg=document.getElementById('overMsg');
+  var winScore=document.getElementById('winScore');
+  var bestLine=document.getElementById('bestLine');
   var muteBtn=document.getElementById('mute');
 
   var W=460,H=720,DPR=1;
@@ -93,15 +155,44 @@
   var sLaser=function(){snd(900,0.07,'square',0.025,420);};
   var sBoom =function(){snd(160,0.22,'sawtooth',0.05,40);};
   var sHit  =function(){snd(240,0.18,'square',0.06,90);};
+  var sBeep =function(){snd(1400+Math.random()*600,0.05,'triangle',0.035,900+Math.random()*800);
+                        setTimeout(function(){snd(1100+Math.random()*700,0.06,'triangle',0.03,1600);},70);};
+  var sBeam =function(){snd(70,0.7,'sawtooth',0.07,30);};
 
   muteBtn.onclick=function(){ muted=!muted; muteBtn.textContent=muted?'🔇':'🔊'; };
 
+  // ---- best score ----
+  var BEST_KEY='kp_starfighter_best';
+  function getBest(){ try{ return parseInt(localStorage.getItem(BEST_KEY)||'0',10)||0; }catch(e){ return 0; } }
+  function setBest(v){ try{ localStorage.setItem(BEST_KEY,String(v)); }catch(e){} }
+  function showBest(){ var b=getBest(); bestLine.textContent = b>0 ? 'BEST SCORE '+b : ''; }
+
+  // ---- story（書き下ろしテキスト） ----
+  // mode: 'story' → 全6ミッション。デス・スター破壊後は 'endless'。
+  var CHAPTERS=[
+    { id:'patrol', title:'MISSION 1', sub:'哨戒任務', need:8,
+      radio:['こちらレッドリーダー。新入り、ついて来い。','前方にTIEの哨戒隊。各機、応戦せよ。'] },
+    { id:'escort', title:'MISSION 2', sub:'防衛線を支えろ', need:12,
+      radio:['輸送船団が後方にいる。一機も通すな。','敵の波が厚くなってきた。気を抜くなよ。'] },
+    { id:'vader', title:'MISSION 3', sub:'黒の襲撃', boss:'sith',
+      radio:['……何かが来る。編隊が次々に落とされている！','折れ翼のTIE——あれが噂の“黒卿”の乗機か。'] },
+    { id:'blockade', title:'MISSION 4', sub:'封鎖突破', need:16,
+      radio:['デス・スターへの航路は帝国艦隊が封鎖している。','強行突破する。護衛のTIEを蹴散らせ！'] },
+    { id:'destroyer', title:'MISSION 5', sub:'旗艦を沈めろ', boss:'capital',
+      radio:['正面にスター・デストロイヤー！','ブリッジ直下が手薄だ。対空砲をかいくぐれ。'] },
+    { id:'trench', title:'FINAL MISSION', sub:'デス・スター', boss:'deathstar',
+      radio:['見えたぞ……あれがデス・スターだ。','弱点は小さな熱排気口だ。狙いは正確に。','コンピュータより自分の感覚を信じろ。フォースと共にあらんことを。'] }
+  ];
+
   // ---- state ----
   var state='start';
+  var mode='story', chapter=0, chKills=0, chapterDone=false;
+  var banner=null;            // {title, sub, t}
+  var radioQ=[], radioCur=null; // 無線メッセージ {text, t, shown}
   var player, bullets, ebullets, enemies, stars, parts, items;
   var powerLevel=1, maxShields=5;
   var score, shields, kills, wave, spawnT, spawnEvery, fireT, shake, flash, tFrame;
-  var boss=null, bossCount=0, warning=0, lastBossWave=0;
+  var boss=null, bossCount=0, warning=0, lastBossWave=0, pendingBoss=null;
   var target=null; // pointer target x
   var keys={};
 
@@ -112,18 +203,84 @@
     stars=[]; for(var i=0;i<90;i++) stars.push({x:Math.random()*W,y:Math.random()*H,z:Math.random()*2+0.4});
     score=0; shields=3; kills=0; wave=1;
     spawnEvery=64; spawnT=30; fireT=0; shake=0; flash=0; tFrame=0;
-    boss=null; bossCount=0; warning=0; lastBossWave=0;
+    boss=null; bossCount=0; warning=0; lastBossWave=0; pendingBoss=null;
+    mode='story'; chapter=0; chKills=0; chapterDone=false;
+    banner=null; radioQ=[]; radioCur=null;
     target=null;
   }
 
-  function start(){ resize(); reset(); state='play'; startScr.classList.add('hidden'); overScr.classList.add('hidden'); }
+  // ---- story helpers ----
+  function pushRadio(lines){
+    for(var i=0;i<lines.length;i++) radioQ.push({text:lines[i], t:0});
+  }
+  function startChapter(i){
+    chapter=i; chKills=0; chapterDone=false;
+    var ch=CHAPTERS[i];
+    banner={title:ch.title, sub:ch.sub, t:150};
+    pushRadio(ch.radio);
+    sBeep();
+    if(ch.boss){ warning=120; pendingBoss=ch.boss; }
+  }
+  function chapterComplete(){
+    if(chapterDone) return;
+    chapterDone=true;
+    score+=100;
+    if(chapter+1<CHAPTERS.length){
+      // 少し間を置いて次章へ
+      setTimeout(function(){ if(state==='play'&&mode==='story') startChapter(chapter+1); }, 900);
+    }
+  }
+  function winGame(){
+    state='win';
+    score+=1000;
+    var b=getBest(); if(score>b) setBest(score);
+    winScore.textContent=score;
+    winScr.classList.remove('hidden');
+    sBoom(); setTimeout(sBoom,180); setTimeout(sBeep,420);
+  }
+  function enterEndless(){
+    mode='endless'; banner={title:'ENDLESS', sub:'帝国の残存艦隊を掃討せよ', t:150};
+    pushRadio(['ここから先は記録なき戦いだ。','生き延びた数だけが、君の勲章になる。']);
+    lastBossWave=wave;
+    winScr.classList.add('hidden');
+    state='play';
+  }
+
+  function start(){
+    resize(); reset(); state='play';
+    startScr.classList.add('hidden'); overScr.classList.add('hidden'); winScr.classList.add('hidden');
+    startChapter(0);
+  }
+  // タイトル → クロール → ゲーム
+  var crawlTimer=null;
+  function showCrawl(){
+    startScr.classList.add('hidden'); overScr.classList.add('hidden'); winScr.classList.add('hidden');
+    crawlWrap.classList.remove('hidden');
+    // アニメ再起動のため一度リフロー
+    crawlText.style.animation='none'; void crawlText.offsetWidth; crawlText.style.animation='';
+    state='crawl';
+    crawlTimer=setTimeout(endCrawl, 30500);
+  }
+  function endCrawl(){
+    if(crawlTimer){ clearTimeout(crawlTimer); crawlTimer=null; }
+    crawlWrap.classList.add('hidden');
+    start();
+  }
+  crawlWrap.addEventListener('click', function(){ if(state==='crawl') endCrawl(); });
+
   function gameOver(){
     state='over'; finalScore.textContent=score;
-    overMsg.textContent='撃墜 '+kills+' 機 ／ WAVE '+wave+' 到達';
+    var ch=CHAPTERS[Math.min(chapter,CHAPTERS.length-1)];
+    var prog = mode==='story' ? (ch.title+'「'+ch.sub+'」で散る') : 'エンドレス WAVE '+wave;
+    overMsg.textContent='撃墜 '+kills+' 機 ／ '+prog;
+    var b=getBest(); if(score>b) setBest(score);
     overScr.classList.remove('hidden'); sBoom();
   }
 
-  startBtn.onclick=start; retryBtn.onclick=start;
+  startBtn.onclick=showCrawl;
+  retryBtn.onclick=start;                 // リトライはクロールを飛ばして即出撃
+  endlessBtn.onclick=enterEndless;
+  restartBtn.onclick=start;
 
   // ---- input ----
   function setTargetFromEvent(e){
@@ -136,7 +293,12 @@
   cv.addEventListener('touchmove',function(e){ if(state==='play'){ setTargetFromEvent(e); e.preventDefault(); } },{passive:false});
   window.addEventListener('keydown',function(e){
     keys[e.key]=true;
-    if((e.key===' '||e.key==='Enter')){ if(state==='start'||state==='over') start(); }
+    if((e.key===' '||e.key==='Enter')){
+      if(state==='start') showCrawl();
+      else if(state==='crawl') endCrawl();
+      else if(state==='over') start();
+      else if(state==='win') enterEndless();
+    }
     if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].indexOf(e.key)>=0) e.preventDefault();
   });
   window.addEventListener('keyup',function(e){ keys[e.key]=false; });
@@ -181,6 +343,11 @@
     for(var i=0;i<stars.length;i++){ var s=stars[i]; s.y+=s.z*(state==='play'?2.2:0.8); if(s.y>H){s.y=0;s.x=Math.random()*W;} }
     if(state!=='play') return;
 
+    // story banner / radio
+    if(banner){ banner.t--; if(banner.t<=0) banner=null; }
+    if(!radioCur && radioQ.length){ radioCur=radioQ.shift(); radioCur.t=190; sBeep(); }
+    if(radioCur){ radioCur.t--; if(radioCur.t<=0) radioCur=null; }
+
     // player move
     if(keys['ArrowLeft']||keys['a']||keys['A']) target=(target==null?player.x:target)-player.sp;
     if(keys['ArrowRight']||keys['d']||keys['D']) target=(target==null?player.x:target)+player.sp;
@@ -194,9 +361,11 @@
     for(var i=bullets.length-1;i>=0;i--){ var b=bullets[i]; b.y+=b.vy; b.x+=(b.vx||0); if(b.y<-10||b.x<-12||b.x>W+12) bullets.splice(i,1); }
     for(var i=ebullets.length-1;i>=0;i--){ var eb=ebullets[i]; eb.y+=eb.vy; eb.x+=eb.vx||0; if(eb.y>H+10) ebullets.splice(i,1); }
 
-    // spawn（ボス出現中は雑魚を止める）
-    if(!boss){ spawnT--; if(spawnT<=0){ spawnEnemy(); spawnT=spawnEvery; } }
-    if(warning>0) warning--;
+    // 警告 → ボス出現（ストーリー章 or エンドレス）
+    if(warning>0){ warning--; if(warning<=0 && pendingBoss){ spawnBoss(pendingBoss); pendingBoss=null; } }
+
+    // spawn（ボス出現中・警告中は雑魚を止める）
+    if(!boss && !pendingBoss){ spawnT--; if(spawnT<=0){ spawnEnemy(); spawnT=spawnEvery; } }
     updateBoss();
 
     // enemies
@@ -215,9 +384,7 @@
     for(var i=bullets.length-1;i>=0;i--){ var b=bullets[i];
       for(var j=enemies.length-1;j>=0;j--){ var en=enemies[j];
         if(Math.abs(b.x-en.x)<en.w/2 && Math.abs(b.y-en.y)<en.h/2){
-          bullets.splice(i,1); en.hp--; if(en.hp<=0){ enemies.splice(j,1); boom(en.x,en.y,'#46E36B'); dropItem(en.x,en.y,false); score+=10; kills++; sBoom();
-            if(kills%10===0){ wave++; spawnEvery=Math.max(26,spawnEvery-6);
-              if(wave%3===0 && !boss && wave!==lastBossWave) triggerBoss(); } }
+          bullets.splice(i,1); en.hp--; if(en.hp<=0){ enemies.splice(j,1); boom(en.x,en.y,'#46E36B'); dropItem(en.x,en.y,false); score+=10; kills++; sBoom(); onKill(); }
           break;
         }
       }
@@ -226,7 +393,23 @@
     // player bullets vs boss
     if(boss && !boss.entering){
       for(var i=bullets.length-1;i>=0;i--){ var bl=bullets[i];
-        if(Math.abs(bl.x-boss.x)<boss.w/2 && Math.abs(bl.y-boss.y)<boss.h/2){
+        if(boss.type==='deathstar'){
+          // デス・スター: 球体は装甲（無効）、排気口のみ有効打
+          var pdx=bl.x-boss.portX, pdy=bl.y-boss.portY;
+          if(pdx*pdx+pdy*pdy < 13*13){
+            bullets.splice(i,1); boss.hp--;
+            parts.push({x:bl.x,y:bl.y,vx:(Math.random()-0.5)*2.4,vy:Math.random()*2,life:0.7,col:'#FFD75E'});
+            snd(500,0.06,'triangle',0.04,900);
+            if(boss.hp<=0){ defeatBoss(); break; }
+          } else {
+            var cdx=bl.x-boss.x, cdy=bl.y-boss.cy;
+            if(cdx*cdx+cdy*cdy < boss.R*boss.R){
+              // 装甲に弾かれる（火花のみ・ダメージなし）
+              bullets.splice(i,1);
+              parts.push({x:bl.x,y:bl.y,vx:(Math.random()-0.5)*1.6,vy:0.6,life:0.4,col:'#8e9bae'});
+            }
+          }
+        } else if(Math.abs(bl.x-boss.x)<boss.w/2 && Math.abs(bl.y-boss.y)<boss.h/2){
           bullets.splice(i,1); boss.hp--;
           parts.push({x:bl.x,y:bl.y,vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2,life:0.6,col:'#9FE8FF'});
           if(boss.hp<=0){ defeatBoss(); break; }
@@ -250,25 +433,74 @@
     // particles
     for(var i=parts.length-1;i>=0;i--){ var p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.vx*=0.94; p.vy*=0.94; p.life-=0.03; if(p.life<=0) parts.splice(i,1); }
     if(shake>0) shake*=0.86; if(flash>0) flash-=0.06;
-    score += 0; // survival handled by kills
+  }
+
+  // 撃墜時のストーリー/難易度進行
+  function onKill(){
+    if(kills%10===0){ wave++; spawnEvery=Math.max(26,spawnEvery-6); }
+    if(mode==='story'){
+      var ch=CHAPTERS[chapter];
+      if(ch.need && !chapterDone){
+        chKills++;
+        if(chKills>=ch.need) chapterComplete();
+      }
+    } else {
+      // エンドレス: 従来どおり3WAVEごとにボス
+      if(wave%3===0 && !boss && !pendingBoss && wave!==lastBossWave){
+        lastBossWave=wave; warning=120;
+        pendingBoss=(bossCount%2===0)?'sith':'capital';
+      }
+    }
   }
 
   function hurt(){ shields--; flash=1; shake=10; sHit(); if(shields<=0) gameOver(); }
 
   // ---- boss ----
-  function triggerBoss(){
-    lastBossWave=wave;
-    var type=(bossCount%2===0)?'sith':'capital'; bossCount++; warning=120;
+  function spawnBoss(type){
+    bossCount++;
     if(type==='sith'){
       var hp=22+wave*4;
       boss={type:'sith', x:W/2, y:-60, ty:120, w:78, h:56, hp:hp, max:hp, cool:70, phase:0, entering:true};
-    } else {
+    } else if(type==='capital'){
       var hp2=44+wave*6;
       boss={type:'capital', x:W/2, y:-130, ty:104, w:Math.min(W*0.82,360), h:124, hp:hp2, max:hp2, cool:60, phase:0, entering:true};
+    } else { // deathstar
+      var R=Math.min(W*0.62, 300);
+      var hp3=40;
+      boss={type:'deathstar', x:W/2, y:0, cy:-R*0.42, ty:-R*0.42, R:R, w:R*2, h:R*2,
+        hp:hp3, max:hp3, cool:50, phase:0, entering:true,
+        portX:W/2, portY:0, beamT:300, beamX:0, beamPhase:'idle', beamHitDone:false};
+      boss.cy=-R*1.6; // 上から迫り出してくる
     }
   }
   function updateBoss(){
     var b=boss; if(!b) return;
+    if(b.type==='deathstar'){
+      // 出現: 画面上端から球面がせり出す
+      if(b.entering){ b.cy+=1.8; if(b.cy>=b.ty){ b.cy=b.ty; b.entering=false; } }
+      b.phase+=0.012;
+      // 排気口（下端の溝に沿ってゆっくり移動）
+      var arcY=b.cy+b.R; // 球の最下端
+      b.portX=W/2+Math.sin(b.phase*0.9)*b.R*0.42;
+      b.portY=arcY-Math.abs(Math.sin(b.phase*0.9))*b.R*0.10-12;
+      if(b.entering) return;
+      // 砲座: 球面下縁のランダム位置から狙い撃ち
+      b.cool--; if(b.cool<=0){
+        var a=(Math.random()*1.5+0.75); // 下向きの弧 (おおよそ 43°〜129°)
+        var px=b.x+Math.cos(a)*b.R*0.92, py=b.cy+Math.sin(a)*b.R*0.92;
+        if(py>0){ ebullets.push({x:px,y:py,vy:4.2,vx:(player.x-px)*0.004}); }
+        b.cool=24;
+      }
+      // スーパーレーザー（緑の柱）: 予告 → 発射
+      b.beamT--;
+      if(b.beamPhase==='idle' && b.beamT<=0){ b.beamPhase='charge'; b.beamT=80; b.beamX=player.x; b.beamHitDone=false; snd(220,0.5,'sine',0.05,520); }
+      else if(b.beamPhase==='charge' && b.beamT<=0){ b.beamPhase='fire'; b.beamT=34; sBeam(); shake=12; }
+      else if(b.beamPhase==='fire'){
+        if(!b.beamHitDone && Math.abs(player.x-b.beamX)<40){ b.beamHitDone=true; hurt(); }
+        if(b.beamT<=0){ b.beamPhase='idle'; b.beamT=260+Math.random()*120; }
+      }
+      return;
+    }
     if(b.entering){ b.y+=2.6; if(b.y>=b.ty){ b.y=b.ty; b.entering=false; } return; }
     b.phase+=0.02;
     if(b.type==='sith'){
@@ -288,11 +520,22 @@
   }
   function defeatBoss(){
     var b=boss;
+    if(b.type==='deathstar'){
+      for(var k=0;k<14;k++) boom(b.x+(Math.random()-0.5)*b.R*1.2, b.cy+b.R*0.5+(Math.random()-0.5)*b.R*0.5, k%2?'#FFD75E':'#FF2D34');
+      flash=1.4; shake=24; boss=null; ebullets=[];
+      sBoom(); setTimeout(sBoom,150); setTimeout(sBoom,330);
+      setTimeout(function(){ if(state==='play') winGame(); }, 700);
+      return;
+    }
     for(var k=0;k<6;k++) boom(b.x+(Math.random()-0.5)*b.w*0.7, b.y+(Math.random()-0.5)*b.h*0.7, k%2?'#FF2D34':'#46E36B');
     score += (b.type==='sith'?200:400); shake=18; sBoom();
     items.push({x:b.x-20,y:b.y,vy:1.4,type:'shield',ph:0});
     items.push({x:b.x+20,y:b.y,vy:1.4,type:'power',ph:1});
+    if(b.type==='sith' && mode==='story'){
+      pushRadio(['敵機、離脱していく……追うな、深追いは禁物だ。']);
+    }
     boss=null;
+    if(mode==='story') chapterComplete();
   }
 
   // ---- draw ----
@@ -326,6 +569,7 @@
     x.restore();
   }
   function drawBoss(b){
+    if(b.type==='deathstar'){ drawDeathstar(b); return; }
     x.save(); x.translate(b.x,b.y);
     if(b.type==='sith'){
       // 折れ翼ソーラーパネル ×2
@@ -360,6 +604,53 @@
     }
     x.restore();
   }
+  function drawDeathstar(b){
+    x.save();
+    // 球体（上から迫り出す巨大な弧）
+    x.fillStyle='#1a2029'; x.strokeStyle='#8e9bae'; x.lineWidth=2.5;
+    x.beginPath(); x.arc(b.x,b.cy,b.R,0,6.28); x.fill(); x.stroke();
+    // 表面パネルのライン（緯線・経線風）
+    x.save(); x.beginPath(); x.arc(b.x,b.cy,b.R,0,6.28); x.clip();
+    x.strokeStyle='rgba(140,155,180,.22)'; x.lineWidth=1;
+    for(var i=1;i<=5;i++){ var yy=b.cy+b.R*(i/5); x.beginPath(); x.moveTo(b.x-b.R,yy); x.lineTo(b.x+b.R,yy); x.stroke(); }
+    for(var i=-3;i<=3;i++){ x.beginPath(); x.moveTo(b.x+i*b.R*0.25,b.cy); x.lineTo(b.x+i*b.R*0.34,b.cy+b.R); x.stroke(); }
+    // 赤道の溝（トレンチ）
+    var ty=b.cy+b.R*0.86;
+    x.fillStyle='rgba(5,8,14,.85)'; x.fillRect(b.x-b.R,ty-7,b.R*2,14);
+    x.strokeStyle='rgba(160,175,200,.4)'; x.beginPath(); x.moveTo(b.x-b.R,ty-7); x.lineTo(b.x+b.R,ty-7); x.moveTo(b.x-b.R,ty+7); x.lineTo(b.x+b.R,ty+7); x.stroke();
+    // スーパーレーザー皿（左上に窪み）
+    x.fillStyle='#11161e'; x.strokeStyle='rgba(160,175,200,.5)'; x.lineWidth=1.5;
+    x.beginPath(); x.arc(b.x-b.R*0.42,b.cy+b.R*0.42,b.R*0.2,0,6.28); x.fill(); x.stroke();
+    x.fillStyle='rgba(70,227,107,.35)'; x.beginPath(); x.arc(b.x-b.R*0.42,b.cy+b.R*0.42,b.R*0.05,0,6.28); x.fill();
+    // 都市の灯のような点
+    x.fillStyle='rgba(159,232,255,.4)';
+    for(var i=0;i<26;i++){ var a=(i*2.39)%6.28, rr=b.R*(0.3+(i*37%53)/100);
+      var px=b.x+Math.cos(a)*rr, py=b.cy+Math.abs(Math.sin(a))*rr;
+      if(py>0 && py<b.cy+b.R) x.fillRect(px,py,1.6,1.6); }
+    x.restore();
+    // 排気口（弱点・点滅）
+    var blink=0.55+0.45*Math.sin(tFrame*0.18);
+    x.shadowColor='#FFD75E'; x.shadowBlur=14*blink;
+    x.fillStyle='rgba(255,215,94,'+(0.55+0.4*blink)+')';
+    x.fillRect(b.portX-6,b.portY-4,12,8);
+    x.shadowBlur=0;
+    x.strokeStyle='#FFD75E'; x.lineWidth=1.4; x.strokeRect(b.portX-9,b.portY-7,18,14);
+    // スーパーレーザー（予告 → 発射）
+    if(b.beamPhase==='charge'){
+      var p=1-b.beamT/80;
+      x.fillStyle='rgba(70,227,107,'+(0.10+p*0.16)+')';
+      x.fillRect(b.beamX-40,0,80,H);
+      x.strokeStyle='rgba(70,227,107,.8)'; x.setLineDash([8,8]); x.lineWidth=1.6;
+      x.beginPath(); x.moveTo(b.beamX-40,0); x.lineTo(b.beamX-40,H); x.moveTo(b.beamX+40,0); x.lineTo(b.beamX+40,H); x.stroke();
+      x.setLineDash([]);
+    } else if(b.beamPhase==='fire'){
+      x.shadowColor='#46E36B'; x.shadowBlur=30;
+      x.fillStyle='rgba(70,227,107,.85)'; x.fillRect(b.beamX-26,0,52,H);
+      x.fillStyle='rgba(235,255,240,.9)'; x.fillRect(b.beamX-8,0,16,H);
+      x.shadowBlur=0;
+    }
+    x.restore();
+  }
   function drawItem(it){
     x.save(); x.translate(it.x, it.y+Math.sin(tFrame*0.1+it.ph)*2);
     var col=it.type==='shield'?'#4FB0FF':'#46E36B';
@@ -374,6 +665,12 @@
   function bolt(b,col){ x.strokeStyle=col; x.lineWidth=3.4; x.lineCap='round'; x.shadowColor=col; x.shadowBlur=10;
     x.beginPath(); x.moveTo(b.x,b.y); x.lineTo(b.x+(b.vx||0)*1.4, b.y+ (b.vy<0?10:-10)); x.stroke(); x.shadowBlur=0; }
 
+  function bossLabel(b){
+    if(b.type==='sith') return 'DARTH VADER — TIE ADVANCED';
+    if(b.type==='capital') return 'STAR DESTROYER';
+    return 'DEATH STAR — 排気口を狙え';
+  }
+
   function draw(){
     var sx = shake>0.5 ? (Math.random()-0.5)*shake : 0;
     var sy = shake>0.5 ? (Math.random()-0.5)*shake : 0;
@@ -386,11 +683,11 @@
       x.fillRect(s.x, s.y, s.z, s.z+ (state==='play'?s.z:0)); }
     x.globalAlpha=1;
 
-    if(state==='play'||state==='over'){
+    if(state==='play'||state==='over'||state==='win'){
+      if(boss) drawBoss(boss);
       for(var i=0;i<ebullets.length;i++) bolt(ebullets[i],'#FF3B3B');
       for(var i=0;i<bullets.length;i++) bolt(bullets[i],'#46E36B');
       for(var i=0;i<enemies.length;i++) drawTie(enemies[i]);
-      if(boss) drawBoss(boss);
       for(var i=0;i<items.length;i++) drawItem(items[i]);
       for(var i=0;i<parts.length;i++){ var p=parts[i]; x.globalAlpha=Math.max(0,p.life); x.fillStyle=p.col;
         x.fillRect(p.x-1.5,p.y-1.5,3,3); } x.globalAlpha=1;
@@ -399,7 +696,7 @@
     x.restore();
 
     // damage flash
-    if(flash>0){ x.fillStyle='rgba(255,45,52,'+(flash*0.4)+')'; x.fillRect(0,0,W,H); }
+    if(flash>0){ x.fillStyle='rgba(255,45,52,'+(Math.min(flash,1)*0.4)+')'; x.fillRect(0,0,W,H); }
 
     // HUD
     if(state==='play'){
@@ -407,8 +704,15 @@
       x.fillText('SCORE '+score, 12, 24);
       x.fillStyle='#46E36B'; x.font='bold 12px monospace';
       x.fillText('PWR x'+powerLevel, 12, 42);
+      // 進行表示: ストーリーはミッション、エンドレスはWAVE
       x.textAlign='center'; x.fillStyle='#E0B95E'; x.font='bold 12px monospace';
-      x.fillText('WAVE '+wave, W/2, 22);
+      if(mode==='story'){
+        var ch=CHAPTERS[chapter];
+        var prog = ch.need ? ('  '+Math.min(chKills,ch.need)+'/'+ch.need) : '';
+        x.fillText(ch.title+prog, W/2, 22);
+      } else {
+        x.fillText('ENDLESS — WAVE '+wave, W/2, 22);
+      }
       // shields
       x.textAlign='right'; x.font='bold 16px monospace';
       for(var i=0;i<maxShields;i++){ x.fillStyle = i<shields ? '#4FB0FF':'#2a3340';
@@ -420,12 +724,37 @@
         x.fillStyle='#FF2D34'; x.fillRect(bx0,by, bw*Math.max(0,boss.hp/boss.max), 5);
         x.strokeStyle='rgba(255,45,52,.7)'; x.lineWidth=1; x.strokeRect(bx0,by,bw,5);
         x.fillStyle='#FF6B6B'; x.font='bold 10px monospace'; x.textAlign='center';
-        x.fillText(boss.type==='sith'?'SITH — TIE ADVANCED':'IMPERIAL CAPITAL SHIP', W/2, by-5);
+        x.fillText(bossLabel(boss), W/2, by-5);
       }
       // 出現警告
       if(warning>0 && Math.floor(warning/8)%2===0){
         x.fillStyle='#FF2D34'; x.font='bold 22px monospace'; x.textAlign='center';
         x.fillText('⚠ WARNING ⚠', W/2, H*0.42);
+      }
+      // ミッションバナー
+      if(banner){
+        var a=Math.min(1, banner.t/30, (150-banner.t)/20+1);
+        x.globalAlpha=Math.max(0,Math.min(1,a));
+        x.textAlign='center';
+        x.fillStyle='#E0B95E'; x.font='bold 15px monospace';
+        x.fillText(banner.title, W/2, H*0.34);
+        x.fillStyle='#fff'; x.font='bold 22px monospace';
+        x.fillText(banner.sub, W/2, H*0.34+30);
+        x.globalAlpha=1;
+      }
+      // 無線メッセージ（下部）
+      if(radioCur){
+        var ra=Math.min(1, (190-radioCur.t)/12, radioCur.t/24);
+        x.globalAlpha=Math.max(0,Math.min(1,ra));
+        x.fillStyle='rgba(4,6,14,.78)';
+        var msg='▸ '+radioCur.text;
+        x.font='12px monospace';
+        var tw=Math.min(x.measureText(msg).width+24, W-20);
+        x.fillRect((W-tw)/2, H-96, tw, 26);
+        x.strokeStyle='rgba(79,176,255,.45)'; x.lineWidth=1; x.strokeRect((W-tw)/2, H-96, tw, 26);
+        x.fillStyle='#9FE8FF'; x.textAlign='center';
+        x.fillText(msg, W/2, H-79);
+        x.globalAlpha=1;
       }
     }
   }
@@ -433,7 +762,7 @@
   function loop(){ update(); draw(); requestAnimationFrame(loop); }
 
   window.addEventListener('resize', function(){ resize(); });
-  resize(); reset(); state='start';
+  resize(); reset(); state='start'; showBest();
   loop();
 })();
 </script>
