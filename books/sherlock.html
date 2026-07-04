@@ -3,301 +3,364 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SHERLOCK HOLMES</title>
+<title>SHERLOCK HOLMES — 事件簿 ｜ K' Library</title>
+<meta name="description" content="根拠はすべて、あなたの袖口にある。シャーロック・ホームズを一冊の捜査ファイルとして開くビジュアル・エッセイ。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#100F0C; --bg2:#1A1813; --ink:#0A0907;
-    --cream:#ECE3CF; --cream2:#C9BfA6; --muted:#8A8068;
-    --amber:#E0A94E; --amber2:#C9852E; --glow:rgba(224,169,78,.55);
-    --blood:#9A352B;
-    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;
-    --serif:"Playfair Display","Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:
-      radial-gradient(800px 520px at 50% -8%, rgba(224,169,78,.22), transparent 60%),
-      radial-gradient(700px 600px at 90% 30%, rgba(224,169,78,.08), transparent 55%),
-      linear-gradient(180deg,#100F0C,#16140F 50%,#0c0b09);
-    color:var(--cream); font-family:var(--sans); min-height:100vh; overflow-x:hidden; position:relative;
-  }
-  /* 霧 */
-  .fog{position:fixed; inset:-20% -20% auto -20%; height:60%; z-index:0; pointer-events:none; opacity:.5;
-    background:radial-gradient(60% 100% at 30% 50%, rgba(220,210,185,.10), transparent 70%),
-              radial-gradient(50% 100% at 75% 40%, rgba(220,210,185,.08), transparent 70%);
-    filter:blur(8px); animation:fog 26s ease-in-out infinite alternate;}
-  .fog.b{top:auto; bottom:0; animation-duration:34s; opacity:.4;}
-  @keyframes fog{from{transform:translateX(-6%);}to{transform:translateX(6%);}}
-
-  svg{display:block;}
-  .ico{fill:none; stroke:var(--cream); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
-  .ico .am{stroke:var(--amber);}
-
-  .wrap{position:relative; z-index:1; max-width:900px; margin:0 auto; padding:0 24px;}
-  .word{font-family:var(--sans); font-size:11px; letter-spacing:.42em; color:var(--amber); text-transform:uppercase; text-align:center; margin-bottom:30px;}
-
-  /* ===== Hero ===== */
-  .hero{min-height:96vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:6px;}
-  .emblem{width:min(220px,52vw); filter:drop-shadow(0 0 26px var(--glow)); animation:flicker 5s ease-in-out infinite;}
-  @keyframes flicker{0%,100%{filter:drop-shadow(0 0 26px var(--glow));}48%{filter:drop-shadow(0 0 14px rgba(224,169,78,.3));}52%{filter:drop-shadow(0 0 30px var(--glow));}}
-  .hero h1{font-family:var(--serif); font-weight:700; font-size:clamp(34px,8.5vw,72px); letter-spacing:.14em;
-    color:#fff; text-shadow:0 0 36px var(--glow); margin-top:18px;}
-  .hero .sub{font-size:12px; letter-spacing:.5em; color:var(--amber); }
-  .hero .addr{font-family:var(--serif); font-size:14px; letter-spacing:.3em; color:var(--cream2); margin-top:18px;}
-  .cue{margin-top:40px; font-size:18px; color:var(--muted); animation:bob 2.4s ease-in-out infinite;}
-  @keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(7px);opacity:1}}
-
-  section{padding:70px 0; border-top:1px solid rgba(224,169,78,.12);}
-
-  /* ===== 道具 row ===== */
-  .tools{display:flex; flex-wrap:wrap; justify-content:center; gap:34px;}
-  .tool{display:flex; flex-direction:column; align-items:center; gap:12px; width:120px;}
-  .tool svg{width:74px; height:74px; transition:transform .25s ease, filter .25s ease;}
-  .tool:hover svg{transform:translateY(-6px) scale(1.06); filter:drop-shadow(0 0 16px var(--glow));}
-  .tool b{font-family:var(--serif); font-size:14px; letter-spacing:.08em; color:var(--cream2); font-weight:600;}
-
-  /* ===== 拡大鏡インタラクティブ ===== */
-  .scene{position:relative; height:360px; border-radius:16px; overflow:hidden; cursor:crosshair;
-    border:1px solid rgba(224,169,78,.2); background:#0c0b08; --mx:50%; --my:50%;
-    box-shadow:inset 0 0 80px rgba(0,0,0,.7);}
-  .clues{position:absolute; inset:0;}
-  .clues svg{position:absolute;}
-  .fog-cover{position:absolute; inset:0; background:
-      radial-gradient(40% 60% at 20% 30%, rgba(210,200,175,.16), transparent 70%),
-      radial-gradient(50% 70% at 80% 60%, rgba(210,200,175,.13), transparent 70%),
-      linear-gradient(180deg, rgba(22,20,16,.96), rgba(16,15,12,.97));
-    -webkit-mask:radial-gradient(circle 78px at var(--mx) var(--my), transparent 74px, #000 80px);
-            mask:radial-gradient(circle 78px at var(--mx) var(--my), transparent 74px, #000 80px);}
-  .lens{position:absolute; top:0; left:0; width:156px; height:156px; pointer-events:none;
-    border-radius:50%; border:3px solid var(--amber); box-shadow:0 0 26px var(--glow), inset 0 0 30px rgba(224,169,78,.18);
-    transform:translate(-999px,-999px);}
-  .lens::after{content:""; position:absolute; width:14px; height:46px; background:var(--amber2); border-radius:6px;
-    right:-30px; bottom:-22px; transform:rotate(-45deg); box-shadow:0 0 12px var(--glow);}
-  .scene .hint{position:absolute; left:50%; bottom:16px; transform:translateX(-50%); z-index:2;
-    font-size:12px; letter-spacing:.2em; color:var(--muted); pointer-events:none;}
-
-  /* ===== 推理フロー ===== */
-  .flow{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
-  .step{display:flex; flex-direction:column; align-items:center; gap:12px; width:130px;}
-  .step svg{width:64px; height:64px;}
-  .step b{font-family:var(--serif); font-size:15px; color:var(--cream); letter-spacing:.1em;}
-  .arrow{font-size:26px; color:var(--amber); animation:slide 1.8s ease-in-out infinite;}
-  @keyframes slide{0%,100%{transform:translateX(0);opacity:.5}50%{transform:translateX(6px);opacity:1}}
-
-  /* ===== 人物 ===== */
-  .cast{display:grid; grid-template-columns:repeat(5,1fr); gap:18px;}
-  @media(max-width:680px){.cast{grid-template-columns:repeat(2,1fr);} }
-  .person{display:flex; flex-direction:column; align-items:center; gap:12px;}
-  .person .disc{width:96px; height:96px; border-radius:50%; display:grid; place-items:center;
-    background:radial-gradient(circle at 50% 30%, #211e17, #0c0b08); border:1px solid rgba(224,169,78,.25);
-    transition:border-color .2s, box-shadow .2s;}
-  .person:hover .disc{border-color:var(--amber); box-shadow:0 0 22px var(--glow);}
-  .person .disc svg{width:64px; height:64px;}
-  .person b{font-family:var(--serif); font-size:14px; color:var(--cream2); letter-spacing:.04em; text-align:center;}
-  .person.villain .disc{background:radial-gradient(circle at 50% 30%, #2a1513, #0c0b08); border-color:rgba(154,53,43,.5);}
-  .person.villain:hover .disc{border-color:var(--blood); box-shadow:0 0 22px rgba(154,53,43,.6);}
-
-  /* ===== 世界 ===== */
-  .world{display:flex; flex-wrap:wrap; justify-content:center; gap:40px; align-items:flex-end;}
-  .world figure{display:flex; flex-direction:column; align-items:center; gap:12px;}
-  .world svg{filter:drop-shadow(0 0 12px rgba(224,169,78,.25));}
-  .world b{font-family:var(--serif); font-size:13px; color:var(--cream2); letter-spacing:.06em;}
-
-  footer{position:relative; z-index:1; text-align:center; padding:50px 24px 70px; border-top:1px solid rgba(224,169,78,.12);}
-  footer .mono{font-size:11px; letter-spacing:.2em; color:var(--muted); line-height:2;}
-  footer a{color:var(--amber); text-decoration:none;}
-
-  @media(prefers-reduced-motion:reduce){*{animation:none!important;}}
+:root{
+  --paper:#e9dfc6;      /* マニラ紙（明） */
+  --paper2:#f4ecd8;     /* 台紙の白 */
+  --ink:#31281c;        /* セピアの濃インク */
+  --faint:#7d7157;
+  --thread:#b3382c;     /* 赤い糸 */
+  --stamp:#a03a2a;
+  --tape:rgba(214,196,150,.55);
+  --tw:'Special Elite', monospace;
+  --serif:'Shippori Mincho','Hiragino Mincho ProN',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--serif); color:var(--ink);
+  background:
+    radial-gradient(900px 400px at 80% -5%, rgba(160,120,60,.10), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(120,95,55,.035) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(90deg, rgba(120,95,55,.03) 0 1px, transparent 1px 9px),
+    linear-gradient(180deg,#ece2c9,#e5dabd);
+  overflow-x:hidden;
+}
+#board{position:relative; max-width:960px; margin:0 auto; padding:56px 20px 40px;}
+/* ============ 赤い糸（スクロールで結ばれていく・主役） ============ */
+#threadsvg{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; overflow:visible}
+#thread{fill:none; stroke:var(--thread); stroke-width:2.2; opacity:.88;
+  stroke-dasharray:1000; stroke-dashoffset:1000;
+  filter:drop-shadow(0 1px 0 rgba(120,30,20,.25));}
+.pin{position:absolute; width:14px; height:14px; border-radius:50%; z-index:4;
+  background:radial-gradient(circle at 35% 30%, #e46a55, var(--thread) 55%, #6d1d12);
+  box-shadow:0 2px 4px rgba(40,20,10,.45);}
+/* ============ 綴じ・見出し ============ */
+.filehead{text-align:center; margin-bottom:44px; position:relative;}
+.filehead .no{font-family:var(--tw); font-size:12px; letter-spacing:.5em; color:var(--faint); text-transform:uppercase;}
+.filehead h1{font-family:var(--tw); font-size:clamp(30px,6.4vw,54px); letter-spacing:.06em; margin:10px 0 4px; color:#241c12;}
+.filehead .jp{font-size:14px; letter-spacing:.6em; color:var(--faint); margin-bottom:18px;}
+.hook{
+  font-size:clamp(19px,3.4vw,27px); font-weight:700; line-height:1.9; letter-spacing:.08em; margin:18px 0 8px;
+}
+.hook mark{background:linear-gradient(transparent 62%, rgba(179,56,44,.3) 62%); color:inherit; padding:0 2px;}
+.filehead .lede{font-size:13.5px; color:var(--faint); line-height:2.1; letter-spacing:.06em;}
+/* 検印 */
+.kanin{
+  position:absolute; top:-16px; right:4%; transform:rotate(8deg);
+  font-family:var(--tw); font-size:11px; letter-spacing:.3em; color:var(--stamp);
+  border:2.5px solid var(--stamp); border-radius:6px; padding:7px 12px; opacity:.75; text-transform:uppercase;
+}
+/* ============ 証拠カード（ピン留めの紙片） ============ */
+.exhibit{
+  position:relative; background:var(--paper2); border-radius:3px;
+  box-shadow:0 10px 26px rgba(60,42,20,.22), 0 2px 4px rgba(60,42,20,.18);
+  padding:26px 28px 24px; margin:0 0 64px; z-index:2;
+}
+.exhibit::before{ /* 上部のテープ */
+  content:""; position:absolute; top:-12px; left:50%; transform:translateX(-50%) rotate(-1.5deg);
+  width:110px; height:24px; background:var(--tape); box-shadow:0 1px 3px rgba(60,42,20,.18);
+}
+.exhibit .tag{
+  font-family:var(--tw); font-size:11px; letter-spacing:.4em; color:var(--stamp);
+  text-transform:uppercase; margin-bottom:14px;
+}
+.exhibit h2{font-size:clamp(17px,2.8vw,22px); letter-spacing:.1em; margin-bottom:14px;}
+.exhibit p{font-size:14px; line-height:2.15; letter-spacing:.04em;}
+.exhibit p + p{margin-top:10px;}
+.exhibit .note{font-size:12.5px; color:var(--faint); margin-top:14px; line-height:2;}
+.exhibit em{font-style:normal; font-weight:700;
+  background:linear-gradient(transparent 64%, rgba(179,56,44,.25) 64%);}
+/* 左右振り分け＋傾き（ピンボード感） */
+.exhibit.l{width:min(560px,100%); margin-right:auto; transform:rotate(-1.1deg);}
+.exhibit.r{width:min(560px,100%); margin-left:auto; transform:rotate(1.2deg);}
+.exhibit.c{width:min(680px,100%); margin-inline:auto;}
+/* ============ 観察の連鎖（荷札タグ） ============ */
+.chain{display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:18px; align-items:center;}
+.fuda{
+  font-size:12.5px; line-height:1.8; letter-spacing:.03em;
+  background:#efe6cd; border:1px solid rgba(120,95,55,.4); border-radius:2px 8px 8px 2px;
+  padding:8px 12px 8px 20px; position:relative; box-shadow:0 2px 5px rgba(60,42,20,.15);
+}
+.fuda::before{content:""; position:absolute; left:7px; top:50%; transform:translateY(-50%);
+  width:6px; height:6px; border-radius:50%; border:1.5px solid var(--faint);}
+.fuda b{color:var(--stamp);}
+.chain .to{font-family:var(--tw); color:var(--thread); font-size:15px;}
+/* ============ 証拠写真（SVG） ============ */
+.photos{display:flex; flex-wrap:wrap; gap:18px; justify-content:center; margin-top:16px;}
+.photo{
+  background:#efe8d6; border:8px solid #f7f2e4; outline:1px solid rgba(120,95,55,.35);
+  box-shadow:0 6px 14px rgba(60,42,20,.2); padding:10px; text-align:center;
+}
+.photo svg{display:block; margin:0 auto 6px;}
+.photo b{font-family:var(--tw); font-size:10.5px; letter-spacing:.18em; color:var(--faint); font-weight:400; text-transform:uppercase;}
+.ico{fill:none; stroke:#3a3021; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+.ico .rd{stroke:var(--stamp);}
+/* ============ 壁の血文字（拡大鏡・再解釈） ============ */
+.wall{
+  position:relative; height:300px; border-radius:3px; overflow:hidden; cursor:crosshair;
+  background:
+    repeating-linear-gradient(0deg, rgba(120,95,55,.06) 0 2px, transparent 2px 26px),
+    repeating-linear-gradient(90deg, rgba(120,95,55,.05) 0 2px, transparent 2px 46px),
+    linear-gradient(180deg,#e3d7ba,#d9cba8);
+  --mx:50%; --my:50%;
+  margin-top:16px;
+}
+.rache{
+  position:absolute; inset:0; display:grid; place-items:center;
+  font-family:var(--tw); font-size:clamp(56px,12vw,110px); letter-spacing:.14em; color:#8e2b1e;
+  transform:rotate(-3deg);
+  opacity:0.06; filter:blur(1px);
+}
+.wall .reveal-mask{
+  position:absolute; inset:0; display:grid; place-items:center;
+  font-family:var(--tw); font-size:clamp(56px,12vw,110px); letter-spacing:.14em; color:#8e2b1e;
+  transform:rotate(-3deg);
+  -webkit-mask:radial-gradient(circle 74px at var(--mx) var(--my), #000 66px, transparent 72px);
+          mask:radial-gradient(circle 74px at var(--mx) var(--my), #000 66px, transparent 72px);
+  text-shadow:0 0 8px rgba(142,43,30,.3);
+}
+.lens{position:absolute; width:150px; height:150px; border-radius:50%; pointer-events:none; z-index:3;
+  border:3px solid #6d5b39; box-shadow:0 6px 18px rgba(60,42,20,.35), inset 0 0 24px rgba(255,250,235,.35);
+  transform:translate(-999px,-999px);}
+.lens::after{content:""; position:absolute; width:12px; height:44px; background:#6d5b39; border-radius:6px;
+  right:-26px; bottom:-20px; transform:rotate(-45deg);}
+.wall .hint{position:absolute; left:50%; bottom:12px; transform:translateX(-50%);
+  font-size:11.5px; letter-spacing:.22em; color:var(--faint); pointer-events:none; font-family:var(--tw);}
+/* ============ 人物（マグショット） ============ */
+.cast{display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin-top:18px;}
+.mug{width:104px; text-align:center; background:#efe8d6; border:1px solid rgba(120,95,55,.35);
+  padding:10px 6px 8px; box-shadow:0 4px 10px rgba(60,42,20,.18);}
+.mug svg{width:64px; height:64px; margin-bottom:4px;}
+.mug b{font-family:var(--tw); font-size:10.5px; letter-spacing:.1em; color:var(--ink); font-weight:400; display:block;}
+.mug span{font-size:10px; color:var(--faint); letter-spacing:.08em;}
+.mug.villain{border-color:rgba(160,58,42,.6); background:#efdfd2;}
+.mug.villain b{color:var(--stamp);}
+/* ============ 新聞切り抜き ============ */
+.clip{
+  background:#f2ecda; border:1px solid rgba(120,95,55,.4); padding:20px 22px 18px;
+  box-shadow:0 8px 18px rgba(60,42,20,.2); margin-top:16px; transform:rotate(.6deg);
+}
+.clip .papername{font-family:var(--tw); font-size:10px; letter-spacing:.34em; color:var(--faint);
+  text-align:center; border-bottom:1px solid rgba(120,95,55,.45); padding-bottom:6px; margin-bottom:12px; text-transform:uppercase;}
+.clip h3{font-size:clamp(20px,4vw,28px); letter-spacing:.14em; text-align:center; margin-bottom:12px;}
+.clip p{font-size:13px; line-height:2.1;}
+/* ============ 結び・CTA ============ */
+.close{position:relative; text-align:center; padding:26px 0 0; z-index:2;}
+.bigstamp{
+  display:inline-block; font-family:var(--tw); font-size:clamp(17px,3.4vw,24px); letter-spacing:.3em;
+  color:var(--stamp); border:3px solid var(--stamp); border-radius:8px; padding:12px 26px;
+  transform:rotate(-5deg); opacity:.85; text-transform:uppercase; margin-bottom:26px;
+}
+.cta{max-width:640px; margin:10px auto 0; padding:24px 20px 0; text-align:center; border-top:1px dashed rgba(120,95,55,.5);}
+.cta .lead{font-family:var(--tw); font-size:11.5px; letter-spacing:.3em; color:var(--faint); margin-bottom:14px; text-transform:uppercase;}
+.cta a{display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-weight:800; font-size:14.5px;
+  padding:13px 26px; border-radius:8px; margin:4px 5px;}
+.cta .r{background:linear-gradient(135deg,#b3382c,#8a2317); color:#f4ecd8;}
+.cta .a{background:linear-gradient(135deg,#FF9900,#E47911); color:#16120a;}
+.cta .pr{margin-top:11px; font-size:11px; color:var(--faint);}
+footer{text-align:center; padding:36px 20px 60px; font-size:11.5px; letter-spacing:.14em; color:var(--faint); line-height:2.2;}
+footer a{color:var(--stamp); text-decoration:none; border-bottom:1px solid rgba(160,58,42,.35);}
+@media(max-width:640px){
+  .exhibit{padding:20px 16px 18px;}
+  .exhibit.l,.exhibit.r{transform:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  #thread{stroke-dashoffset:0 !important;}
+}
 </style>
 </head>
 <body>
-<div class="fog"></div>
-<div class="fog b"></div>
 
-<div class="wrap">
+<div id="board">
+  <svg id="threadsvg" aria-hidden="true"><path id="thread" d=""/></svg>
 
-  <!-- HERO -->
-  <header class="hero">
-    <svg class="emblem" viewBox="0 0 200 150">
-      <!-- 鹿撃ち帽 -->
-      <path class="ico" d="M44 88 Q100 24 156 88"/>
-      <path class="ico" d="M30 88 Q100 70 170 88 Q100 104 30 88 Z"/>
-      <path class="ico" d="M48 86 q-14 10 -2 24"/>
-      <path class="ico" d="M152 86 q14 10 2 24"/>
-      <circle class="ico am" cx="100" cy="40" r="4" fill="none"/>
-      <!-- パイプ -->
-      <path class="ico am" d="M120 120 h26 a4 4 0 0 1 4 4 v6 a13 13 0 0 1 -26 0 v-6 a4 4 0 0 1 4 -4 Z"/>
-      <path class="ico am" d="M120 132 q-34 2 -46 16"/>
-    </svg>
-    <h1>SHERLOCK<br>HOLMES</h1>
-    <div class="sub">CONSULTING DETECTIVE</div>
-    <div class="addr">221B&nbsp;&nbsp;BAKER&nbsp;ST.</div>
-    <div class="cue">▾</div>
+  <header class="filehead">
+    <span class="kanin">Baker St. 221B</span>
+    <div class="no">Case File — Consulting Detective No.001</div>
+    <h1>SHERLOCK HOLMES</h1>
+    <div class="jp">事件簿</div>
+    <p class="hook">根拠はすべて、<mark>あなたの袖口</mark>にある。</p>
+    <p class="lede">灰を140種見分け、歩幅から身長を割り出し、初対面の相手の経歴を言い当てる。<br>
+    世界初の「顧問探偵」の頭の中を、一冊の捜査ファイルとして開く。</p>
   </header>
 
-  <!-- 道具 -->
-  <section>
-    <div class="word">Tools</div>
-    <div class="tools">
-      <div class="tool">
-        <svg class="ico" viewBox="0 0 80 64"><path d="M16 40 Q40 12 64 40"/><path d="M8 40 Q40 30 72 40 Q40 50 8 40 Z"/><path d="M18 39 q-8 6 -1 14"/><path d="M62 39 q8 6 1 14"/><circle class="am" cx="40" cy="18" r="3"/></svg>
-        <b>帽子</b>
-      </div>
-      <div class="tool">
-        <svg class="ico" viewBox="0 0 80 64"><path class="am" d="M44 20 h22 a4 4 0 0 1 4 4 v6 a13 13 0 0 1 -26 0 v-6 a4 4 0 0 1 4 -4 Z"/><path class="am" d="M44 32 q-32 2 -40 22"/></svg>
-        <b>パイプ</b>
-      </div>
-      <div class="tool">
-        <svg class="ico" viewBox="0 0 64 64"><circle cx="26" cy="26" r="16"/><line class="am" x1="38" y1="38" x2="54" y2="54" stroke-width="4.5"/></svg>
-        <b>拡大鏡</b>
-      </div>
-      <div class="tool">
-        <svg class="ico" viewBox="0 0 64 64"><path d="M30 22 C22 22 20 32 26 36 C20 40 22 52 32 52 C42 52 44 40 38 36 C44 32 42 22 34 22 Z"/><line x1="32" y1="22" x2="32" y2="8"/><circle class="am" cx="32" cy="7" r="3"/></svg>
-        <b>ヴァイオリン</b>
-      </div>
+  <!-- 証拠A：観察の連鎖 -->
+  <section class="exhibit l" data-pin>
+    <div class="tag">Exhibit A — 観察の連鎖</div>
+    <h2>「アフガニスタンに行っておられましたね」</h2>
+    <p>初対面のワトソンへの<em>第一声</em>である。握手のあいだ——時間にして一秒——に、ホームズの中ではこれだけの糸が結ばれていた。</p>
+    <div class="chain">
+      <span class="fuda">医者の風貌、しかし<b>軍人の姿勢</b></span><span class="to">→</span>
+      <span class="fuda">つまり<b>軍医</b></span><span class="to">→</span>
+      <span class="fuda">顔は浅黒いのに<b>手首は白い</b>＝日焼け、熱帯帰り</span><span class="to">→</span>
+      <span class="fuda"><b>左腕</b>のうごきが不自然＝負傷</span><span class="to">→</span>
+      <span class="fuda">英国軍医が熱帯で負傷する土地は、当時ひとつ——<b>アフガニスタン</b></span>
     </div>
+    <p class="note">観察とは、相手をこの解像度で見ることをいう。推理は魔法ではなく、<em>視力</em>である。</p>
   </section>
 
-  <!-- 拡大鏡で手がかりを探す（インタラクティブ） -->
-  <section>
-    <div class="word">Investigation</div>
-    <div class="scene" id="scene">
-      <div class="clues">
-        <!-- 足跡 -->
-        <svg class="ico am" width="40" height="40" viewBox="0 0 32 32" style="left:8%; top:62%;"><path d="M11 4 C7 4 7 12 9 16 C10 19 9 22 11 22 C14 22 14 18 13 15 C12 11 15 4 11 4Z"/><ellipse cx="11" cy="26" rx="4" ry="3"/></svg>
-        <svg class="ico am" width="40" height="40" viewBox="0 0 32 32" style="left:18%; top:46%;"><path d="M11 4 C7 4 7 12 9 16 C10 19 9 22 11 22 C14 22 14 18 13 15 C12 11 15 4 11 4Z"/><ellipse cx="11" cy="26" rx="4" ry="3"/></svg>
-        <svg class="ico am" width="40" height="40" viewBox="0 0 32 32" style="left:30%; top:30%;"><path d="M11 4 C7 4 7 12 9 16 C10 19 9 22 11 22 C14 22 14 18 13 15 C12 11 15 4 11 4Z"/><ellipse cx="11" cy="26" rx="4" ry="3"/></svg>
-        <!-- 指紋 -->
-        <svg class="ico am" width="64" height="64" viewBox="0 0 48 48" style="right:14%; top:18%;"><path d="M24 8 C14 8 10 16 10 24"/><path d="M24 13 C18 13 15 18 15 24 C15 30 14 34 12 38"/><path d="M24 18 C20 18 19 21 19 25 C19 31 18 35 16 39"/><path d="M24 22 C22 22 23 26 23 30 C23 35 22 38 21 40"/></svg>
-        <!-- 血痕 -->
-        <svg width="34" height="40" viewBox="0 0 24 30" style="left:46%; top:66%;"><path d="M12 3 C12 3 21 16 12 24 C3 16 12 3 12 3 Z" fill="#9A352B" stroke="none"/></svg>
-        <!-- 鍵 -->
-        <svg class="ico" width="56" height="56" viewBox="0 0 48 48" style="right:30%; bottom:14%;"><circle cx="16" cy="18" r="8"/><path d="M21 23 L38 40 M33 35 l5 -5 M30 32 l4 -4"/></svg>
-        <!-- 灰（葉巻の灰） -->
-        <svg class="ico am" width="40" height="40" viewBox="0 0 32 32" style="left:64%; top:30%;"><path d="M6 22 q6 -4 12 0 q6 4 8 -2"/><path d="M8 26 q5 -3 10 0 q5 3 7 -1"/></svg>
-      </div>
-      <div class="fog-cover"></div>
+  <!-- 証拠B：遺留品（神話の検証） -->
+  <section class="exhibit r" data-pin>
+    <div class="tag">Exhibit B — 遺留品</div>
+    <h2>この写真には、偽物が混ざっている</h2>
+    <div class="photos">
+      <div class="photo"><svg class="ico" width="84" height="66" viewBox="0 0 80 64"><path d="M16 40 Q40 12 64 40"/><path d="M8 40 Q40 30 72 40 Q40 50 8 40 Z"/><path d="M18 39 q-8 6 -1 14"/><path d="M62 39 q8 6 1 14"/><circle class="rd" cx="40" cy="18" r="3"/></svg><b>Deerstalker</b></div>
+      <div class="photo"><svg class="ico" width="84" height="66" viewBox="0 0 80 64"><path d="M44 20 h22 a4 4 0 0 1 4 4 v6 a13 13 0 0 1 -26 0 v-6 a4 4 0 0 1 4 -4 Z"/><path d="M44 32 q-32 2 -40 22"/></svg><b>Pipe</b></div>
+      <div class="photo"><svg class="ico" width="70" height="66" viewBox="0 0 64 64"><circle cx="26" cy="26" r="16"/><line class="rd" x1="38" y1="38" x2="54" y2="54" stroke-width="4.5"/></svg><b>Lens</b></div>
+      <div class="photo"><svg class="ico" width="70" height="66" viewBox="0 0 64 64"><path d="M30 22 C22 22 20 32 26 36 C20 40 22 52 32 52 C42 52 44 40 38 36 C44 32 42 22 34 22 Z"/><line x1="32" y1="22" x2="32" y2="8"/><circle class="rd" cx="32" cy="7" r="3"/></svg><b>Violin</b></div>
+    </div>
+    <p class="note">偽物は<em>鹿撃ち帽</em>——原作の本文には一度も登場しない。挿絵画家パジェットが被せた帽子が、そのまま世界の記憶になった。ついでに言えば、有名な台詞「初歩だよ、ワトソン君」も<em>原作には存在しない</em>。名探偵の半分は、読者が作った。</p>
+  </section>
+
+  <!-- 証拠C：壁の血文字（拡大鏡） -->
+  <section class="exhibit c" data-pin>
+    <div class="tag">Exhibit C — 現場・壁面</div>
+    <h2>壁の文字を、レンズで検分せよ</h2>
+    <div class="wall" id="wall">
+      <div class="rache" aria-hidden="true">RACHE</div>
+      <div class="reveal-mask" aria-hidden="true">RACHE</div>
       <div class="lens" id="lens"></div>
-      <div class="hint">🔍 — 霧をなぞる</div>
+      <div class="hint">🔍 なぞって検分する</div>
     </div>
+    <p class="note">第一作『緋色の研究』。ヤードの警部は「書きかけの <em>RACHEL</em>（女の名）」と断じたが、ホームズだけが独語の <em>RACHE——復讐</em> と読んだ。同じ壁を見て、違うものが見える。それがこのシリーズの全部である。</p>
   </section>
 
-  <!-- 推理 -->
-  <section>
-    <div class="word">Deduction</div>
-    <div class="flow">
-      <div class="step">
-        <svg class="ico" viewBox="0 0 64 40"><path d="M6 20 Q32 4 58 20 Q32 36 6 20 Z"/><circle class="am" cx="32" cy="20" r="7"/><circle cx="32" cy="20" r="2.5" fill="currentColor" stroke="none"/></svg>
-        <b>観察</b>
-      </div>
-      <div class="arrow">→</div>
-      <div class="step">
-        <svg class="ico" viewBox="0 0 64 64"><circle cx="26" cy="26" r="15"/><line class="am" x1="37" y1="37" x2="52" y2="52" stroke-width="4.5"/><path class="am" d="M20 26 h12 M26 20 v12"/></svg>
-        <b>推理</b>
-      </div>
-      <div class="arrow">→</div>
-      <div class="step">
-        <svg class="ico am" viewBox="0 0 64 64"><path d="M32 8 a16 16 0 0 1 10 28 q-2 2 -2 6 h-16 q0 -4 -2 -6 a16 16 0 0 1 10 -28 Z"/><line x1="26" y1="52" x2="38" y2="52"/><line x1="28" y1="57" x2="36" y2="57"/></svg>
-        <b>解決</b>
-      </div>
-    </div>
-  </section>
-
-  <!-- 人物 -->
-  <section>
-    <div class="word">Characters</div>
+  <!-- 証拠D：関係者 -->
+  <section class="exhibit l" data-pin>
+    <div class="tag">Exhibit D — 関係者</div>
+    <h2>ベイカー街 221B・関係者一覧</h2>
     <div class="cast">
-      <div class="person">
-        <div class="disc"><svg class="ico" viewBox="0 0 64 64"><path class="ico" d="M18 30 Q32 12 46 30"/><path d="M14 30 Q32 24 50 30 Q32 36 14 30 Z"/><circle cx="32" cy="46" r="11"/><path class="am" d="M40 46 q12 0 16 8"/></svg></div>
-        <b>Holmes</b>
-      </div>
-      <div class="person">
-        <div class="disc"><svg class="ico" viewBox="0 0 64 64"><path d="M20 24 h24 M18 24 q14 -8 28 0"/><circle cx="32" cy="42" r="11"/><path d="M26 44 q6 4 12 0"/></svg></div>
-        <b>Watson</b>
-      </div>
-      <div class="person">
-        <div class="disc"><svg class="ico" viewBox="0 0 64 64"><circle cx="32" cy="40" r="12"/><path d="M22 30 q10 -10 20 0"/><circle class="am" cx="32" cy="18" r="4"/><path class="am" d="M44 46 h8 v6 a4 4 0 0 1 -8 0 Z"/></svg></div>
-        <b>Mrs. Hudson</b>
-      </div>
-      <div class="person">
-        <div class="disc"><svg class="ico" viewBox="0 0 64 64"><path d="M18 28 h28 M20 28 q12 -7 24 0"/><circle cx="32" cy="44" r="11"/><path class="am" d="M28 42 l3 3 5 -6"/></svg></div>
-        <b>Lestrade</b>
-      </div>
-      <div class="person villain">
-        <div class="disc"><svg class="ico" viewBox="0 0 64 64"><path d="M22 22 q10 -10 20 0 l3 12 q-2 4 -2 8" stroke="#9A352B"/><circle cx="32" cy="44" r="11" stroke="#9A352B"/><path d="M26 44 q6 -3 12 0" stroke="#9A352B"/></svg></div>
-        <b>Moriarty</b>
-      </div>
+      <div class="mug"><svg class="ico" viewBox="0 0 64 64"><path d="M18 30 Q32 12 46 30"/><path d="M14 30 Q32 24 50 30 Q32 36 14 30 Z"/><circle cx="32" cy="46" r="11"/><path class="rd" d="M40 46 q12 0 16 8"/></svg><b>HOLMES</b><span>顧問探偵</span></div>
+      <div class="mug"><svg class="ico" viewBox="0 0 64 64"><path d="M20 24 h24 M18 24 q14 -8 28 0"/><circle cx="32" cy="42" r="11"/><path d="M26 44 q6 4 12 0"/></svg><b>WATSON</b><span>軍医・記録者</span></div>
+      <div class="mug"><svg class="ico" viewBox="0 0 64 64"><circle cx="32" cy="40" r="12"/><path d="M22 30 q10 -10 20 0"/><circle class="rd" cx="32" cy="18" r="4"/><path class="rd" d="M44 46 h8 v6 a4 4 0 0 1 -8 0 Z"/></svg><b>MRS. HUDSON</b><span>大家</span></div>
+      <div class="mug"><svg class="ico" viewBox="0 0 64 64"><path d="M18 28 h28 M20 28 q12 -7 24 0"/><circle cx="32" cy="44" r="11"/><path class="rd" d="M28 42 l3 3 5 -6"/></svg><b>LESTRADE</b><span>ヤード警部</span></div>
+      <div class="mug villain"><svg class="ico" viewBox="0 0 64 64"><path d="M22 22 q10 -10 20 0 l3 12 q-2 4 -2 8" stroke="#a03a2a"/><circle cx="32" cy="44" r="11" stroke="#a03a2a"/><path d="M26 44 q6 -3 12 0" stroke="#a03a2a"/></svg><b>MORIARTY</b><span>犯罪界のナポレオン</span></div>
+    </div>
+    <p class="note">ワトソンは<em>無能な引き立て役ではない</em>。読者と同じ速度で驚くための、物語の心拍である。</p>
+  </section>
+
+  <!-- 証拠E：新聞 -->
+  <section class="exhibit r" data-pin>
+    <div class="tag">Exhibit E — 切り抜き</div>
+    <div class="clip">
+      <div class="papername">The Strand Magazine — Dec. 1893</div>
+      <h3>名探偵、滝に死す</h3>
+      <p>作者コナン・ドイルは、自作の探偵に飽きていた。「彼は私の頭を歴史小説から遠ざける」。かくして最終問題——ホームズはモリアーティと組み合ったまま、ライヘンバッハの滝壺へ消えた。</p>
+      <p>その直後に起きたことのほうが、事件だった。ロンドンの若者は<em>喪章を巻いて</em>出勤し、掲載誌は<em>2万人の購読者</em>を失い、抗議の手紙は「人でなし」で始まった。8年後、作者は白旗を上げて探偵を生き返らせる。</p>
+      <p><em>読者が登場人物を生き返らせた</em>、文学史上もっとも有名な事例である。フィクションの人物が「実在」を獲得した瞬間だった。</p>
     </div>
   </section>
 
-  <!-- 世界 -->
-  <section>
-    <div class="word">London</div>
-    <div class="world">
-      <figure>
-        <svg class="ico" width="70" height="96" viewBox="0 0 56 80"><rect x="14" y="20" width="28" height="58" rx="2"/><path d="M14 20 q14 -12 28 0"/><circle class="am" cx="36" cy="50" r="2"/><text x="28" y="40" text-anchor="middle" font-size="11" fill="#E0A94E" stroke="none" font-family="Georgia,serif">221B</text></svg>
-        <b>The Door</b>
-      </figure>
-      <figure>
-        <svg class="ico" width="46" height="100" viewBox="0 0 40 84"><line x1="20" y1="40" x2="20" y2="82"/><rect x="12" y="16" width="16" height="22" rx="2" class="am"/><path d="M12 16 q8 -8 16 0" class="am"/><line x1="20" y1="8" x2="20" y2="16"/><circle cx="20" cy="6" r="2.5" class="am"/></svg>
-        <b>Gas Lamp</b>
-      </figure>
-      <figure>
-        <svg class="ico" width="104" height="80" viewBox="0 0 88 64"><circle cx="24" cy="52" r="8"/><circle cx="66" cy="52" r="8"/><path d="M14 52 h-4 v-22 q0 -8 8 -8 h30 q8 0 10 8 l6 22 h-6"/><path d="M22 22 v-6 q0 -4 4 -4 h6"/></svg>
-        <b>Hansom Cab</b>
-      </figure>
+  <!-- 結び -->
+  <div class="close" data-pin>
+    <div class="bigstamp">Case Never Closed</div>
+    <p style="font-size:13.5px; line-height:2.2; letter-spacing:.05em; max-width:560px; margin:0 auto;">
+      130年たった今も、ベイカー街221Bには世界中から手紙が届く。<br>
+      宛先の人物が紙とインクでできていることを、みんな知っているのに。
+    </p>
+    <div class="cta">
+      <div class="lead">この事件簿を開く</div>
+      <a class="r" href="https://a.r10.to/hkrZM7" target="_blank" rel="sponsored noopener">🛒 全集を楽天で読む →</a>
+      <a class="a" href="https://www.amazon.co.jp/s?k=%E3%82%B7%E3%83%A3%E3%83%BC%E3%83%AD%E3%83%83%E3%82%AF%E3%83%BB%E3%83%9B%E3%83%BC%E3%83%A0%E3%82%BA%20%E5%85%A8%E9%9B%86&tag=kplab-22" target="_blank" rel="sponsored noopener">🛒 Amazonで読む →</a>
+      <div class="pr">※本リンクは楽天・Amazonアフィリエイトを含みます（PR）</div>
     </div>
-  </section>
-
-</div>
-
-<div style="max-width:560px;margin:40px auto 0;padding:26px 24px 0;text-align:center;border-top:1px solid rgba(224,169,78,.2);">
-  <div style="font-size:12px;letter-spacing:.14em;color:#E0A94E;margin-bottom:12px;font-family:sans-serif;">この事件に挑む</div>
-  <a href="https://a.r10.to/hkrZM7" target="_blank" rel="sponsored noopener" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:800;letter-spacing:.04em;font-family:sans-serif;background:linear-gradient(135deg,#E0A94E,#C9852E);color:#14130f;padding:14px 30px;border-radius:10px;box-shadow:0 0 22px rgba(224,169,78,.35);">🛒 全集を楽天で読む →</a>
-  <a href="https://www.amazon.co.jp/s?k=%E3%82%B7%E3%83%A3%E3%83%BC%E3%83%AD%E3%83%83%E3%82%AF%E3%83%BB%E3%83%9B%E3%83%BC%E3%83%A0%E3%82%BA%20%E5%85%A8%E9%9B%86&tag=kplab-22" target="_blank" rel="sponsored noopener" style="display:inline-flex;align-items:center;gap:8px;margin:8px 0 0 10px;text-decoration:none;font-weight:800;letter-spacing:.04em;background:linear-gradient(135deg,#FF9900,#E47911);color:#16120a;padding:14px 26px;border-radius:10px;box-shadow:0 0 20px rgba(255,153,0,.3);">🛒 Amazonで読む →</a>
-  <div style="margin-top:11px;font-size:11px;color:#8B8268;font-family:sans-serif;">※本リンクは楽天・Amazonアフィリエイトを含みます（PR）</div>
+  </div>
 </div>
 
 <footer>
-  <p class="mono">SHERLOCK HOLMES — A. CONAN DOYLE · 1887–<br>
-  Visual edit by K' Intelligence · 文字に頼らない解説の試み<br>
-  <a href="index.html">◂ 書架へ戻る</a><br>
-  <a href="https://gor565.github.io/kp-lab/">K' Lab</a></p>
+  SHERLOCK HOLMES — A. CONAN DOYLE · 1887–<br>
+  Visual edit by K' Intelligence<br>
+  <a href="index.html">◂ 書架へ戻る</a>　·　<a href="https://gor565.github.io/kp-lab/">K' Lab</a>
 </footer>
 
 <script>
 (function(){
-  var scene=document.getElementById('scene'), lens=document.getElementById('lens');
-  if(!scene) return;
-  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var auto=!reduce, t=0;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var board = document.getElementById('board');
+  var svg = document.getElementById('threadsvg');
+  var thread = document.getElementById('thread');
+  var exhibits = [...document.querySelectorAll('[data-pin]')];
+  var pins = [];
 
-  function setPos(cx,cy){
-    var r=scene.getBoundingClientRect();
-    cx=Math.max(0,Math.min(r.width,cx)); cy=Math.max(0,Math.min(r.height,cy));
-    scene.style.setProperty('--mx',cx+'px'); scene.style.setProperty('--my',cy+'px');
-    lens.style.transform='translate('+(cx-78)+'px,'+(cy-78)+'px)';
+  // 各証拠カードの上辺にピンを打ち、赤い糸で結ぶ
+  function layout(){
+    pins.forEach(function(p){ p.remove(); });
+    pins = [];
+    var br = board.getBoundingClientRect();
+    var pts = [];
+    exhibits.forEach(function(ex, i){
+      var r = ex.getBoundingClientRect();
+      // 左カードは右肩、右カードは左肩にピン（糸がジグザグに渡る）
+      var x = (r.left - br.left) + (ex.classList.contains('r') ? r.width * .12 : r.width * .88);
+      var y = (r.top - br.top) + 6;
+      var pin = document.createElement('span');
+      pin.className = 'pin';
+      pin.style.left = (x - 7) + 'px';
+      pin.style.top = (y - 7) + 'px';
+      board.appendChild(pin);
+      pins.push(pin);
+      pts.push([x, y]);
+    });
+    var d = pts.map(function(p, i){
+      if (i === 0) return 'M' + p[0] + ' ' + p[1];
+      var prev = pts[i-1];
+      // 糸のたわみ：中点を少し下げる
+      var mx = (prev[0] + p[0]) / 2, my = (prev[1] + p[1]) / 2 + 46;
+      return 'Q' + mx + ' ' + my + ' ' + p[0] + ' ' + p[1];
+    }).join(' ');
+    thread.setAttribute('d', d);
+    thread.setAttribute('pathLength', '1000');
+    svg.setAttribute('width', board.clientWidth);
+    svg.setAttribute('height', board.clientHeight);
   }
-  function fromEvent(e){
-    var r=scene.getBoundingClientRect();
-    var p=e.touches?e.touches[0]:e;
-    setPos(p.clientX-r.left, p.clientY-r.top);
-  }
-  scene.addEventListener('pointermove',function(e){ auto=false; fromEvent(e); });
-  scene.addEventListener('touchmove',function(e){ auto=false; fromEvent(e); e.preventDefault(); },{passive:false});
 
-  // 初期位置 & 自動スイープ（操作するまで）
+  function onScroll(){
+    if (reduce) return;
+    var doc = document.documentElement;
+    var p = Math.min(1, (scrollY + innerHeight * .82) / doc.scrollHeight);
+    thread.style.strokeDashoffset = 1000 * (1 - p);
+  }
+
+  addEventListener('resize', function(){ layout(); onScroll(); }, { passive:true });
+  addEventListener('scroll', function(){ requestAnimationFrame(onScroll); }, { passive:true });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ layout(); onScroll(); });
+  layout(); onScroll();
+
+  // 壁の血文字：レンズ検分
+  var wall = document.getElementById('wall'), lens = document.getElementById('lens');
+  var auto = !reduce, t = 0;
+  function setPos(cx, cy){
+    var r = wall.getBoundingClientRect();
+    cx = Math.max(0, Math.min(r.width, cx)); cy = Math.max(0, Math.min(r.height, cy));
+    wall.style.setProperty('--mx', cx + 'px'); wall.style.setProperty('--my', cy + 'px');
+    lens.style.transform = 'translate(' + (cx - 75) + 'px,' + (cy - 75) + 'px)';
+  }
+  wall.addEventListener('pointermove', function(e){
+    auto = false;
+    var r = wall.getBoundingClientRect();
+    setPos(e.clientX - r.left, e.clientY - r.top);
+  });
+  wall.addEventListener('touchmove', function(e){
+    auto = false;
+    var r = wall.getBoundingClientRect(), p = e.touches[0];
+    setPos(p.clientX - r.left, p.clientY - r.top);
+    e.preventDefault();
+  }, { passive:false });
   function tick(){
-    if(auto){
-      t+=0.012;
-      var w=scene.clientWidth, h=scene.clientHeight;
-      setPos(w*(0.5+0.34*Math.sin(t)), h*(0.5+0.32*Math.sin(t*1.7)));
+    if (auto){
+      t += 0.011;
+      setPos(wall.clientWidth * (0.5 + 0.36 * Math.sin(t)), wall.clientHeight * (0.5 + 0.3 * Math.sin(t * 1.6)));
     }
     requestAnimationFrame(tick);
   }
-  setPos(scene.clientWidth*0.5, scene.clientHeight*0.5);
-  if(!reduce) requestAnimationFrame(tick);
+  setPos(wall.clientWidth * .5, wall.clientHeight * .5);
+  if (!reduce) requestAnimationFrame(tick);
+  else { wall.querySelector('.reveal-mask').style.mask = 'none'; wall.querySelector('.reveal-mask').style.webkitMask = 'none'; }
 })();
 </script>
 
