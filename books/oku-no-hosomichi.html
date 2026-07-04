@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>おくのほそ道 — 五・七・五は、歩幅である ｜ K' Library</title>
+<meta name="description" content="46歳。家を売って、2400キロを歩いた。松尾芭蕉『おくのほそ道』を、絵巻として歩き直すビジュアル・エッセイ。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --washi:#efe6d1;      /* 生成りの和紙（明） */
+  --washi2:#e7dcc2;
+  --ink:#2a2620;        /* 墨 */
+  --ink-soft:#5a5344;
+  --kaki:#bf4a26;       /* 柿色＝道・印 */
+  --ai:#2c4a6e;         /* 藍＝川 */
+  --serif:'Shippori Mincho','Hiragino Mincho ProN',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:auto}
+body{
+  font-family:var(--serif);
+  color:var(--ink);
+  background:var(--washi);
+}
+/* ============ 巻物ステージ（縦スクロール → 左へ進む絵巻） ============ */
+#space{width:100%}
+#stage{
+  position:fixed; top:0; right:0; height:100svh;
+  width:max-content; /* fixed要素のshrink-to-fitで100vwに潰されないよう明示 */
+  display:flex; flex-direction:row-reverse; /* 先頭シーンが右端＝巻物の起点 */
+  will-change:transform;
+  background:
+    radial-gradient(1200px 500px at 20% 110%, rgba(191,74,38,.045), transparent 60%),
+    radial-gradient(900px 400px at 70% -10%, rgba(44,74,110,.05), transparent 60%),
+    repeating-linear-gradient(90deg, rgba(90,83,68,.028) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(0deg, rgba(90,83,68,.02) 0 1px, transparent 1px 5px),
+    linear-gradient(180deg, var(--washi) 0%, var(--washi2) 100%);
+  box-shadow:inset 0 14px 26px -18px rgba(42,38,32,.5), inset 0 -14px 26px -18px rgba(42,38,32,.45);
+}
+/* 巻物の縁（上下の表装） */
+#stage::before,#stage::after{
+  content:""; position:absolute; left:0; right:0; height:10px; z-index:5;
+  background:linear-gradient(90deg,#3a3126,#6b5a41 30%,#3a3126 60%,#6b5a41);
+}
+#stage::before{top:0} #stage::after{bottom:0}
+
+/* ============ 道（SVG・スクロールで伸びる） ============ */
+#roadsvg{position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none}
+#road{
+  fill:none; stroke:var(--kaki); stroke-width:4.5; stroke-linecap:round; stroke-linejoin:round;
+  stroke-dasharray:600; stroke-dashoffset:600; opacity:.9;
+}
+#roaddots{fill:none; stroke:rgba(191,74,38,.4); stroke-width:4; stroke-dasharray:.5 6; opacity:.9}
+
+/* ============ 距離カウンタ（脇役） ============ */
+#odometer{
+  position:fixed; top:22px; left:14px; z-index:40;
+  writing-mode:vertical-rl; text-orientation:mixed;
+  font-size:12px; letter-spacing:.3em; color:var(--ink-soft);
+  border-left:1px solid rgba(90,83,68,.35); padding:8px 6px 12px 10px;
+  background:rgba(239,230,209,.85); border-radius:0 0 4px 0;
+  font-feature-settings:"tnum";
+}
+#odometer b{color:var(--kaki); font-weight:700}
+
+/* ============ シーン共通 ============ */
+.scene{
+  flex:none; height:100%; position:relative; z-index:2;
+  display:flex; align-items:center; justify-content:center;
+  padding:0 clamp(28px,6vw,90px);
+}
+.v{writing-mode:vertical-rl; text-orientation:mixed}
+.station{transition:opacity 1.6s ease, filter 1.9s ease; opacity:0; filter:blur(9px)}
+.station.in{opacity:1; filter:blur(0)}
+.haiku{
+  font-size:clamp(26px,4.6svh,42px); font-weight:500; letter-spacing:.34em; line-height:2.1;
+  height:min(74svh,560px);
+}
+.haiku .kana{font-size:.5em; letter-spacing:.22em; color:var(--ink-soft); margin-top:1.2em}
+.place{
+  writing-mode:vertical-rl; font-size:12px; letter-spacing:.5em; color:var(--kaki);
+  border-right:1px solid rgba(191,74,38,.5); padding-right:8px; margin-left:26px; height:12em;
+}
+.note{
+  writing-mode:vertical-rl; font-size:clamp(12.5px,1.9svh,15px); line-height:2.5; letter-spacing:.12em;
+  color:var(--ink-soft); height:min(62svh,470px); margin-right:34px;
+}
+.note em{font-style:normal; color:var(--ink); font-weight:700}
+
+/* ---- 起点：題字 ---- */
+#s-title{width:min(100vw,900px)}
+.title-wrap{display:flex; align-items:center; gap:clamp(18px,4vw,44px)}
+.daiji{
+  font-size:clamp(46px,10.5svh,92px); font-weight:700; letter-spacing:.28em; line-height:1.28;
+  height:min(80svh,600px);
+}
+.daiji small{display:block; font-size:.28em; letter-spacing:.5em; color:var(--ink-soft); margin-top:2.2em}
+.inkan{
+  width:clamp(44px,6.5svh,58px); height:clamp(44px,6.5svh,58px); flex:none; align-self:flex-end;
+  background:var(--kaki); color:var(--washi); border-radius:6px;
+  display:grid; place-items:center; writing-mode:vertical-rl;
+  font-size:clamp(15px,2.4svh,21px); font-weight:700; letter-spacing:.1em;
+  box-shadow:0 1px 0 rgba(42,38,32,.25); transform:rotate(-2deg);
+}
+.hint{
+  position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+  font-size:11px; letter-spacing:.32em; color:var(--ink-soft); white-space:nowrap;
+}
+.hint .arrow{display:inline-block; animation:nudge 2.2s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(-7px)}}
+
+/* ---- 数字の見開き ---- */
+#s-num{width:min(100vw,980px)}
+.numrow{display:flex; flex-direction:row-reverse; gap:clamp(20px,5vw,64px); align-items:center}
+.bignum .n{
+  font-size:clamp(40px,9svh,84px); font-weight:700; letter-spacing:.1em; line-height:1.15;
+  height:min(58svh,430px);
+}
+.bignum .l{font-size:clamp(12px,1.8svh,14px); letter-spacing:.4em; color:var(--kaki); margin-top:.8em}
+
+/* ---- 句のない松島 ---- */
+.tanzaku-empty{
+  width:clamp(64px,9svh,86px); height:min(66svh,480px);
+  border:1px solid rgba(90,83,68,.4); border-radius:4px;
+  background:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.06));
+  box-shadow:0 2px 10px rgba(42,38,32,.08);
+  display:grid; place-items:center; margin-right:38px;
+}
+.tanzaku-empty span{writing-mode:vertical-rl; font-size:11px; letter-spacing:.55em; color:rgba(90,83,68,.55)}
+
+/* ---- 最上川：藍の帯 ---- */
+#s-mogami{background:linear-gradient(180deg, transparent 58%, rgba(44,74,110,.14) 58%, rgba(44,74,110,.22) 74%, transparent 74%)}
+#s-mogami .haiku{color:var(--ai)}
+#s-mogami .place{color:var(--ai); border-right-color:rgba(44,74,110,.5)}
+
+/* ---- 結び・CTA ---- */
+#s-cta{width:min(100vw,860px); flex-direction:column; gap:3.4svh; text-align:center}
+.cta-lead{writing-mode:vertical-rl; font-size:13px; letter-spacing:.4em; color:var(--ink-soft); height:11em}
+.cta-buttons{display:flex; flex-wrap:wrap; gap:12px; justify-content:center}
+.cta-buttons a{
+  display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-weight:800;
+  padding:14px 28px; border-radius:10px; font-family:var(--serif); font-size:15px;
+}
+.cta-r{background:linear-gradient(135deg,var(--kaki),#8f3117); color:var(--washi)}
+.cta-a{background:linear-gradient(135deg,#FF9900,#E47911); color:#16120a}
+.pr{font-size:11px; color:var(--ink-soft)}
+.backlink{font-size:12.5px; letter-spacing:.2em}
+.backlink a{color:var(--ai); text-decoration:none; border-bottom:1px solid rgba(44,74,110,.4); padding-bottom:2px}
+
+/* ============ モバイル ============ */
+@media (max-width:640px){
+  .note{margin-right:16px; height:min(56svh,420px)}
+  .place{margin-left:12px}
+  .scene{padding:0 4vw}
+  #odometer{top:16px; left:10px}
+}
+/* ============ reduced motion ============ */
+@media (prefers-reduced-motion:reduce){
+  .station{transition:none; filter:none; opacity:1}
+  .hint .arrow{animation:none}
+}
+</style>
+</head>
+<body>
+<div id="space"></div>
+
+<div id="stage">
+  <svg id="roadsvg" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+  <!-- 起点（右端）：題字 -->
+  <section class="scene" id="s-title">
+    <div class="title-wrap">
+      <h1 class="daiji v">おくのほそ道<small>松尾芭蕉　元禄二年</small></h1>
+      <div class="inkan" aria-hidden="true">芭蕉</div>
+    </div>
+    <p class="hint"><span class="arrow">◀</span>　下へスクロール — 絵巻は左へすすみます</p>
+  </section>
+
+  <!-- 数字 -->
+  <section class="scene station" id="s-num">
+    <div class="numrow">
+      <div class="bignum"><div class="n v">四十六歳。</div><div class="l v">当時の平均寿命の、ほぼ終点</div></div>
+      <div class="bignum"><div class="n v">家を、売った。</div><div class="l v">芭蕉庵を人に譲り渡してから発った</div></div>
+      <div class="bignum"><div class="n v">二四〇〇キロ。</div><div class="l v">百五十日　おおむね徒歩　多い日は四十キロ</div></div>
+    </div>
+  </section>
+
+  <!-- 序 -->
+  <section class="scene station" id="s-jo">
+    <p class="haiku v" style="font-size:clamp(20px,3.4svh,30px);letter-spacing:.22em">月日は百代の過客にして、<br>行きかふ年もまた旅人なり。</p>
+    <p class="note">帰ることを前提にしない旅支度である。<em>これは観光ではなく、覚悟だった。</em>そして覚悟は、五文字と七文字の器に注がれていく——<em>五・七・五は、歩幅である。</em>読むのではない。歩調が合ってしまうのだ。</p>
+  </section>
+
+  <!-- 千住 -->
+  <section class="scene station">
+    <p class="note">見送りの人々は、彼の背中が<em>幻のように</em>小さくなるまで立っていたという。最初の一句は、別れの句である。</p>
+    <p class="haiku v">行く春や<br>鳥啼き魚の<br>目は泪<span class="kana">ゆくはるや　とりなきうおの　めはなみだ</span></p>
+    <span class="place">千住 ─ 旅立ち</span>
+  </section>
+
+  <!-- 松島（句がない） -->
+  <section class="scene station">
+    <div class="tanzaku-empty"><span>（句は、ない）</span></div>
+    <p class="note">日本一の絶景と呼ばれた松島で、紀行文の名手は<em>本文に一句も残さなかった</em>。言葉が届かないと判断したとき、引き返す勇気。この空白の短冊こそ、絶景の証明である。</p>
+    <span class="place">松島 ─ 沈黙</span>
+  </section>
+
+  <!-- 平泉 -->
+  <section class="scene station">
+    <p class="note">奥州藤原氏、三代の栄華。黄金の都の跡地は、ただの<em>夏の草むら</em>になっていた。芭蕉はここで泣いている。</p>
+    <p class="haiku v">夏草や<br>兵どもが<br>夢の跡<span class="kana">なつくさや　つわものどもが　ゆめのあと</span></p>
+    <span class="place">平泉 ─ 栄華の跡</span>
+  </section>
+
+  <!-- 立石寺 -->
+  <section class="scene station">
+    <p class="note">静けさを言うために、<em>音を置く</em>。蝉の声だけが岩に吸い込まれていく山寺。逆説の頂点であり、この旅の最高到達点。</p>
+    <p class="haiku v">閑さや<br>岩にしみ入る<br>蝉の声<span class="kana">しずかさや　いわにしみいる　せみのこえ</span></p>
+    <span class="place">立石寺 ─ 山寺</span>
+  </section>
+
+  <!-- 最上川 -->
+  <section class="scene station" id="s-mogami">
+    <p class="note">梅雨のすべてを飲み込んだ川は、舟ごと押し流す速さだった。動の句。旅は下り坂に入る。</p>
+    <p class="haiku v">五月雨を<br>あつめて早し<br>最上川<span class="kana">さみだれを　あつめてはやし　もがみがわ</span></p>
+    <span class="place">最上川 ─ 急流</span>
+  </section>
+
+  <!-- 大垣・結び -->
+  <section class="scene station">
+    <p class="note">百五十日の旅の終着で、迎えの人々に囲まれながら、彼はもう<em>伊勢へ発つ日取り</em>の話をしていた。終わらせないことが、この旅の結びである。</p>
+    <p class="haiku v">蛤の<br>ふたみにわかれ<br>行く秋ぞ<span class="kana">はまぐりの　ふたみにわかれ　ゆくあきぞ</span></p>
+    <span class="place">大垣 ─ 結び、また旅へ</span>
+  </section>
+
+  <!-- CTA -->
+  <section class="scene station" id="s-cta">
+    <p class="cta-lead">この道を、活字で歩き直す</p>
+    <div class="cta-buttons">
+      <!-- 楽天リンク(a.r10.to)は発行後に差し込み
+      <a class="cta-r" href="{楽天 a.r10.to}" target="_blank" rel="sponsored noopener">🛒 楽天で読む →</a> -->
+      <a class="cta-a" href="https://www.amazon.co.jp/s?k=%E3%81%8A%E3%81%8F%E3%81%AE%E3%81%BB%E3%81%9D%E9%81%93%20%E6%9D%BE%E5%B0%BE%E8%8A%AD%E8%95%89&amp;tag=kplab-22" target="_blank" rel="sponsored noopener">🛒 Amazonで読む →</a>
+    </div>
+    <p class="pr">※本リンクは楽天・Amazonアフィリエイトを含みます（PR）</p>
+    <p class="backlink"><a href="index.html">◂ 書架へ戻る</a></p>
+  </section>
+</div>
+
+<div id="odometer" aria-live="off">歩いた道のり <b id="ri">〇</b> 里 ／ 六百里</div>
+
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const space = document.getElementById('space');
+  const svg = document.getElementById('roadsvg');
+  const riEl = document.getElementById('ri');
+  const stations = [...document.querySelectorAll('.station')];
+  const KANJI = '〇一二三四五六七八九';
+  const toKanji = n => n===0 ? '〇' : String(n).split('').map(d=>KANJI[+d]).join('');
+
+  let W = 0, MAX = 1;
+  let road = null;
+
+  function layout(){
+    road = null; // SVG再構築で古い参照が残らないように
+    W = stage.scrollWidth;
+    // 巻物の右端は画面右端（CSS right:0）。スクロール量ぶん右へ送る＝左の続きが現れる
+    MAX = Math.max(1, W - innerWidth);
+    space.style.height = (MAX + innerHeight) + 'px';
+    // 道SVG：ステージ座標系で1本のうねる道を描く
+    svg.setAttribute('viewBox', `0 0 ${W} 1000`);
+    svg.innerHTML = '';
+    const pts = [];
+    const n = 90; // 点を増やして滑らかな山道に
+    for (let i = 0; i <= n; i++){
+      const t = i / n;
+      const x = W - 60 - (W - 120) * t;                // 右→左へ
+      const y = 800 + Math.sin(t * 33) * 55 + Math.sin(t * 11.3) * 30; // 文字帯より下を蛇行
+      pts.push(`${i === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`);
+    }
+    const mk = (id) => {
+      const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+      p.setAttribute('d', pts.join(''));
+      p.setAttribute('id', id);
+      p.setAttribute('pathLength', '600');
+      return p;
+    };
+    svg.appendChild(mk('roaddots'));
+    svg.appendChild(mk('road'));
+  }
+
+  function onScroll(){
+    const y = Math.max(0, Math.min(scrollY, MAX));
+    const p = y / MAX;
+    stage.style.transform = `translateX(${y}px)`;
+    if (!road) road = document.getElementById('road');
+    // 道の先端は視界の少し先を行く（先端が常に背後だと歩いた道が見えない）
+    const lead = innerWidth * .6;
+    const pDraw = Math.min(1, (y + lead) / (MAX + lead));
+    if (road) road.style.strokeDashoffset = 600 * (1 - pDraw);
+    riEl.textContent = toKanji(Math.round(600 * p));
+    // 宿場の到着判定（画面内に入ったらにじみが乾く）
+    for (const s of stations){
+      if (s.classList.contains('in')) continue;
+      const r = s.getBoundingClientRect();
+      if (r.left < innerWidth * .82 && r.right > 0) s.classList.add('in');
+    }
+  }
+
+  addEventListener('resize', () => { layout(); onScroll(); }, { passive:true });
+  addEventListener('scroll', () => requestAnimationFrame(onScroll), { passive:true });
+  document.fonts && document.fonts.ready ? document.fonts.ready.then(()=>{ layout(); onScroll(); }) : null;
+  layout(); onScroll();
+})();
+</script>
+</body>
+</html>
