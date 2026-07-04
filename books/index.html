@@ -4,63 +4,98 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>K' Library — 書架</title>
-<meta name="description" content="K'が作る、文字とデザインで語るビジュアル・エッセイの書架。背表紙を選ぶと作品へ。">
+<meta name="description" content="K'が作る、文字とデザインで語るビジュアル・エッセイの書架。背表紙に手をかざすと栞が現れ、選ぶとその一冊がひらく。">
 <style>
   :root{
-    --room:#1C140E; --room2:#120C08; --wood:#5A3A22; --wood2:#3E2716; --wood3:#6E4A2C;
-    --shelf:#2A1B10; --ink:#EFE4D2; --muted:#A89378; --gold:#E0B95E;
+    --room:#160f0a; --ink:#EFE4D2; --muted:#A89378; --gold:#E0B95E;
+    --wood:#5A3A22; --wood2:#3E2716; --wood3:#6E4A2C;
+    --glow:#E0B95E;            /* ホバー中の本が部屋を染める色 */
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;
     --serif:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
+  html{background:var(--room);}
   body{
-    font-family:var(--sans); color:var(--ink); min-height:100vh; padding:48px 20px 80px;
-    background:
-      radial-gradient(900px 500px at 50% -8%, rgba(224,185,94,.16), transparent 60%),
-      radial-gradient(700px 500px at 50% 120%, rgba(0,0,0,.5), transparent 60%),
-      linear-gradient(180deg,#1C140E,#140d08);
+    font-family:var(--sans); color:var(--ink); min-height:100vh; padding:44px 20px 70px;
+    background:linear-gradient(180deg,#191009,#120b06 60%,#0d0804);
+    overflow-x:hidden;
   }
-  .head{text-align:center; max-width:720px; margin:0 auto 44px;}
-  .eyebrow{font-size:11px; letter-spacing:.4em; color:var(--gold); text-transform:uppercase; margin-bottom:14px;}
-  .head h1{font-family:var(--serif); font-size:clamp(30px,6vw,48px); font-weight:700; letter-spacing:.14em; color:#fff;
-    text-shadow:0 0 30px rgba(224,185,94,.25);}
-  .head p{font-size:14px; color:var(--muted); margin-top:14px; line-height:1.8;}
+  /* ---- 部屋の環境光（ホバー中の本の色に染まる） ---- */
+  #ambient{
+    position:fixed; inset:-20%; z-index:0; pointer-events:none;
+    background:radial-gradient(58% 46% at 50% 34%, var(--glow), transparent 70%);
+    opacity:.10; transition:opacity .7s ease, background .7s ease;
+    mix-blend-mode:screen;
+  }
+  body.lit #ambient{opacity:.32;}
+  /* ---- 天窓からの光の柱と塵 ---- */
+  #shaft{
+    position:fixed; top:-6%; left:50%; width:min(560px,72vw); height:78vh; z-index:0; pointer-events:none;
+    transform:translateX(-50%) skewX(-7deg);
+    background:linear-gradient(180deg, rgba(239,228,210,.10), rgba(239,228,210,.028) 55%, transparent 90%);
+    clip-path:polygon(24% 0, 76% 0, 100% 100%, 0 100%);
+    mix-blend-mode:screen;
+  }
+  .mote{position:fixed; z-index:0; width:3px; height:3px; border-radius:50%; pointer-events:none;
+    background:rgba(239,228,210,.5); filter:blur(.5px); animation:drift linear infinite; mix-blend-mode:screen;}
+  @keyframes drift{
+    0%{transform:translate3d(0,-6vh,0); opacity:0}
+    12%{opacity:.7} 85%{opacity:.4}
+    100%{transform:translate3d(var(--dx,30px),86vh,0); opacity:0}
+  }
 
-  /* 本棚 */
-  .bookcase{max-width:860px; margin:0 auto; padding:14px; border-radius:10px;
-    background:linear-gradient(180deg,var(--wood3),var(--wood2));
-    box-shadow:0 30px 70px rgba(0,0,0,.6), inset 0 0 0 2px rgba(0,0,0,.25), inset 0 0 40px rgba(0,0,0,.5);}
-  .shelf{position:relative; background:linear-gradient(180deg,#241710,#1a110a); border-radius:5px; margin-bottom:14px;
-    padding:26px 22px 0; box-shadow:inset 0 8px 24px rgba(0,0,0,.6);}
+  .wrap{position:relative; z-index:2;}
+  .head{text-align:center; max-width:720px; margin:0 auto 30px;}
+  .eyebrow{font-size:11px; letter-spacing:.44em; color:var(--gold); text-transform:uppercase; margin-bottom:13px;}
+  .head h1{font-family:var(--serif); font-size:clamp(30px,6vw,46px); font-weight:700; letter-spacing:.2em; color:#fff;
+    text-shadow:0 0 34px rgba(224,185,94,.28);}
+  .head p{font-size:13px; color:var(--muted); margin-top:12px; letter-spacing:.08em;}
+
+  /* ---- 本棚 ---- */
+  .bookcase{max-width:880px; margin:0 auto; padding:16px 16px 14px; border-radius:12px; position:relative;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 2px, transparent 2px 90px),
+      linear-gradient(180deg,var(--wood3),var(--wood2));
+    box-shadow:0 36px 80px rgba(0,0,0,.65), inset 0 0 0 2px rgba(0,0,0,.3), inset 0 0 46px rgba(0,0,0,.5);}
+  .shelf{position:relative; border-radius:5px; margin-bottom:15px;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,225,180,.02) 0 3px, transparent 3px 64px),
+      linear-gradient(180deg,#221610,#180f09);
+    padding:26px 20px 0; box-shadow:inset 0 10px 26px rgba(0,0,0,.65);}
   .shelf:last-child{margin-bottom:0;}
-  .shelf .cat{position:absolute; top:8px; left:16px; font-size:10px; letter-spacing:.24em; color:var(--muted); text-transform:uppercase;}
-  .row{display:flex; align-items:flex-end; justify-content:center; gap:12px; flex-wrap:wrap; min-height:262px;}
-  /* 棚板 */
-  .plank{height:16px; border-radius:0 0 5px 5px; margin:0 -22px;
+  .shelf .cat{position:absolute; top:8px; left:16px; font-size:10px; letter-spacing:.26em; color:var(--muted); text-transform:uppercase;}
+  .row{display:flex; align-items:flex-end; justify-content:center; gap:11px; flex-wrap:wrap; min-height:262px;}
+  .plank{height:15px; border-radius:0 0 5px 5px; margin:0 -20px;
     background:linear-gradient(180deg,var(--wood3),var(--wood),var(--wood2));
-    box-shadow:0 10px 18px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,220,180,.18);}
+    box-shadow:0 12px 20px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,220,180,.16);}
 
-  /* 背表紙 */
+  /* ---- 背表紙 ---- */
   .book{position:relative; text-decoration:none; display:flex; flex-direction:column; justify-content:space-between;
     align-items:center; border-radius:3px 3px 2px 2px; padding:18px 0 12px; color:#fff; cursor:pointer;
-    box-shadow:2px 0 0 rgba(0,0,0,.3), inset -6px 0 12px rgba(0,0,0,.35), inset 6px 0 10px rgba(255,255,255,.06);
-    transition:transform .28s cubic-bezier(.2,.8,.3,1), box-shadow .28s, filter .28s;
+    box-shadow:2px 0 0 rgba(0,0,0,.3), inset -6px 0 12px rgba(0,0,0,.38), inset 6px 0 10px rgba(255,255,255,.06);
+    transition:transform .3s cubic-bezier(.2,.8,.3,1), box-shadow .3s, filter .3s;
     transform-origin:bottom center;}
-  .book:hover{transform:translateY(-22px) rotate(-1deg); box-shadow:0 18px 30px rgba(0,0,0,.6), inset -6px 0 12px rgba(0,0,0,.35);}
+  /* 生きた棚：数冊だけ傾ける */
+  .book.lean-l{transform:rotate(-4.5deg) translateY(2px);}
+  .book.lean-r{transform:rotate(3.5deg) translateY(1px);}
+  .book:hover,.book:focus-visible{transform:translateY(-24px); filter:brightness(1.12);
+    box-shadow:0 20px 34px rgba(0,0,0,.65), 0 0 34px -6px var(--glow), inset -6px 0 12px rgba(0,0,0,.35);}
+  .book.lean-l:hover,.book.lean-l:focus-visible{transform:rotate(-1.5deg) translateY(-22px);}
+  .book.lean-r:hover,.book.lean-r:focus-visible{transform:rotate(1deg) translateY(-22px);}
   .book:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
-  .book.pull{transform:translateY(-60px) scale(1.04); filter:brightness(1.15);}
+  .book.pull{transform:translateY(-62px) scale(1.05)!important; filter:brightness(1.2);}
   .book .ttl{writing-mode:vertical-rl; text-orientation:mixed; font-family:var(--serif); font-weight:700; letter-spacing:.06em;
     line-height:1.25; text-shadow:0 1px 2px rgba(0,0,0,.5); flex:1;}
-  .book .label{font-size:9px; letter-spacing:.08em; padding:4px 4px; opacity:.85; writing-mode:horizontal-tb; text-align:center;
+  .book .label{font-size:9px; letter-spacing:.08em; padding:4px 4px; opacity:.85; text-align:center;
     border-top:1px solid rgba(255,255,255,.25); width:78%;}
-  .book .top{font-size:9px; letter-spacing:.1em; opacity:.7; writing-mode:horizontal-tb; border-bottom:1px solid rgba(255,255,255,.25); width:78%; text-align:center; padding-bottom:4px;}
+  .book .top{font-size:9px; letter-spacing:.1em; opacity:.7; border-bottom:1px solid rgba(255,255,255,.25); width:78%; text-align:center; padding-bottom:4px;}
 
-  /* 各巻の装い */
+  /* ---- 各巻の装い（作品の顔・継承） ---- */
   .b-galaxy {background:linear-gradient(90deg,#0a1430,#16224a,#0a1430); width:52px; height:256px;}
   .b-galaxy .ttl, .b-galaxy .label, .b-galaxy .top{color:#DCE6FF;}
   .b-holmes {background:linear-gradient(90deg,#14130f,#272219,#14130f); width:50px; height:240px;}
   .b-holmes .ttl, .b-holmes .label, .b-holmes .top{color:#E0A94E;}
-  .b-nichiyu{background:linear-gradient(90deg,#cabf9f,#e7dec6,#cabf9f); width:56px; height:248px; color:#2A2620;}
+  .b-nichiyu{background:linear-gradient(90deg,#cabf9f,#e7dec6,#cabf9f); width:56px; height:248px;}
   .b-nichiyu .ttl{color:#2A2620;} .b-nichiyu .label,.b-nichiyu .top{color:#7A1D17; border-color:rgba(120,30,20,.35);}
   .b-pre   {background:linear-gradient(90deg,#5a0d14,#8A1620,#5a0d14); width:50px; height:262px;}
   .b-pre .ttl,.b-pre .label,.b-pre .top{color:#D9B65A;}
@@ -82,94 +117,154 @@
   .b-1984 .ttl,.b-1984 .label,.b-1984 .top{color:#e23b3b;}
   .b-borges{background:linear-gradient(90deg,#2e1f0a,#4a3010,#2e1f0a); width:54px; height:246px;}
   .b-borges .ttl,.b-borges .label,.b-borges .top{color:#e8d49a;}
-  .b-suna{background:linear-gradient(90deg,#a8946d,#d8c9a8,#a8946d); width:54px; height:250px; color:#3a2c18;}
+  .b-suna{background:linear-gradient(90deg,#a8946d,#d8c9a8,#a8946d); width:54px; height:250px;}
   .b-suna .ttl{color:#3a2c18;} .b-suna .label,.b-suna .top{color:#5c3d1e; border-color:rgba(92,61,30,.35);}
   .b-oku{background:linear-gradient(90deg,#d9cba7,#f0e7d2,#d9cba7); width:56px; height:266px;}
   .b-oku .ttl{color:#2a2620;} .b-oku .label,.b-oku .top{color:#bf4a26; border-color:rgba(191,74,38,.35);}
   .b-apocalypse{background:linear-gradient(90deg,#0a0f0a,#1a2616,#0a0f0a); width:52px; height:258px;}
   .b-apocalypse .ttl,.b-apocalypse .label,.b-apocalypse .top{color:#E0A030;}
 
-  .tip{text-align:center; color:var(--muted); font-size:12px; letter-spacing:.06em; margin:30px 0 0;}
-  footer{text-align:center; margin-top:40px; font-size:11px; color:#7a6c54; letter-spacing:.1em; line-height:2;}
+  /* ---- 浮遊する栞カード（手をかざした本の「入口の一行」・常に視界内） ---- */
+  #desk{
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+    width:min(720px, 94vw); min-height:88px; z-index:6;
+    border:1px solid rgba(239,228,210,.16); border-radius:12px;
+    background:linear-gradient(180deg, rgba(34,22,14,.86), rgba(20,13,8,.88));
+    backdrop-filter:blur(6px);
+    padding:16px 26px 14px; text-align:center;
+    box-shadow:0 18px 44px rgba(0,0,0,.5);
+    transition:border-color .5s ease;
+  }
+  body.lit #desk{border-color:color-mix(in srgb, var(--glow) 45%, transparent);}
+  #desk .ribbon{
+    position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+    font-size:10px; letter-spacing:.34em; color:var(--muted); text-transform:uppercase;
+    background:var(--room); padding:2px 14px; border-radius:99px; border:1px solid rgba(239,228,210,.14);
+  }
+  #desk-meta{font-size:11px; letter-spacing:.24em; color:var(--muted); margin-bottom:8px; transition:color .5s;}
+  body.lit #desk-meta{color:var(--glow);}
+  #desk-hook{
+    font-family:var(--serif); font-size:clamp(15px,2.6vw,19px); line-height:1.9; letter-spacing:.05em; color:var(--ink);
+    opacity:.55; transition:opacity .45s ease;
+  }
+  body.lit #desk-hook{opacity:1;}
+  #desk.swap #desk-hook,#desk.swap #desk-meta{opacity:0; transition:opacity .14s;}
+
+  footer{position:relative; z-index:2; text-align:center; margin:38px 0 130px; font-size:11px; color:#7a6c54; letter-spacing:.1em; line-height:2;}
   footer a{color:var(--gold); text-decoration:none;}
 
-  @media(max-width:560px){ .row{gap:9px; min-height:0; padding-bottom:6px;} .book{padding-top:14px;} }
-  @media(prefers-reduced-motion:reduce){ .book{transition:none;} .book:hover{transform:translateY(-10px);} }
+  @media(max-width:560px){
+    .row{gap:8px; min-height:0; padding-bottom:6px;}
+    .book{padding-top:14px;}
+    #desk{padding:16px 16px 14px;}
+    #desk-hook{font-size:14px;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .book,.book.lean-l,.book.lean-r{transition:none; transform:none;}
+    .book:hover,.book:focus-visible{transform:translateY(-10px);}
+    .mote{display:none;}
+    #ambient{transition:none;}
+  }
 </style>
 </head>
 <body>
+  <div id="ambient" aria-hidden="true"></div>
+  <div id="shaft" aria-hidden="true"></div>
 
-  <div class="head">
-    <div class="eyebrow">K' Library</div>
-    <h1>書 架</h1>
-    <p>文字とデザインで語る、ビジュアル・エッセイの蔵書。<br>背表紙を選ぶと、その一冊がひらく。</p>
-  </div>
-
-  <div class="bookcase">
-    <div class="shelf">
-      <span class="cat">物語 と 探究 / Tales &amp; Inquiry</span>
-      <div class="row">
-        <a class="book b-galaxy" href="galaxy-railroad.html">
-          <span class="top">宮沢賢治</span><span class="ttl">銀河鉄道の夜</span><span class="label">幻想</span>
-        </a>
-        <a class="book b-holmes" href="sherlock.html">
-          <span class="top">A.C.ドイル</span><span class="ttl">シャーロック・ホームズ</span><span class="label">探偵</span>
-        </a>
-        <a class="book b-nichiyu" href="nichiyu.html">
-          <span class="top">検証ファイル</span><span class="ttl">日ユ同祖論</span><span class="label">仮説</span>
-        </a>
-        <a class="book b-fermat" href="fermat.html">
-          <span class="top">サイモン・シン</span><span class="ttl">フェルマーの最終定理</span><span class="label">数学</span>
-        </a>
-        <a class="book b-shikkaku" href="ningen-shikkaku.html">
-          <span class="top">太宰 治</span><span class="ttl">人間失格</span><span class="label">告白</span>
-        </a>
-        <a class="book b-kafka" href="kafka.html">
-          <span class="top">F.カフカ</span><span class="ttl">変身</span><span class="label">不条理</span>
-        </a>
-        <a class="book b-hakase" href="hakase.html">
-          <span class="top">小川洋子</span><span class="ttl">博士の愛した数式</span><span class="label">数・記憶</span>
-        </a>
-        <a class="book b-hyakunen" href="hyakunen.html">
-          <span class="top">G.G.マルケス</span><span class="ttl">百年の孤独</span><span class="label">反復・忘却</span>
-        </a>
-        <a class="book b-1984" href="1984.html">
-          <span class="top">G.オーウェル</span><span class="ttl">1984年</span><span class="label">監視・言語</span>
-        </a>
-        <a class="book b-borges" href="borges.html">
-          <span class="top">J.L.ボルヘス</span><span class="ttl">伝奇集</span><span class="label">無限・迷宮</span>
-        </a>
-        <a class="book b-suna" href="suna-no-onna.html">
-          <span class="top">安部公房</span><span class="ttl">砂の女</span><span class="label">砂・実存</span>
-        </a>
-        <a class="book b-oku" href="oku-no-hosomichi.html">
-          <span class="top">松尾芭蕉</span><span class="ttl">おくのほそ道</span><span class="label">紀行・絵巻</span>
-        </a>
-      </div>
-      <div class="plank"></div>
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">K' Library</div>
+      <h1>書 架</h1>
+      <p>文字とデザインで語る、ビジュアル・エッセイの蔵書。</p>
     </div>
 
-    <div class="shelf">
-      <span class="cat">映画評論 / Cinema</span>
-      <div class="row">
-        <a class="book b-pre" href="starwars/prequel.html">
-          <span class="top">STAR WARS</span><span class="ttl">プリクエル I–III</span><span class="label">★★★</span>
-        </a>
-        <a class="book b-org" href="starwars/original.html">
-          <span class="top">STAR WARS</span><span class="ttl">オリジナル IV–VI</span><span class="label">★★★★★</span>
-        </a>
-        <a class="book b-seq" href="starwars/sequel.html">
-          <span class="top">STAR WARS</span><span class="ttl">シークエル VII–IX</span><span class="label">★★★</span>
-        </a>
-        <a class="book b-apocalypse" href="apocalypse-now.html">
-          <span class="top">F.コッポラ</span><span class="ttl">地獄の黙示録</span><span class="label">1979</span>
-        </a>
+    <div class="bookcase">
+      <div class="shelf">
+        <span class="cat">物語 と 探究 / Tales &amp; Inquiry</span>
+        <div class="row">
+          <a class="book b-galaxy" href="galaxy-railroad.html" data-accent="#8FB0FF"
+             data-hook="死者を乗せた夜汽車が、「ほんとうのさいわい」を探して走る。">
+            <span class="top">宮沢賢治</span><span class="ttl">銀河鉄道の夜</span><span class="label">幻想</span>
+          </a>
+          <a class="book b-holmes lean-r" href="sherlock.html" data-accent="#E0A94E"
+             data-hook="根拠はすべて、あなたの袖口にある。3秒で職業を当てる男。">
+            <span class="top">A.C.ドイル</span><span class="ttl">シャーロック・ホームズ</span><span class="label">探偵</span>
+          </a>
+          <a class="book b-nichiyu" href="nichiyu.html" data-accent="#C97A5A"
+             data-hook="証拠は、ない。それでも消えない仮説には、理由がある。">
+            <span class="top">検証ファイル</span><span class="ttl">日ユ同祖論</span><span class="label">仮説</span>
+          </a>
+          <a class="book b-fermat" href="fermat.html" data-accent="#F5C842"
+             data-hook="343年、誰も解けなかった。解いた男は7年間、誰にも言わなかった。">
+            <span class="top">サイモン・シン</span><span class="ttl">フェルマーの最終定理</span><span class="label">数学</span>
+          </a>
+          <a class="book b-shikkaku" href="ningen-shikkaku.html" data-accent="#C0A888"
+             data-hook="「失格」と呼ばれた男を、誰も責めなかった。">
+            <span class="top">太宰 治</span><span class="ttl">人間失格</span><span class="label">告白</span>
+          </a>
+          <a class="book b-kafka lean-l" href="kafka.html" data-accent="#c8a96e"
+             data-hook="虫になった朝より、家族が慣れていく夕方のほうが、怖い。">
+            <span class="top">F.カフカ</span><span class="ttl">変身</span><span class="label">不条理</span>
+          </a>
+          <a class="book b-hakase" href="hakase.html" data-accent="#7FA8CE"
+             data-hook="記憶は80分しかもたない。それでも、愛は定義できる。">
+            <span class="top">小川洋子</span><span class="ttl">博士の愛した数式</span><span class="label">数・記憶</span>
+          </a>
+          <a class="book b-hyakunen" href="hyakunen.html" data-accent="#D4A017"
+             data-hook="同じ名前が22人。忘却は、こうして一族を滅ぼす。">
+            <span class="top">G.G.マルケス</span><span class="ttl">百年の孤独</span><span class="label">反復・忘却</span>
+          </a>
+          <a class="book b-1984" href="1984.html" data-accent="#e23b3b"
+             data-hook="言葉を減らせば、思想は消える。辞書が凶器になる話。">
+            <span class="top">G.オーウェル</span><span class="ttl">1984年</span><span class="label">監視・言語</span>
+          </a>
+          <a class="book b-borges lean-r" href="borges.html" data-accent="#e8d49a"
+             data-hook="無限の図書館には、この一行も、すでに収蔵されている。">
+            <span class="top">J.L.ボルヘス</span><span class="ttl">伝奇集</span><span class="label">無限・迷宮</span>
+          </a>
+          <a class="book b-suna" href="suna-no-onna.html" data-accent="#D8C9A8"
+             data-hook="砂は、皮膚のどこにでも入り込む。それでも逃げない理由。">
+            <span class="top">安部公房</span><span class="ttl">砂の女</span><span class="label">砂・実存</span>
+          </a>
+          <a class="book b-oku" href="oku-no-hosomichi.html" data-accent="#e07a4a"
+             data-hook="46歳。家を売って、二四〇〇キロを歩いた。">
+            <span class="top">松尾芭蕉</span><span class="ttl">おくのほそ道</span><span class="label">紀行・絵巻</span>
+          </a>
+        </div>
+        <div class="plank"></div>
       </div>
-      <div class="plank"></div>
+
+      <div class="shelf">
+        <span class="cat">映画評論 / Cinema</span>
+        <div class="row">
+          <a class="book b-pre" href="starwars/prequel.html" data-accent="#D9B65A"
+             data-hook="英雄の堕落は、善意から始まる。">
+            <span class="top">STAR WARS</span><span class="ttl">プリクエル I–III</span><span class="label">★★★</span>
+          </a>
+          <a class="book b-org lean-l" href="starwars/original.html" data-accent="#FFB23E"
+             data-hook="農場の少年が、銀河を継ぐ。神話は三幕で語られる。">
+            <span class="top">STAR WARS</span><span class="ttl">オリジナル IV–VI</span><span class="label">★★★★★</span>
+          </a>
+          <a class="book b-seq" href="starwars/sequel.html" data-accent="#FF2D34"
+             data-hook="継承とは、何を燃やすかを選ぶことだった。">
+            <span class="top">STAR WARS</span><span class="ttl">シークエル VII–IX</span><span class="label">★★★</span>
+          </a>
+          <a class="book b-apocalypse" href="apocalypse-now.html" data-accent="#E0A030"
+             data-hook="川を遡るほど、文明が剥がれていく。">
+            <span class="top">F.コッポラ</span><span class="ttl">地獄の黙示録</span><span class="label">1979</span>
+          </a>
+        </div>
+        <div class="plank"></div>
+      </div>
+    </div>
+
+    <!-- 机：手をかざした本の栞が現れる -->
+    <div id="desk" aria-live="polite">
+      <span class="ribbon">栞</span>
+      <div id="desk-meta">背表紙にふれると、その一冊の栞があらわれる</div>
+      <div id="desk-hook">どの一冊も、あらすじではなく「入口」から始まります。</div>
     </div>
   </div>
-
-  <p class="tip">▸ 背表紙をクリックすると、その作品ページへ</p>
 
   <footer>
     K' Library — 書架 ／ ビジュアル・エッセイ集<br>
@@ -178,16 +273,73 @@
 
 <script>
 (function(){
-  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var body = document.body;
+  var desk = document.getElementById('desk');
+  var meta = document.getElementById('desk-meta');
+  var hook = document.getElementById('desk-hook');
+  var root = document.documentElement;
+  var timer = null;
+
+  function show(b){
+    var accent = b.getAttribute('data-accent') || '#E0B95E';
+    var top = b.querySelector('.top'), ttl = b.querySelector('.ttl');
+    root.style.setProperty('--glow', accent);
+    body.classList.add('lit');
+    desk.classList.add('swap');
+    clearTimeout(timer);
+    timer = setTimeout(function(){
+      meta.textContent = (top ? top.textContent + '　' : '') + (ttl ? ttl.textContent : '');
+      hook.textContent = b.getAttribute('data-hook') || '';
+      desk.classList.remove('swap');
+    }, 150);
+  }
+  function hide(){
+    body.classList.remove('lit');
+  }
+
+  // タッチ端末：1タップ目で栞、2タップ目でひらく（ホバーが無い環境でも入口の一行が読める）
+  var coarse = matchMedia('(pointer: coarse)').matches;
+  var selected = null;
+  if (coarse) meta.textContent = '背表紙にふれると栞があらわれる ・ もういちどで ひらく';
+
   document.querySelectorAll('.book').forEach(function(b){
+    b.addEventListener('mouseenter', function(){ show(b); });
+    b.addEventListener('focus', function(){ show(b); });
+    b.addEventListener('mouseleave', hide);
+    b.addEventListener('blur', hide);
     b.addEventListener('click', function(e){
-      if(reduce) return; // そのまま遷移
+      if (coarse && selected !== b){
+        e.preventDefault();
+        selected = b;
+        show(b);
+        return;
+      }
+      if (reduce) return; // そのまま遷移
       e.preventDefault();
-      var href=b.getAttribute('href');
+      var href = b.getAttribute('href');
       b.classList.add('pull');
-      setTimeout(function(){ location.href=href; }, 300);
+      setTimeout(function(){ location.href = href; }, 300);
     });
   });
+  document.addEventListener('click', function(e){
+    if (coarse && selected && !e.target.closest('.book')){ selected = null; hide(); }
+  });
+
+  // 塵（天窓の光にただよう）
+  if (!reduce){
+    for (var i = 0; i < 9; i++){
+      var m = document.createElement('span');
+      m.className = 'mote';
+      m.style.left = (34 + Math.random() * 32) + 'vw';
+      m.style.top = (Math.random() * 30) + 'vh';
+      m.style.setProperty('--dx', (Math.random() * 80 - 40) + 'px');
+      m.style.animationDuration = (9 + Math.random() * 14) + 's';
+      m.style.animationDelay = (-Math.random() * 12) + 's';
+      m.style.opacity = String(.3 + Math.random() * .5);
+      document.body.appendChild(m);
+    }
+  }
 })();
 </script>
 
