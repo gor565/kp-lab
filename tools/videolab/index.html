@@ -5,356 +5,519 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>動画変換スタジオ — K' Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0D1B2A; --surface: #142233; --surface2: #1A2C42;
-      --border: #243850; --blue: #5B8DEF; --text: #F0F4F8;
-      --muted: #7A90A8; --light: #A8BCCF; --green: #4CAF82;
+      --bg: #16181D;
+      --panel: #1E2128;
+      --panel-2: #252932;
+      --panel-3: #2B303A;
+      --line: #2E333C;
+      --line-soft: #24282F;
+      --amber: #F0A030;
+      --amber-hi: #FFB84D;
+      --amber-dim: rgba(240, 160, 48, 0.14);
+      --text: #E6E8EB;
+      --dim: #A9B0B8;
+      --muted: #7C838C;
+      --green: #5FCF8E;
+      --red: #E8615A;
+      --mono: 'SFMono-Regular', Consolas, 'Roboto Mono', 'Courier New', monospace;
+      --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: var(--bg); color: var(--text);
-      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
-      min-height: 100vh; padding-bottom: 60px;
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px; min-height: 100vh; padding-bottom: 40px;
     }
-    .header {
-      padding: 14px 24px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 16px;
+
+    /* ── Top bar ─────────────────────────────────── */
+    .topbar {
+      display: flex; align-items: center; gap: 14px;
+      padding: 0 18px; height: 46px;
+      background: var(--panel); border-bottom: 1px solid var(--line);
+      position: sticky; top: 0; z-index: 20;
     }
-    .back { font-size: 12px; color: var(--blue); text-decoration: none; letter-spacing: 0.06em; }
-    .header h1 { font-size: 15px; font-weight: 700; }
-    .badge { font-size: 11px; color: var(--muted); margin-left: auto; }
-
-    .layout {
-      display: flex; gap: 28px; max-width: 1200px;
-      margin: 0 auto; padding: 28px 24px;
+    .rec-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--amber); flex-shrink: 0;
+      box-shadow: 0 0 8px var(--amber);
     }
-    .controls { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
-    .preview-col { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px 18px;
+    .wordmark {
+      font-family: var(--mono); font-size: 13px; font-weight: 700;
+      letter-spacing: 0.18em; color: var(--text);
     }
-    .card-title {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
-      color: var(--muted); text-transform: uppercase; margin-bottom: 12px;
+    .back {
+      font-size: 11px; color: var(--muted); text-decoration: none;
+      letter-spacing: 0.06em; padding-right: 14px;
+      border-right: 1px solid var(--line);
     }
-    .form-row { margin-bottom: 10px; }
-    .form-row:last-child { margin-bottom: 0; }
-    label { font-size: 12px; color: var(--light); display: block; margin-bottom: 4px; }
-    .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .label-row label { margin-bottom: 0; }
-    .label-val { font-size: 12px; color: var(--blue); }
-    .hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
-
-    select, input[type="text"], input[type="number"] {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; color: var(--text); font-size: 13px;
-      padding: 8px 11px; outline: none; transition: border-color 0.15s; font-family: inherit;
+    .back:hover { color: var(--amber); }
+    .tc-master {
+      font-family: var(--mono); font-size: 15px; letter-spacing: 0.08em;
+      color: var(--amber); margin-left: auto;
+      font-variant-numeric: tabular-nums;
     }
-    select:focus, input:focus { border-color: var(--blue); }
-
-    input[type="range"] { width: 100%; accent-color: var(--blue); cursor: pointer; }
-
-    .two-col { display: flex; gap: 8px; }
-    .two-col > div { flex: 1; }
-
-    .drop-zone {
-      border: 2px dashed var(--border); border-radius: 10px;
-      padding: 28px 16px; text-align: center; cursor: pointer;
-      transition: border-color 0.2s; color: var(--muted); font-size: 13px; line-height: 1.6;
+    .engine-chip {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 11px; color: var(--muted);
+      background: var(--panel-2); border: 1px solid var(--line);
+      border-radius: 5px; padding: 5px 10px;
     }
-    .drop-zone:hover, .drop-zone.over { border-color: var(--blue); color: var(--blue); }
-    .drop-zone input { display: none; }
-
-    .btn {
-      width: 100%; padding: 11px; border-radius: 9px; border: none;
-      font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.15s;
-      font-family: inherit;
-    }
-    .btn:hover { opacity: 0.85; }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-primary { background: var(--blue); color: #fff; }
-    .btn-secondary { background: var(--surface2); color: var(--light); border: 1px solid var(--border); }
-
-    .tab-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-    .tab {
-      flex: 1 1 30%; padding: 7px 4px; text-align: center; font-size: 12px; font-weight: 700;
-      border-radius: 7px; cursor: pointer; border: 1px solid var(--border);
-      color: var(--muted); background: var(--surface2); transition: all 0.15s;
-    }
-    .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
-
-    .section { display: none; }
-    .section.active { display: block; }
-
-    .preview-wrap {
-      width: 100%; aspect-ratio: 16/9;
-      background: #000; border-radius: 10px; overflow: hidden;
-      position: relative; display: flex; align-items: center; justify-content: center;
-    }
-    .preview-wrap video, .preview-wrap img { max-width: 100%; max-height: 100%; display: block; }
-    .preview-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px; }
-
-    .meta { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
-
-    /* Engine loading overlay */
-    .engine-status {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 12px; color: var(--light);
-    }
+    .engine-chip.ready { color: var(--green); border-color: rgba(95,207,142,0.35); }
+    .engine-chip.failed { color: var(--red); border-color: rgba(232,97,90,0.35); }
     .spinner {
-      width: 14px; height: 14px; border: 2px solid var(--border);
-      border-top-color: var(--blue); border-radius: 50%;
+      width: 11px; height: 11px; border: 2px solid var(--line);
+      border-top-color: var(--amber); border-radius: 50%;
       animation: spin 0.8s linear infinite; flex-shrink: 0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .engine-ready { color: var(--green); }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    .led { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 
-    /* Progress */
-    .progress-track {
-      width: 100%; height: 8px; background: var(--surface2);
-      border-radius: 5px; overflow: hidden; border: 1px solid var(--border);
+    /* ── Stage layout ────────────────────────────── */
+    .stage {
+      display: grid; grid-template-columns: 296px minmax(0, 1fr);
+      gap: 14px; max-width: 1340px; margin: 0 auto; padding: 14px 18px;
+      align-items: start;
     }
-    .progress-fill {
-      height: 100%; width: 0%; background: var(--blue);
-      transition: width 0.2s ease; border-radius: 5px;
-    }
-    .progress-label { font-size: 12px; color: var(--blue); margin-top: 6px; text-align: center; }
+    .rail { display: flex; flex-direction: column; gap: 12px; }
+    .main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 
+    /* ── Panels ──────────────────────────────────── */
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    }
+    .panel-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 13px; border-bottom: 1px solid var(--line-soft);
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.16em; color: var(--muted); text-transform: uppercase;
+    }
+    .panel-body { padding: 13px; }
+
+    /* ── Source rail ─────────────────────────────── */
+    .drop-zone {
+      border: 1px dashed var(--line); border-radius: 6px;
+      padding: 22px 12px; text-align: center; cursor: pointer;
+      transition: all 0.18s var(--ease);
+      color: var(--muted); font-size: 12px; line-height: 1.7;
+      background: var(--panel-2);
+    }
+    .drop-zone:hover, .drop-zone.over {
+      border-color: var(--amber); color: var(--amber); background: var(--amber-dim);
+    }
+    .drop-zone input { display: none; }
+    .drop-zone.loaded {
+      border-style: solid; border-color: var(--line);
+      color: var(--text); padding: 12px; text-align: left;
+      font-family: var(--mono); font-size: 11px; word-break: break-all;
+    }
+
+    .specs { margin-top: 11px; display: grid; gap: 5px; }
+    .spec {
+      display: flex; justify-content: space-between; gap: 10px;
+      font-family: var(--mono); font-size: 11px;
+      padding: 4px 0; border-bottom: 1px dotted var(--line-soft);
+    }
+    .spec:last-child { border-bottom: none; }
+    .spec-k { color: var(--muted); letter-spacing: 0.06em; }
+    .spec-v { color: var(--dim); text-align: right; word-break: break-all; }
+
+    /* ── Inspector form ──────────────────────────── */
+    .field { margin-bottom: 11px; }
+    .field:last-child { margin-bottom: 0; }
+    label {
+      display: block; font-size: 11px; color: var(--muted);
+      letter-spacing: 0.05em; margin-bottom: 5px;
+    }
+    .label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+    .label-row label { margin-bottom: 0; }
+    .label-val { font-family: var(--mono); font-size: 12px; color: var(--amber); }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%; background: var(--bg); border: 1px solid var(--line);
+      border-radius: 5px; color: var(--text); font-size: 12px;
+      padding: 8px 10px; outline: none; font-family: inherit;
+      transition: border-color 0.15s var(--ease);
+    }
+    input[type="text"], input[type="number"] { font-family: var(--mono); }
+    select:focus, input:focus { border-color: var(--amber); }
+    select { cursor: pointer; }
+
+    input[type="range"] {
+      width: 100%; accent-color: var(--amber); cursor: pointer;
+    }
+    .check {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--dim); cursor: pointer;
+    }
+    .check input { width: auto; accent-color: var(--amber); cursor: pointer; }
+
+    .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .hint {
+      font-size: 11px; color: var(--muted); line-height: 1.65;
+      margin-top: 9px; padding-top: 9px; border-top: 1px dotted var(--line-soft);
+    }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Viewer ──────────────────────────────────── */
+    .viewer {
+      width: 100%; aspect-ratio: 16/9; background: #000;
+      border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; position: relative;
+    }
+    .viewer video, .viewer img { max-width: 100%; max-height: 100%; display: block; }
+    .viewer audio { width: 82%; }
+    .viewer-empty {
+      color: var(--muted); font-size: 12px; text-align: center;
+      padding: 24px; line-height: 1.9; letter-spacing: 0.04em;
+    }
+    .viewer-empty .glyph {
+      font-family: var(--mono); font-size: 26px; color: var(--line);
+      display: block; margin-bottom: 10px;
+    }
+
+    /* ── Timeline ────────────────────────────────── */
+    .tl-head { justify-content: space-between; }
+    .tl-marks { display: flex; gap: 16px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; }
+    .tl-marks span { color: var(--muted); }
+    .tl-marks b { color: var(--amber); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+    .tl-track {
+      position: relative; height: 62px; margin: 4px 8px 0;
+      background: var(--panel-2);
+      background-image: repeating-linear-gradient(
+        90deg, transparent 0 27px, var(--line-soft) 27px 28px
+      );
+      border: 1px solid var(--line); border-radius: 5px;
+      cursor: crosshair; touch-action: none;
+    }
+    .tl-track.disabled { opacity: 0.4; cursor: not-allowed; }
+    .tl-range {
+      position: absolute; top: 0; bottom: 0;
+      background: var(--amber-dim); pointer-events: none;
+    }
+    .tl-handle {
+      position: absolute; top: -3px; bottom: -3px; width: 14px;
+      margin-left: -7px; cursor: ew-resize; z-index: 3; touch-action: none;
+    }
+    .tl-handle::before {
+      content: ''; position: absolute; left: 5px; top: 0; bottom: 0;
+      width: 4px; background: var(--amber); border-radius: 2px;
+      transition: background 0.15s var(--ease);
+    }
+    .tl-handle:hover::before, .tl-handle.grab::before { background: var(--amber-hi); }
+    .tl-playhead {
+      position: absolute; top: -3px; bottom: -3px; width: 1px;
+      background: #fff; z-index: 4; pointer-events: none;
+    }
+    .tl-playhead::before {
+      content: ''; position: absolute; top: -1px; left: -4px;
+      border-left: 4.5px solid transparent; border-right: 4.5px solid transparent;
+      border-top: 6px solid #fff;
+    }
+    .tl-ruler {
+      display: flex; justify-content: space-between;
+      font-family: var(--mono); font-size: 10px; color: var(--muted);
+      padding: 6px 8px 2px; letter-spacing: 0.06em;
+    }
+
+    /* ── Ops bar ─────────────────────────────────── */
+    .opsbar {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 8px; padding: 9px 10px;
+    }
+    .op {
+      flex: 1 1 auto; min-width: 78px; padding: 9px 8px; text-align: center;
+      font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      border-radius: 5px; cursor: pointer; border: 1px solid var(--line);
+      color: var(--muted); background: var(--panel-2);
+      transition: all 0.15s var(--ease); user-select: none;
+    }
+    .op:hover { color: var(--dim); border-color: var(--panel-3); }
+    .op.active {
+      background: var(--amber); color: #1A1206;
+      border-color: var(--amber); box-shadow: 0 0 14px rgba(240,160,48,0.25);
+    }
+    .render {
+      flex: 0 0 auto; margin-left: auto; padding: 10px 26px;
+      font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.14em;
+      border: 1px solid var(--amber); border-radius: 5px; cursor: pointer;
+      background: var(--amber); color: #1A1206;
+      transition: all 0.15s var(--ease);
+    }
+    .render:hover:not(:disabled) { background: var(--amber-hi); border-color: var(--amber-hi); }
+    .render:disabled {
+      background: transparent; color: var(--muted);
+      border-color: var(--line); cursor: not-allowed;
+    }
+
+    /* ── Progress / log ──────────────────────────── */
+    .bar-track {
+      height: 6px; background: var(--bg); border: 1px solid var(--line);
+      border-radius: 4px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; width: 0%; background: var(--amber);
+      border-radius: 3px; transition: width 0.2s var(--ease);
+    }
+    .bar-label {
+      font-family: var(--mono); font-size: 11px; color: var(--amber);
+      text-align: right; margin-top: 6px; letter-spacing: 0.08em;
+    }
     .log {
-      background: #0A1420; border: 1px solid var(--border); border-radius: 8px;
-      padding: 10px 12px; font-family: 'SFMono-Regular', Consolas, monospace;
-      font-size: 11px; color: var(--muted); line-height: 1.5;
-      height: 120px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+      margin-top: 11px; background: #101216; border: 1px solid var(--line);
+      border-radius: 5px; padding: 9px 11px; font-family: var(--mono);
+      font-size: 10.5px; color: var(--muted); line-height: 1.6;
+      height: 130px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
     }
 
-    .error-box {
-      background: rgba(239, 91, 91, 0.1); border: 1px solid #ef5b5b;
-      color: #ff9d9d; border-radius: 8px; padding: 10px 12px;
-      font-size: 12px; line-height: 1.5;
+    .err {
+      background: rgba(232, 97, 90, 0.09); border: 1px solid rgba(232,97,90,0.4);
+      color: #FFB0AB; border-radius: 5px; padding: 10px 12px;
+      font-size: 12px; line-height: 1.7; white-space: pre-wrap;
     }
 
-    .result-actions { display: flex; gap: 8px; margin-top: 12px; }
-    .result-actions .btn { flex: 1; }
+    .out-foot {
+      display: flex; align-items: center; gap: 12px; margin-top: 11px; flex-wrap: wrap;
+    }
+    .out-meta { font-family: var(--mono); font-size: 11px; color: var(--dim); word-break: break-all; }
+    .dl {
+      margin-left: auto; padding: 9px 20px; border-radius: 5px; cursor: pointer;
+      font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      background: var(--panel-3); color: var(--text); border: 1px solid var(--line);
+      transition: all 0.15s var(--ease);
+    }
+    .dl:hover { border-color: var(--amber); color: var(--amber); }
 
     .hidden { display: none !important; }
 
-    @media (max-width: 800px) {
-      .layout { flex-direction: column; }
-      .controls { width: 100%; }
+    @media (max-width: 880px) {
+      .stage { grid-template-columns: 1fr; }
+      .tc-master { font-size: 13px; }
+      .render { width: 100%; margin-left: 0; }
     }
   </style>
 </head>
 <body>
 
-<div class="header">
+<div class="topbar">
   <a class="back" href="../../">← K' Lab</a>
-  <h1>動画変換スタジオ</h1>
-  <span class="badge">ffmpeg.wasm · ブラウザ完結</span>
+  <span class="rec-dot"></span>
+  <span class="wordmark">VIDEOLAB</span>
+  <span class="tc-master" id="tcMaster">00:00:00.00</span>
+  <div class="engine-chip" id="engineChip">
+    <span class="spinner"></span><span>LOADING ENGINE…</span>
+  </div>
 </div>
 
-<div class="layout">
-  <!-- ===== Controls ===== -->
-  <div class="controls">
+<div class="stage">
 
-    <!-- Engine status -->
-    <div class="card">
-      <div class="card-title">変換エンジン</div>
-      <div id="engineStatus" class="engine-status">
-        <span class="spinner"></span>
-        <span>エンジンを読み込み中… (初回は約30MB)</span>
+  <!-- ═══ Rail: source + inspector ═══ -->
+  <div class="rail">
+
+    <div class="panel">
+      <div class="panel-head">Source</div>
+      <div class="panel-body">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept="video/*,audio/*">
+          クリック / ドラッグで<br>動画・音声を読み込む
+        </div>
+        <div class="specs hidden" id="specs"></div>
       </div>
     </div>
 
-    <!-- File input -->
-    <div class="card">
-      <div class="card-title">ファイル</div>
-      <div class="drop-zone" id="dropZone">
-        <input type="file" id="fileInput" accept="video/*,audio/*">
-        クリックまたはドラッグで<br>動画 / 音声ファイルを選択
-      </div>
-      <div id="fileMeta" class="meta hidden"></div>
-    </div>
+    <div class="panel">
+      <div class="panel-head">Inspector</div>
+      <div class="panel-body">
 
-    <!-- Operation tabs -->
-    <div class="card">
-      <div class="card-title">操作</div>
-      <div class="tab-row">
-        <div class="tab active" data-op="convert" onclick="switchOp('convert')">変換</div>
-        <div class="tab" data-op="trim" onclick="switchOp('trim')">トリミング</div>
-        <div class="tab" data-op="resize" onclick="switchOp('resize')">圧縮</div>
-        <div class="tab" data-op="gif" onclick="switchOp('gif')">GIF化</div>
-        <div class="tab" data-op="thumb" onclick="switchOp('thumb')">サムネ</div>
-        <div class="tab" data-op="audio" onclick="switchOp('audio')">音声抽出</div>
-      </div>
+        <!-- CONVERT -->
+        <div class="section active" id="sec-convert">
+          <div class="field">
+            <label>出力コンテナ / コーデック</label>
+            <select id="convFormat">
+              <option value="mp4">MP4 — H.264 / AAC</option>
+              <option value="webm">WebM — VP9 / Opus</option>
+              <option value="mov">MOV — H.264</option>
+              <option value="mkv">MKV — H.264</option>
+              <option value="mp3">MP3 — 音声のみ</option>
+              <option value="wav">WAV — 音声のみ</option>
+            </select>
+          </div>
+          <div class="hint">クリップ全体を再エンコードします。音声形式を選ぶと映像トラックは破棄されます。</div>
+        </div>
 
-      <!-- Convert -->
-      <div class="section active" id="sec-convert">
-        <div class="form-row">
-          <label>出力フォーマット</label>
-          <select id="convFormat">
-            <option value="mp4">MP4 (H.264)</option>
-            <option value="webm">WebM (VP9)</option>
-            <option value="mov">MOV</option>
-            <option value="mkv">MKV</option>
-            <option value="gif">GIF</option>
-            <option value="mp3">MP3 (音声のみ)</option>
-            <option value="wav">WAV (音声のみ)</option>
-          </select>
+        <!-- TRIM -->
+        <div class="section" id="sec-trim">
+          <div class="duo">
+            <div class="field">
+              <label>IN 点</label>
+              <input type="text" id="inTC" value="0:00.00">
+            </div>
+            <div class="field">
+              <label>OUT 点</label>
+              <input type="text" id="outTC" value="0:00.00">
+            </div>
+          </div>
+          <div class="field">
+            <label>出力コンテナ</label>
+            <select id="trimFormat">
+              <option value="mp4">MP4</option>
+              <option value="webm">WebM</option>
+              <option value="mov">MOV</option>
+              <option value="mkv">MKV</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="check"><input type="checkbox" id="trimReencode"> 再エンコードして正確に切る</label>
+          </div>
+          <div class="hint">タイムラインの ▮ をドラッグして IN / OUT を決められます。再エンコードなしは高速ですが、開始位置が最寄りのキーフレームにずれます。</div>
         </div>
-        <div class="hint">コンテナ/コーデックを変換します。音声フォーマットを選ぶと映像は破棄されます。</div>
-      </div>
 
-      <!-- Trim -->
-      <div class="section" id="sec-trim">
-        <div class="two-col">
-          <div class="form-row">
-            <label>開始 (秒 or hh:mm:ss)</label>
-            <input type="text" id="trimStart" value="0" placeholder="0">
+        <!-- SCALE -->
+        <div class="section" id="sec-scale">
+          <div class="field">
+            <label>解像度</label>
+            <select id="resScale">
+              <option value="">元のまま</option>
+              <option value="1920:1080">1080p — 1920×1080</option>
+              <option value="1280:720" selected>720p — 1280×720</option>
+              <option value="854:480">480p — 854×480</option>
+            </select>
           </div>
-          <div class="form-row">
-            <label>終了 (秒 or hh:mm:ss)</label>
-            <input type="text" id="trimEnd" placeholder="10">
+          <div class="field">
+            <div class="label-row">
+              <label>CRF — 小さいほど高画質</label>
+              <span class="label-val" id="crfVal">28</span>
+            </div>
+            <input type="range" id="crf" min="18" max="40" value="28">
           </div>
+          <div class="field">
+            <label>出力コンテナ</label>
+            <select id="resFormat">
+              <option value="mp4">MP4 — H.264</option>
+              <option value="webm">WebM — VP9</option>
+            </select>
+          </div>
+          <div class="hint">CRF 23 前後が標準画質。数値を上げるほどファイルは小さく、粗くなります。</div>
         </div>
-        <div class="form-row">
-          <label>出力フォーマット</label>
-          <select id="trimFormat">
-            <option value="mp4">MP4</option>
-            <option value="webm">WebM</option>
-            <option value="mov">MOV</option>
-            <option value="mkv">MKV</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label><input type="checkbox" id="trimReencode" style="width:auto;vertical-align:middle;"> 再エンコード (フレーム単位で正確にカット)</label>
-        </div>
-        <div class="hint">再エンコードなしはコピーで高速ですが、開始位置がキーフレームにずれる場合があります。</div>
-      </div>
 
-      <!-- Resize / compress -->
-      <div class="section" id="sec-resize">
-        <div class="form-row">
-          <label>解像度</label>
-          <select id="resScale">
-            <option value="">元のまま</option>
-            <option value="1920:1080">1080p (1920×1080)</option>
-            <option value="1280:720" selected>720p (1280×720)</option>
-            <option value="854:480">480p (854×480)</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <div class="label-row">
-            <label>CRF (画質 / 小さいほど高画質)</label>
-            <span class="label-val" id="crfVal">28</span>
+        <!-- GIF -->
+        <div class="section" id="sec-gif">
+          <div class="duo">
+            <div class="field">
+              <label>fps</label>
+              <input type="number" id="gifFps" value="12" min="1" max="30">
+            </div>
+            <div class="field">
+              <label>幅 (px)</label>
+              <input type="number" id="gifWidth" value="480" min="16" max="1920">
+            </div>
           </div>
-          <input type="range" id="crf" min="18" max="40" value="28">
+          <div class="hint">タイムラインの IN 〜 OUT 区間を GIF 化します。palettegen / paletteuse の2パスで減色するため、単色の多い映像ほど綺麗に出ます。</div>
         </div>
-        <div class="form-row">
-          <label>出力フォーマット</label>
-          <select id="resFormat">
-            <option value="mp4">MP4 (H.264)</option>
-            <option value="webm">WebM (VP9)</option>
-          </select>
-        </div>
-        <div class="hint">CRF 23前後が標準。数値を上げるとファイルは小さくなります。</div>
-      </div>
 
-      <!-- GIF -->
-      <div class="section" id="sec-gif">
-        <div class="two-col">
-          <div class="form-row">
-            <label>開始 (秒)</label>
-            <input type="text" id="gifStart" value="0" placeholder="0">
+        <!-- FRAME -->
+        <div class="section" id="sec-frame">
+          <div class="field">
+            <label>切り出し位置</label>
+            <input type="text" id="frameTC" value="0:00.00">
           </div>
-          <div class="form-row">
-            <label>長さ (秒)</label>
-            <input type="text" id="gifDuration" value="3" placeholder="3">
+          <div class="field">
+            <label>出力形式</label>
+            <select id="frameFormat">
+              <option value="png">PNG — 可逆</option>
+              <option value="jpg">JPG — 軽量</option>
+            </select>
           </div>
+          <div class="hint">再生ヘッド ▼ の位置の1フレームを静止画として書き出します。プレビューを再生・シークすると位置が追従します。</div>
         </div>
-        <div class="two-col">
-          <div class="form-row">
-            <label>fps</label>
-            <input type="number" id="gifFps" value="12" min="1" max="30">
-          </div>
-          <div class="form-row">
-            <label>幅 (px)</label>
-            <input type="number" id="gifWidth" value="480" min="16" max="1920">
-          </div>
-        </div>
-        <div class="hint">パレット最適化 (palettegen / paletteuse) の2パスで書き出します。</div>
-      </div>
 
-      <!-- Thumbnail -->
-      <div class="section" id="sec-thumb">
-        <div class="form-row">
-          <label>タイムスタンプ (秒 or hh:mm:ss)</label>
-          <input type="text" id="thumbTime" value="1" placeholder="1">
+        <!-- AUDIO -->
+        <div class="section" id="sec-audio">
+          <div class="field">
+            <label>出力形式</label>
+            <select id="audioFormat">
+              <option value="mp3">MP3 — VBR q2</option>
+              <option value="wav">WAV — 非圧縮</option>
+              <option value="aac">AAC — 192kbps (m4a)</option>
+            </select>
+          </div>
+          <div class="hint">映像を捨て、音声トラックのみを抽出します。</div>
         </div>
-        <div class="form-row">
-          <label>出力形式</label>
-          <select id="thumbFormat">
-            <option value="png">PNG</option>
-            <option value="jpg">JPG</option>
-          </select>
-        </div>
-        <div class="hint">指定した時間の1フレームを静止画として抽出します。</div>
-      </div>
 
-      <!-- Audio extract -->
-      <div class="section" id="sec-audio">
-        <div class="form-row">
-          <label>出力形式</label>
-          <select id="audioFormat">
-            <option value="mp3">MP3</option>
-            <option value="wav">WAV</option>
-            <option value="aac">AAC (m4a)</option>
-          </select>
-        </div>
-        <div class="hint">動画から音声トラックのみを抽出します。</div>
       </div>
     </div>
-
-    <!-- Run -->
-    <button class="btn btn-primary" id="runBtn" onclick="runOperation()" disabled>実行</button>
   </div>
 
-  <!-- ===== Preview / Output ===== -->
-  <div class="preview-col">
+  <!-- ═══ Main: viewer / timeline / ops ═══ -->
+  <div class="main">
 
-    <!-- Input preview -->
-    <div class="card">
-      <div class="card-title">入力プレビュー</div>
-      <div class="preview-wrap" id="inputPreview">
-        <div class="preview-empty">ファイルを読み込むとここに表示されます</div>
+    <div class="viewer" id="viewer">
+      <div class="viewer-empty">
+        <span class="glyph">[ ▸ ]</span>
+        ソースを読み込むとここに表示されます
       </div>
     </div>
 
-    <!-- Progress + log -->
-    <div class="card hidden" id="processCard">
-      <div class="card-title">処理状況</div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-      <div class="progress-label" id="progressLabel">0%</div>
-      <div class="log" id="logBox"></div>
+    <div class="panel">
+      <div class="panel-head tl-head">
+        <span>Timeline</span>
+        <span class="tl-marks">
+          <span>IN <b id="markIn">--:--</b></span>
+          <span>OUT <b id="markOut">--:--</b></span>
+          <span>LEN <b id="markLen">--:--</b></span>
+        </span>
+      </div>
+      <div class="panel-body" style="padding: 9px 5px 5px;">
+        <div class="tl-track disabled" id="tlTrack">
+          <div class="tl-range" id="tlRange"></div>
+          <div class="tl-playhead" id="tlPlayhead" style="left:0"></div>
+          <div class="tl-handle" id="tlIn" style="left:0"></div>
+          <div class="tl-handle" id="tlOut" style="left:100%"></div>
+        </div>
+        <div class="tl-ruler">
+          <span>0:00.00</span>
+          <span id="tlEnd">0:00.00</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Error -->
-    <div class="card hidden" id="errorCard">
-      <div class="card-title">エラー</div>
-      <div class="error-box" id="errorBox"></div>
+    <div class="opsbar">
+      <div class="op active" data-op="convert">CONVERT</div>
+      <div class="op" data-op="trim">TRIM</div>
+      <div class="op" data-op="scale">SCALE</div>
+      <div class="op" data-op="gif">GIF</div>
+      <div class="op" data-op="frame">FRAME</div>
+      <div class="op" data-op="audio">AUDIO</div>
+      <button class="render" id="renderBtn" disabled>RENDER</button>
     </div>
 
-    <!-- Output -->
-    <div class="card hidden" id="outputCard">
-      <div class="card-title">出力結果</div>
-      <div class="preview-wrap" id="outputPreview"></div>
-      <div class="meta" id="outputMeta"></div>
-      <div class="result-actions">
-        <button class="btn btn-primary" id="downloadBtn">ダウンロード</button>
+    <div class="panel hidden" id="processPanel">
+      <div class="panel-head">Render — 処理状況</div>
+      <div class="panel-body">
+        <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+        <div class="bar-label" id="barLabel">0%</div>
+        <div class="log" id="logBox"></div>
+      </div>
+    </div>
+
+    <div class="panel hidden" id="errorPanel">
+      <div class="panel-head">Error</div>
+      <div class="panel-body"><div class="err" id="errBox"></div></div>
+    </div>
+
+    <div class="panel hidden" id="outputPanel">
+      <div class="panel-head">Output</div>
+      <div class="panel-body">
+        <div class="viewer" id="outViewer"></div>
+        <div class="out-foot">
+          <span class="out-meta" id="outMeta"></span>
+          <button class="dl" id="dlBtn">DOWNLOAD</button>
+        </div>
       </div>
     </div>
 
@@ -365,208 +528,335 @@
   import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/esm/index.js';
   import { fetchFile, toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js';
 
-  const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+  const coreBase = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+  const workerURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/esm/worker.js';
   const ffmpeg = new FFmpeg();
 
-  // ── State ──────────────────────────────────────────
+  // ── State ────────────────────────────────────────
   let engineReady = false;
-  let inputFile = null;       // the selected File
-  let inputName = '';         // filename used inside ffmpeg FS
-  let inputExt = '';
+  let inputFile = null;
+  let inputName = '';
   let running = false;
-  let lastOutputURL = null;   // object URL to revoke
-
-  // ── DOM refs ───────────────────────────────────────
-  const el = (id) => document.getElementById(id);
-  const engineStatus = el('engineStatus');
-  const runBtn = el('runBtn');
-  const dropZone = el('dropZone');
-  const fileInput = el('fileInput');
-  const fileMeta = el('fileMeta');
-  const inputPreview = el('inputPreview');
-  const processCard = el('processCard');
-  const progressFill = el('progressFill');
-  const progressLabel = el('progressLabel');
-  const logBox = el('logBox');
-  const errorCard = el('errorCard');
-  const errorBox = el('errorBox');
-  const outputCard = el('outputCard');
-  const outputPreview = el('outputPreview');
-  const outputMeta = el('outputMeta');
-  const downloadBtn = el('downloadBtn');
-
   let currentOp = 'convert';
+  let media = null;          // <video> or <audio> in the viewer
+  let duration = 0;          // seconds; 0 = unknown
+  let inPoint = 0, outPoint = 0, playhead = 0;
+  let lastOutputURL = null;
 
-  // ── Tabs ───────────────────────────────────────────
-  window.switchOp = function (op) {
-    currentOp = op;
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.op === op));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    el('sec-' + op).classList.add('active');
-  };
+  const el = (id) => document.getElementById(id);
+  const viewer = el('viewer');
+  const tlTrack = el('tlTrack'), tlRange = el('tlRange');
+  const tlIn = el('tlIn'), tlOut = el('tlOut'), tlPlayhead = el('tlPlayhead');
+  const renderBtn = el('renderBtn');
 
-  // ── ffmpeg logging / progress ──────────────────────
+  // ── Timecode helpers ─────────────────────────────
+  function fmtTC(s) {
+    s = Math.max(0, Number(s) || 0);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = (s % 60).toFixed(2).padStart(5, '0');
+    return h > 0
+      ? `${h}:${String(m).padStart(2, '0')}:${sec}`
+      : `${m}:${sec}`;
+  }
+  function fmtTCLong(s) {
+    s = Math.max(0, Number(s) || 0);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = (s % 60).toFixed(2).padStart(5, '0');
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${sec}`;
+  }
+  function parseTC(str) {
+    if (str == null) return NaN;
+    const parts = String(str).trim().split(':');
+    if (!parts.length || parts.some(p => p === '' || isNaN(Number(p)))) return NaN;
+    return parts.reduce((acc, p) => acc * 60 + Number(p), 0);
+  }
+
+  // ── Timeline rendering ───────────────────────────
+  function pct(t) { return duration > 0 ? Math.max(0, Math.min(1, t / duration)) * 100 : 0; }
+
+  function paintTimeline() {
+    const a = pct(inPoint), b = pct(outPoint);
+    tlIn.style.left = a + '%';
+    tlOut.style.left = b + '%';
+    tlRange.style.left = a + '%';
+    tlRange.style.width = Math.max(0, b - a) + '%';
+    tlPlayhead.style.left = pct(playhead) + '%';
+
+    el('markIn').textContent = duration ? fmtTC(inPoint) : '--:--';
+    el('markOut').textContent = duration ? fmtTC(outPoint) : '--:--';
+    el('markLen').textContent = duration ? fmtTC(Math.max(0, outPoint - inPoint)) : '--:--';
+    el('tlEnd').textContent = fmtTC(duration);
+    el('tcMaster').textContent = fmtTCLong(playhead);
+
+    // keep inspector fields in sync (skip the one being edited)
+    const ae = document.activeElement;
+    if (ae !== el('inTC')) el('inTC').value = fmtTC(inPoint);
+    if (ae !== el('outTC')) el('outTC').value = fmtTC(outPoint);
+    if (ae !== el('frameTC')) el('frameTC').value = fmtTC(playhead);
+  }
+
+  function timeAtEvent(e) {
+    const r = tlTrack.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    return ratio * duration;
+  }
+
+  // scrub by clicking the track
+  tlTrack.addEventListener('pointerdown', (e) => {
+    if (!duration || e.target.classList.contains('tl-handle')) return;
+    seekTo(timeAtEvent(e));
+  });
+
+  function makeDraggable(handle, which) {
+    handle.addEventListener('pointerdown', (e) => {
+      if (!duration) return;
+      e.preventDefault();
+      handle.setPointerCapture(e.pointerId);
+      handle.classList.add('grab');
+    });
+    handle.addEventListener('pointermove', (e) => {
+      if (!handle.hasPointerCapture?.(e.pointerId)) return;
+      const t = timeAtEvent(e);
+      if (which === 'in') inPoint = Math.min(t, outPoint - 0.05);
+      else outPoint = Math.max(t, inPoint + 0.05);
+      inPoint = Math.max(0, inPoint);
+      outPoint = Math.min(duration, outPoint);
+      seekTo(which === 'in' ? inPoint : outPoint);
+    });
+    const release = (e) => {
+      handle.classList.remove('grab');
+      try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
+    };
+    handle.addEventListener('pointerup', release);
+    handle.addEventListener('pointercancel', release);
+  }
+  makeDraggable(tlIn, 'in');
+  makeDraggable(tlOut, 'out');
+
+  function seekTo(t) {
+    playhead = Math.max(0, Math.min(duration, t));
+    if (media && isFinite(media.duration)) media.currentTime = playhead;
+    paintTimeline();
+  }
+
+  // inspector timecode fields → timeline
+  function bindTCField(id, apply) {
+    const node = el(id);
+    const commit = () => {
+      const v = parseTC(node.value);
+      if (isNaN(v) || !duration) { paintTimeline(); return; }
+      apply(Math.max(0, Math.min(duration, v)));
+      paintTimeline();
+    };
+    node.addEventListener('change', commit);
+    node.addEventListener('blur', commit);
+  }
+  bindTCField('inTC', v => { inPoint = Math.min(v, outPoint - 0.05); });
+  bindTCField('outTC', v => { outPoint = Math.max(v, inPoint + 0.05); });
+  bindTCField('frameTC', v => { seekTo(v); });
+
+  // ── Op tabs ──────────────────────────────────────
+  document.querySelectorAll('.op').forEach(tab => {
+    tab.addEventListener('click', () => {
+      currentOp = tab.dataset.op;
+      document.querySelectorAll('.op').forEach(t => t.classList.toggle('active', t === tab));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      el('sec-' + currentOp).classList.add('active');
+    });
+  });
+
+  // ── Engine ───────────────────────────────────────
   ffmpeg.on('log', ({ message }) => {
     if (!message) return;
-    logBox.textContent += message + '\n';
-    logBox.scrollTop = logBox.scrollHeight;
+    const box = el('logBox');
+    box.textContent += message + '\n';
+    box.scrollTop = box.scrollHeight;
   });
 
   ffmpeg.on('progress', ({ progress }) => {
-    let pct = Math.round((progress || 0) * 100);
-    if (!isFinite(pct)) pct = 0;
-    pct = Math.max(0, Math.min(100, pct));
-    progressFill.style.width = pct + '%';
-    progressLabel.textContent = pct + '%';
+    let p = Math.round((progress || 0) * 100);
+    if (!isFinite(p)) p = 0;
+    p = Math.max(0, Math.min(100, p));
+    el('barFill').style.width = p + '%';
+    el('barLabel').textContent = p + '%';
   });
 
-  // ── Load engine ────────────────────────────────────
   async function loadEngine() {
+    const chip = el('engineChip');
     try {
       await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        coreURL: await toBlobURL(`${coreBase}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm'),
+        // GitHub Pages などクロスオリジン配信では worker を直接 new Worker() できないため Blob 化する
+        classWorkerURL: await toBlobURL(workerURL, 'text/javascript'),
       });
       engineReady = true;
-      engineStatus.classList.add('engine-ready');
-      engineStatus.innerHTML = '<span class="dot"></span><span>エンジン準備完了</span>';
-      if (inputFile) runBtn.disabled = false;
+      chip.classList.add('ready');
+      chip.innerHTML = '<span class="led"></span><span>ENGINE READY</span>';
+      if (inputFile) renderBtn.disabled = false;
     } catch (e) {
-      engineStatus.innerHTML = '<span>エンジンの読み込みに失敗しました</span>';
-      showError('変換エンジン (ffmpeg.wasm) の読み込みに失敗しました。ネットワーク接続を確認して再読み込みしてください。\n' + (e && e.message ? e.message : e));
+      chip.classList.add('failed');
+      chip.innerHTML = '<span class="led"></span><span>ENGINE FAILED</span>';
+      showError('変換エンジン (ffmpeg.wasm) の読み込みに失敗しました。ネットワーク接続を確認して再読み込みしてください。\n\n' + (e && e.message ? e.message : e));
     }
   }
 
-  // ── File loading ───────────────────────────────────
+  // ── File loading ─────────────────────────────────
+  const dropZone = el('dropZone'), fileInput = el('fileInput');
   dropZone.addEventListener('click', () => fileInput.click());
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
   dropZone.addEventListener('drop', e => {
     e.preventDefault(); dropZone.classList.remove('over');
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files?.[0]) loadFile(e.dataTransfer.files[0]);
   });
   fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
 
   function loadFile(file) {
     inputFile = file;
     const dot = file.name.lastIndexOf('.');
-    inputExt = dot >= 0 ? file.name.slice(dot + 1).toLowerCase() : 'bin';
-    inputName = 'input.' + inputExt;
+    const ext = dot >= 0 ? file.name.slice(dot + 1).toLowerCase() : 'bin';
+    inputName = 'input.' + ext;
 
-    dropZone.innerHTML = '✓ ' + escapeHtml(file.name);
-    fileMeta.classList.remove('hidden');
-    fileMeta.textContent = `${formatBytes(file.size)} · ${file.type || '不明な形式'}`;
+    dropZone.classList.add('loaded');
+    dropZone.textContent = '▸ ' + file.name;
 
-    // Input preview
+    const specs = el('specs');
+    specs.classList.remove('hidden');
+    specs.innerHTML = '';
+    addSpec(specs, 'SIZE', formatBytes(file.size));
+    addSpec(specs, 'TYPE', file.type || 'unknown');
+
+    // Build viewer media element
     const url = URL.createObjectURL(file);
-    inputPreview.innerHTML = '';
-    if (file.type.startsWith('audio/')) {
-      const audio = document.createElement('audio');
-      audio.controls = true; audio.src = url; audio.style.width = '90%';
-      inputPreview.appendChild(audio);
-    } else {
-      const video = document.createElement('video');
-      video.controls = true; video.src = url;
-      inputPreview.appendChild(video);
-    }
+    viewer.innerHTML = '';
+    media = document.createElement(file.type.startsWith('audio/') ? 'audio' : 'video');
+    media.controls = true;
+    media.src = url;
+    viewer.appendChild(media);
 
-    if (engineReady) runBtn.disabled = false;
-    hide(errorCard);
+    duration = 0; inPoint = outPoint = playhead = 0;
+    tlTrack.classList.add('disabled');
+    paintTimeline();
+
+    media.addEventListener('loadedmetadata', () => {
+      duration = isFinite(media.duration) ? media.duration : 0;
+      inPoint = 0;
+      outPoint = duration;
+      playhead = 0;
+      if (duration > 0) tlTrack.classList.remove('disabled');
+      addSpec(specs, 'DURATION', fmtTC(duration));
+      if (media.videoWidth) addSpec(specs, 'RESOLUTION', `${media.videoWidth}×${media.videoHeight}`);
+      paintTimeline();
+    });
+    media.addEventListener('timeupdate', () => {
+      playhead = media.currentTime;
+      paintTimeline();
+    });
+
+    if (engineReady) renderBtn.disabled = false;
+    hide(el('errorPanel'));
   }
 
-  // ── Build ffmpeg args per operation ────────────────
-  // Returns { args: [...], outName, outMime, isImage, twoPass }
+  function addSpec(parent, k, v) {
+    const row = document.createElement('div');
+    row.className = 'spec';
+    const kk = document.createElement('span'); kk.className = 'spec-k'; kk.textContent = k;
+    const vv = document.createElement('span'); vv.className = 'spec-v'; vv.textContent = v;
+    row.append(kk, vv);
+    parent.appendChild(row);
+  }
+
+  // ── Job builder ──────────────────────────────────
   function buildJob() {
     const out = (ext) => 'output.' + ext;
+    const inS = String(inPoint);
+    const lenS = String(Math.max(0.05, outPoint - inPoint));
+
     switch (currentOp) {
       case 'convert': {
         const fmt = el('convFormat').value;
         let args = ['-i', inputName];
-        if (fmt === 'mp3') args = args.concat(['-vn', '-c:a', 'libmp3lame', '-q:a', '2']);
-        else if (fmt === 'wav') args = args.concat(['-vn']);
-        else if (fmt === 'gif') args = args.concat(['-f', 'gif']);
-        else if (fmt === 'webm') args = args.concat(['-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '32', '-c:a', 'libopus']);
-        else args = args.concat(['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-c:a', 'aac']);
+        if (fmt === 'mp3') args.push('-vn', '-c:a', 'libmp3lame', '-q:a', '2');
+        else if (fmt === 'wav') args.push('-vn');
+        else if (fmt === 'webm') args.push('-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '32', '-c:a', 'libopus');
+        else args.push('-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-c:a', 'aac');
         args.push(out(fmt));
-        return { args, outName: out(fmt), outMime: mimeFor(fmt), isImage: false };
+        return { args, outName: out(fmt), outMime: mimeFor(fmt) };
       }
       case 'trim': {
-        const start = (el('trimStart').value || '0').trim();
-        const end = (el('trimEnd').value || '').trim();
+        if (!duration) throw new Error('ソースの長さを取得できていません。');
         const fmt = el('trimFormat').value;
-        const reencode = el('trimReencode').checked;
-        let args = ['-ss', start, '-i', inputName];
-        if (end) args = args.concat(['-to', end]);
-        if (reencode) args = args.concat(['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-c:a', 'aac']);
-        else args = args.concat(['-c', 'copy']);
+        const args = ['-ss', inS, '-i', inputName, '-t', lenS];
+        if (el('trimReencode').checked) args.push('-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-c:a', 'aac');
+        else args.push('-c', 'copy');
         args.push(out(fmt));
-        return { args, outName: out(fmt), outMime: mimeFor(fmt), isImage: false };
+        return { args, outName: out(fmt), outMime: mimeFor(fmt) };
       }
-      case 'resize': {
+      case 'scale': {
         const scale = el('resScale').value;
         const crf = el('crf').value;
         const fmt = el('resFormat').value;
-        let args = ['-i', inputName];
-        if (scale) args = args.concat(['-vf', `scale=${scale}:flags=lanczos`]);
-        if (fmt === 'webm') args = args.concat(['-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', crf, '-c:a', 'libopus']);
-        else args = args.concat(['-c:v', 'libx264', '-preset', 'veryfast', '-crf', crf, '-c:a', 'aac']);
+        const args = ['-i', inputName];
+        if (scale) args.push('-vf', `scale=${scale}:flags=lanczos`);
+        if (fmt === 'webm') args.push('-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', crf, '-c:a', 'libopus');
+        else args.push('-c:v', 'libx264', '-preset', 'veryfast', '-crf', crf, '-c:a', 'aac');
         args.push(out(fmt));
-        return { args, outName: out(fmt), outMime: mimeFor(fmt), isImage: false };
+        return { args, outName: out(fmt), outMime: mimeFor(fmt) };
       }
       case 'gif': {
-        const start = (el('gifStart').value || '0').trim();
-        const dur = (el('gifDuration').value || '3').trim();
+        if (!duration) throw new Error('ソースの長さを取得できていません。');
         const fps = el('gifFps').value || '12';
         const width = el('gifWidth').value || '480';
         const vf = `fps=${fps},scale=${width}:-1:flags=lanczos`;
-        // two-pass palette optimization
         return {
           twoPass: true,
-          pass1: ['-ss', start, '-t', dur, '-i', inputName, '-vf', `${vf},palettegen`, '-y', 'palette.png'],
-          pass2: ['-ss', start, '-t', dur, '-i', inputName, '-i', 'palette.png', '-lavfi', `${vf} [x]; [x][1:v] paletteuse`, '-y', out('gif')],
-          args: null, outName: out('gif'), outMime: 'image/gif', isImage: false,
+          pass1: ['-ss', inS, '-t', lenS, '-i', inputName, '-vf', `${vf},palettegen`, '-y', 'palette.png'],
+          pass2: ['-ss', inS, '-t', lenS, '-i', inputName, '-i', 'palette.png',
+                  '-lavfi', `${vf} [x]; [x][1:v] paletteuse`, '-y', out('gif')],
+          outName: out('gif'), outMime: 'image/gif', isImage: true,
         };
       }
-      case 'thumb': {
-        const time = (el('thumbTime').value || '0').trim();
-        const fmt = el('thumbFormat').value;
-        const args = ['-ss', time, '-i', inputName, '-frames:v', '1', '-q:v', '2', out(fmt)];
+      case 'frame': {
+        const fmt = el('frameFormat').value;
+        const args = ['-ss', String(playhead), '-i', inputName, '-frames:v', '1', '-q:v', '2', out(fmt)];
         return { args, outName: out(fmt), outMime: mimeFor(fmt), isImage: true };
       }
       case 'audio': {
         const fmt = el('audioFormat').value;
-        let args = ['-i', inputName, '-vn'];
-        if (fmt === 'mp3') args = args.concat(['-c:a', 'libmp3lame', '-q:a', '2']);
-        else if (fmt === 'aac') args = args.concat(['-c:a', 'aac', '-b:a', '192k']);
-        const outExt = fmt === 'aac' ? 'm4a' : fmt;
-        args.push(out(outExt));
-        return { args, outName: out(outExt), outMime: mimeFor(fmt), isImage: false };
+        const args = ['-i', inputName, '-vn'];
+        if (fmt === 'mp3') args.push('-c:a', 'libmp3lame', '-q:a', '2');
+        else if (fmt === 'aac') args.push('-c:a', 'aac', '-b:a', '192k');
+        const ext = fmt === 'aac' ? 'm4a' : fmt;
+        args.push(out(ext));
+        return { args, outName: out(ext), outMime: mimeFor(fmt) };
       }
     }
   }
 
-  // ── Run ────────────────────────────────────────────
-  window.runOperation = async function () {
+  // ── Render ───────────────────────────────────────
+  renderBtn.addEventListener('click', async () => {
     if (!engineReady || !inputFile || running) return;
     running = true;
-    runBtn.disabled = true;
-    hide(errorCard);
-    hide(outputCard);
-    show(processCard);
-    logBox.textContent = '';
-    progressFill.style.width = '0%';
-    progressLabel.textContent = '0%';
+    renderBtn.disabled = true;
+    renderBtn.textContent = 'RENDERING…';
+    hide(el('errorPanel'));
+    hide(el('outputPanel'));
+    show(el('processPanel'));
+    el('logBox').textContent = '';
+    el('barFill').style.width = '0%';
+    el('barLabel').textContent = '0%';
 
     let job;
     try {
       job = buildJob();
     } catch (e) {
-      finishError('入力値が不正です: ' + (e && e.message ? e.message : e));
-      return;
+      return finishError('入力値が不正です: ' + (e && e.message ? e.message : e));
     }
 
     try {
-      // Write input to virtual FS
       await ffmpeg.writeFile(inputName, await fetchFile(inputFile));
 
       if (job.twoPass) {
@@ -576,97 +866,92 @@
         await ffmpeg.exec(job.args);
       }
 
-      // Read result
       const data = await ffmpeg.readFile(job.outName);
       if (!data || data.length === 0) {
-        throw new Error('出力が空でした。パラメータ（時間指定・フォーマットの組み合わせ）を確認してください。');
+        throw new Error('出力が空でした。時間指定やフォーマットの組み合わせを確認してください。');
       }
       const blob = new Blob([data.buffer], { type: job.outMime });
 
       if (lastOutputURL) URL.revokeObjectURL(lastOutputURL);
       lastOutputURL = URL.createObjectURL(blob);
-
       showOutput(job, blob, lastOutputURL);
 
-      // Cleanup FS
       await safeDelete(inputName);
       await safeDelete(job.outName);
       if (job.twoPass) await safeDelete('palette.png');
     } catch (e) {
-      finishError('変換に失敗しました。ログを確認してください。\n' + (e && e.message ? e.message : e));
-      return;
+      return finishError('レンダリングに失敗しました。下のログを確認してください。\n\n' + (e && e.message ? e.message : e));
     }
 
     running = false;
-    runBtn.disabled = false;
-  };
+    renderBtn.disabled = false;
+    renderBtn.textContent = 'RENDER';
+  });
 
   function showOutput(job, blob, url) {
-    outputPreview.innerHTML = '';
-    const outExt = job.outName.split('.').pop();
-    if (job.isImage || outExt === 'gif') {
+    const outViewer = el('outViewer');
+    outViewer.innerHTML = '';
+    const ext = job.outName.split('.').pop();
+
+    if (job.isImage) {
       const img = document.createElement('img');
       img.src = url;
-      outputPreview.appendChild(img);
-    } else if (['mp3', 'wav', 'aac', 'm4a'].includes(outExt)) {
+      outViewer.appendChild(img);
+    } else if (['mp3', 'wav', 'aac', 'm4a'].includes(ext)) {
       const audio = document.createElement('audio');
-      audio.controls = true; audio.src = url; audio.style.width = '90%';
-      outputPreview.appendChild(audio);
+      audio.controls = true; audio.src = url;
+      outViewer.appendChild(audio);
     } else {
       const video = document.createElement('video');
       video.controls = true; video.src = url;
-      outputPreview.appendChild(video);
+      outViewer.appendChild(video);
     }
 
-    const baseName = (inputFile.name.replace(/\.[^.]+$/, '')) || 'output';
-    const dlName = baseName + '_' + currentOp + '.' + outExt;
-    outputMeta.textContent = `${dlName} · ${formatBytes(blob.size)}`;
-    downloadBtn.onclick = () => {
+    const base = inputFile.name.replace(/\.[^.]+$/, '') || 'output';
+    const dlName = `${base}_${currentOp}.${ext}`;
+    el('outMeta').textContent = `${dlName} · ${formatBytes(blob.size)}`;
+    el('dlBtn').onclick = () => {
       const a = document.createElement('a');
       a.href = url; a.download = dlName; a.click();
     };
-    show(outputCard);
+    show(el('outputPanel'));
   }
 
   async function safeDelete(name) {
-    try { await ffmpeg.deleteFile(name); } catch (e) { /* ignore */ }
+    try { await ffmpeg.deleteFile(name); } catch (_) { /* ignore */ }
   }
 
-  // ── Errors ─────────────────────────────────────────
+  // ── Errors ───────────────────────────────────────
   function showError(msg) {
-    errorBox.textContent = msg;
-    show(errorCard);
+    el('errBox').textContent = msg;
+    show(el('errorPanel'));
   }
   function finishError(msg) {
     showError(msg);
     running = false;
-    runBtn.disabled = false;
+    renderBtn.disabled = false;
+    renderBtn.textContent = 'RENDER';
   }
 
-  // ── Helpers ────────────────────────────────────────
+  // ── Misc helpers ─────────────────────────────────
   function mimeFor(fmt) {
-    const map = {
+    return {
       mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', mkv: 'video/x-matroska',
-      gif: 'image/gif', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+      gif: 'image/gif', png: 'image/png', jpg: 'image/jpeg',
       mp3: 'audio/mpeg', wav: 'audio/wav', aac: 'audio/aac', m4a: 'audio/mp4',
-    };
-    return map[fmt] || 'application/octet-stream';
+    }[fmt] || 'application/octet-stream';
   }
   function formatBytes(b) {
     if (b < 1024) return b + ' B';
     if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
     return (b / 1024 / 1024).toFixed(2) + ' MB';
   }
-  function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
-  function show(node) { node.classList.remove('hidden'); }
-  function hide(node) { node.classList.add('hidden'); }
+  function show(n) { n.classList.remove('hidden'); }
+  function hide(n) { n.classList.add('hidden'); }
 
-  // ── CRF label ──────────────────────────────────────
   el('crf').addEventListener('input', e => { el('crfVal').textContent = e.target.value; });
 
-  // ── Kick off engine load ───────────────────────────
+  paintTimeline();
   loadEngine();
 </script>
 </body>
