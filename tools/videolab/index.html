@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>動画変換スタジオ — K' Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0D1B2A; --surface: #142233; --surface2: #1A2C42;
+      --border: #243850; --blue: #5B8DEF; --text: #F0F4F8;
+      --muted: #7A90A8; --light: #A8BCCF; --green: #4CAF82;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
+      min-height: 100vh; padding-bottom: 60px;
+    }
+    .header {
+      padding: 14px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .back { font-size: 12px; color: var(--blue); text-decoration: none; letter-spacing: 0.06em; }
+    .header h1 { font-size: 15px; font-weight: 700; }
+    .badge { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+    .layout {
+      display: flex; gap: 28px; max-width: 1200px;
+      margin: 0 auto; padding: 28px 24px;
+    }
+    .controls { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+    .preview-col { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 18px;
+    }
+    .card-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 12px;
+    }
+    .form-row { margin-bottom: 10px; }
+    .form-row:last-child { margin-bottom: 0; }
+    label { font-size: 12px; color: var(--light); display: block; margin-bottom: 4px; }
+    .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .label-row label { margin-bottom: 0; }
+    .label-val { font-size: 12px; color: var(--blue); }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px;
+      padding: 8px 11px; outline: none; transition: border-color 0.15s; font-family: inherit;
+    }
+    select:focus, input:focus { border-color: var(--blue); }
+
+    input[type="range"] { width: 100%; accent-color: var(--blue); cursor: pointer; }
+
+    .two-col { display: flex; gap: 8px; }
+    .two-col > div { flex: 1; }
+
+    .drop-zone {
+      border: 2px dashed var(--border); border-radius: 10px;
+      padding: 28px 16px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s; color: var(--muted); font-size: 13px; line-height: 1.6;
+    }
+    .drop-zone:hover, .drop-zone.over { border-color: var(--blue); color: var(--blue); }
+    .drop-zone input { display: none; }
+
+    .btn {
+      width: 100%; padding: 11px; border-radius: 9px; border: none;
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.15s;
+      font-family: inherit;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-secondary { background: var(--surface2); color: var(--light); border: 1px solid var(--border); }
+
+    .tab-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .tab {
+      flex: 1 1 30%; padding: 7px 4px; text-align: center; font-size: 12px; font-weight: 700;
+      border-radius: 7px; cursor: pointer; border: 1px solid var(--border);
+      color: var(--muted); background: var(--surface2); transition: all 0.15s;
+    }
+    .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .preview-wrap {
+      width: 100%; aspect-ratio: 16/9;
+      background: #000; border-radius: 10px; overflow: hidden;
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+    .preview-wrap video, .preview-wrap img { max-width: 100%; max-height: 100%; display: block; }
+    .preview-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px; }
+
+    .meta { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+
+    /* Engine loading overlay */
+    .engine-status {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; color: var(--light);
+    }
+    .spinner {
+      width: 14px; height: 14px; border: 2px solid var(--border);
+      border-top-color: var(--blue); border-radius: 50%;
+      animation: spin 0.8s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .engine-ready { color: var(--green); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+    /* Progress */
+    .progress-track {
+      width: 100%; height: 8px; background: var(--surface2);
+      border-radius: 5px; overflow: hidden; border: 1px solid var(--border);
+    }
+    .progress-fill {
+      height: 100%; width: 0%; background: var(--blue);
+      transition: width 0.2s ease; border-radius: 5px;
+    }
+    .progress-label { font-size: 12px; color: var(--blue); margin-top: 6px; text-align: center; }
+
+    .log {
+      background: #0A1420; border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 11px; color: var(--muted); line-height: 1.5;
+      height: 120px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+    }
+
+    .error-box {
+      background: rgba(239, 91, 91, 0.1); border: 1px solid #ef5b5b;
+      color: #ff9d9d; border-radius: 8px; padding: 10px 12px;
+      font-size: 12px; line-height: 1.5;
+    }
+
+    .result-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .result-actions .btn { flex: 1; }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 800px) {
+      .layout { flex-direction: column; }
+      .controls { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back" href="../../">← K' Lab</a>
+  <h1>動画変換スタジオ</h1>
+  <span class="badge">ffmpeg.wasm · ブラウザ完結</span>
+</div>
+
+<div class="layout">
+  <!-- ===== Controls ===== -->
+  <div class="controls">
+
+    <!-- Engine status -->
+    <div class="card">
+      <div class="card-title">変換エンジン</div>
+      <div id="engineStatus" class="engine-status">
+        <span class="spinner"></span>
+        <span>エンジンを読み込み中… (初回は約30MB)</span>
+      </div>
+    </div>
+
+    <!-- File input -->
+    <div class="card">
+      <div class="card-title">ファイル</div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="video/*,audio/*">
+        クリックまたはドラッグで<br>動画 / 音声ファイルを選択
+      </div>
+      <div id="fileMeta" class="meta hidden"></div>
+    </div>
+
+    <!-- Operation tabs -->
+    <div class="card">
+      <div class="card-title">操作</div>
+      <div class="tab-row">
+        <div class="tab active" data-op="convert" onclick="switchOp('convert')">変換</div>
+        <div class="tab" data-op="trim" onclick="switchOp('trim')">トリミング</div>
+        <div class="tab" data-op="resize" onclick="switchOp('resize')">圧縮</div>
+        <div class="tab" data-op="gif" onclick="switchOp('gif')">GIF化</div>
+        <div class="tab" data-op="thumb" onclick="switchOp('thumb')">サムネ</div>
+        <div class="tab" data-op="audio" onclick="switchOp('audio')">音声抽出</div>
+      </div>
+
+      <!-- Convert -->
+      <div class="section active" id="sec-convert">
+        <div class="form-row">
+          <label>出力フォーマット</label>
+          <select id="convFormat">
+            <option value="mp4">MP4 (H.264)</option>
+            <option value="webm">WebM (VP9)</option>
+            <option value="mov">MOV</option>
+            <option value="mkv">MKV</option>
+            <option value="gif">GIF</option>
+            <option value="mp3">MP3 (音声のみ)</option>
+            <option value="wav">WAV (音声のみ)</option>
+          </select>
+        </div>
+        <div class="hint">コンテナ/コーデックを変換します。音声フォーマットを選ぶと映像は破棄されます。</div>
+      </div>
+
+      <!-- Trim -->
+      <div class="section" id="sec-trim">
+        <div class="two-col">
+          <div class="form-row">
+            <label>開始 (秒 or hh:mm:ss)</label>
+            <input type="text" id="trimStart" value="0" placeholder="0">
+          </div>
+          <div class="form-row">
+            <label>終了 (秒 or hh:mm:ss)</label>
+            <input type="text" id="trimEnd" placeholder="10">
+          </div>
+        </div>
+        <div class="form-row">
+          <label>出力フォーマット</label>
+          <select id="trimFormat">
+            <option value="mp4">MP4</option>
+            <option value="webm">WebM</option>
+            <option value="mov">MOV</option>
+            <option value="mkv">MKV</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label><input type="checkbox" id="trimReencode" style="width:auto;vertical-align:middle;"> 再エンコード (フレーム単位で正確にカット)</label>
+        </div>
+        <div class="hint">再エンコードなしはコピーで高速ですが、開始位置がキーフレームにずれる場合があります。</div>
+      </div>
+
+      <!-- Resize / compress -->
+      <div class="section" id="sec-resize">
+        <div class="form-row">
+          <label>解像度</label>
+          <select id="resScale">
+            <option value="">元のまま</option>
+            <option value="1920:1080">1080p (1920×1080)</option>
+            <option value="1280:720" selected>720p (1280×720)</option>
+            <option value="854:480">480p (854×480)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="label-row">
+            <label>CRF (画質 / 小さいほど高画質)</label>
+            <span class="label-val" id="crfVal">28</span>
+          </div>
+          <input type="range" id="crf" min="18" max="40" value="28">
+        </div>
+        <div class="form-row">
+          <label>出力フォーマット</label>
+          <select id="resFormat">
+            <option value="mp4">MP4 (H.264)</option>
+            <option value="webm">WebM (VP9)</option>
+          </select>
+        </div>
+        <div class="hint">CRF 23前後が標準。数値を上げるとファイルは小さくなります。</div>
+      </div>
+
+      <!-- GIF -->
+      <div class="section" id="sec-gif">
+        <div class="two-col">
+          <div class="form-row">
+            <label>開始 (秒)</label>
+            <input type="text" id="gifStart" value="0" placeholder="0">
+          </div>
+          <div class="form-row">
+            <label>長さ (秒)</label>
+            <input type="text" id="gifDuration" value="3" placeholder="3">
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="form-row">
+            <label>fps</label>
+            <input type="number" id="gifFps" value="12" min="1" max="30">
+          </div>
+          <div class="form-row">
+            <label>幅 (px)</label>
+            <input type="number" id="gifWidth" value="480" min="16" max="1920">
+          </div>
+        </div>
+        <div class="hint">パレット最適化 (palettegen / paletteuse) の2パスで書き出します。</div>
+      </div>
+
+      <!-- Thumbnail -->
+      <div class="section" id="sec-thumb">
+        <div class="form-row">
+          <label>タイムスタンプ (秒 or hh:mm:ss)</label>
+          <input type="text" id="thumbTime" value="1" placeholder="1">
+        </div>
+        <div class="form-row">
+          <label>出力形式</label>
+          <select id="thumbFormat">
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+          </select>
+        </div>
+        <div class="hint">指定した時間の1フレームを静止画として抽出します。</div>
+      </div>
+
+      <!-- Audio extract -->
+      <div class="section" id="sec-audio">
+        <div class="form-row">
+          <label>出力形式</label>
+          <select id="audioFormat">
+            <option value="mp3">MP3</option>
+            <option value="wav">WAV</option>
+            <option value="aac">AAC (m4a)</option>
+          </select>
+        </div>
+        <div class="hint">動画から音声トラックのみを抽出します。</div>
+      </div>
+    </div>
+
+    <!-- Run -->
+    <button class="btn btn-primary" id="runBtn" onclick="runOperation()" disabled>実行</button>
+  </div>
+
+  <!-- ===== Preview / Output ===== -->
+  <div class="preview-col">
+
+    <!-- Input preview -->
+    <div class="card">
+      <div class="card-title">入力プレビュー</div>
+      <div class="preview-wrap" id="inputPreview">
+        <div class="preview-empty">ファイルを読み込むとここに表示されます</div>
+      </div>
+    </div>
+
+    <!-- Progress + log -->
+    <div class="card hidden" id="processCard">
+      <div class="card-title">処理状況</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">0%</div>
+      <div class="log" id="logBox"></div>
+    </div>
+
+    <!-- Error -->
+    <div class="card hidden" id="errorCard">
+      <div class="card-title">エラー</div>
+      <div class="error-box" id="errorBox"></div>
+    </div>
+
+    <!-- Output -->
+    <div class="card hidden" id="outputCard">
+      <div class="card-title">出力結果</div>
+      <div class="preview-wrap" id="outputPreview"></div>
+      <div class="meta" id="outputMeta"></div>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="downloadBtn">ダウンロード</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+  import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/esm/index.js';
+  import { fetchFile, toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js';
+
+  const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+  const ffmpeg = new FFmpeg();
+
+  // ── State ──────────────────────────────────────────
+  let engineReady = false;
+  let inputFile = null;       // the selected File
+  let inputName = '';         // filename used inside ffmpeg FS
+  let inputExt = '';
+  let running = false;
+  let lastOutputURL = null;   // object URL to revoke
+
+  // ── DOM refs ───────────────────────────────────────
+  const el = (id) => document.getElementById(id);
+  const engineStatus = el('engineStatus');
+  const runBtn = el('runBtn');
+  const dropZone = el('dropZone');
+  const fileInput = el('fileInput');
+  const fileMeta = el('fileMeta');
+  const inputPreview = el('inputPreview');
+  const processCard = el('processCard');
+  const progressFill = el('progressFill');
+  const progressLabel = el('progressLabel');
+  const logBox = el('logBox');
+  const errorCard = el('errorCard');
+  const errorBox = el('errorBox');
+  const outputCard = el('outputCard');
+  const outputPreview = el('outputPreview');
+  const outputMeta = el('outputMeta');
+  const downloadBtn = el('downloadBtn');
+
+  let currentOp = 'convert';
+
+  // ── Tabs ───────────────────────────────────────────
+  window.switchOp = function (op) {
+    currentOp = op;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.op === op));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    el('sec-' + op).classList.add('active');
+  };
+
+  // ── ffmpeg logging / progress ──────────────────────
+  ffmpeg.on('log', ({ message }) => {
+    if (!message) return;
+    logBox.textContent += message + '\n';
+    logBox.scrollTop = logBox.scrollHeight;
+  });
+
+  ffmpeg.on('progress', ({ progress }) => {
+    let pct = Math.round((progress || 0) * 100);
+    if (!isFinite(pct)) pct = 0;
+    pct = Math.max(0, Math.min(100, pct));
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = pct + '%';
+  });
+
+  // ── Load engine ────────────────────────────────────
+  async function loadEngine() {
+    try {
+      await ffmpeg.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+      });
+      engineReady = true;
+      engineStatus.classList.add('engine-ready');
+      engineStatus.innerHTML = '<span class="dot"></span><span>エンジン準備完了</span>';
+      if (inputFile) runBtn.disabled = false;
+    } catch (e) {
+      engineStatus.innerHTML = '<span>エンジンの読み込みに失敗しました</span>';
+      showError('変換エンジン (ffmpeg.wasm) の読み込みに失敗しました。ネットワーク接続を確認して再読み込みしてください。\n' + (e && e.message ? e.message : e));
+    }
+  }
+
+  // ── File loading ───────────────────────────────────
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('over');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+  function loadFile(file) {
+    inputFile = file;
+    const dot = file.name.lastIndexOf('.');
+    inputExt = dot >= 0 ? file.name.slice(dot + 1).toLowerCase() : 'bin';
+    inputName = 'input.' + inputExt;
+
+    dropZone.innerHTML = '✓ ' + escapeHtml(file.name);
+    fileMeta.classList.remove('hidden');
+    fileMeta.textContent = `${formatBytes(file.size)} · ${file.type || '不明な形式'}`;
+
+    // Input preview
+    const url = URL.createObjectURL(file);
+    inputPreview.innerHTML = '';
+    if (file.type.startsWith('audio/')) {
+      const audio = document.createElement('audio');
+      audio.controls = true; audio.src = url; audio.style.width = '90%';
+      inputPreview.appendChild(audio);
+    } else {
+      const video = document.createElement('video');
+      video.controls = true; video.src = url;
+      inputPreview.appendChild(video);
+    }
+
+    if (engineReady) runBtn.disabled = false;
+    hide(errorCard);
+  }
+
+  // ── Build ffmpeg args per operation ────────────────
+  // Returns { args: [...], outName, outMime, isImage, twoPass }
+  function buildJob() {
+    const out = (ext) => 'output.' + ext;
+    switch (currentOp) {
+      case 'convert': {
+        const fmt = el('convFormat').value;
+        let args = ['-i', inputName];
+        if (fmt === 'mp3') args = args.concat(['-vn', '-c:a', 'libmp3lame', '-q:a', '2']);
+        else if (fmt === 'wav') args = args.concat(['-vn']);
+        else if (fmt === 'gif') args = args.concat(['-f', 'gif']);
+        else if (fmt === 'webm') args = args.concat(['-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '32', '-c:a', 'libopus']);
+        else args = args.concat(['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-c:a', 'aac']);
+        args.push(out(fmt));
+        return { args, outName: out(fmt), outMime: mimeFor(fmt), isImage: false };
+      }
+      case 'trim': {
+        const start = (el('trimStart').value || '0').trim();
+        const end = (el('trimEnd').value || '').trim();
+        const fmt = el('trimFormat').value;
+        const reencode = el('trimReencode').checked;
+        let args = ['-ss', start, '-i', inputName];
+        if (end) args = args.concat(['-to', end]);
+        if (reencode) args = args.concat(['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-c:a', 'aac']);
+        else args = args.concat(['-c', 'copy']);
+        args.push(out(fmt));
+        return { args, outName: out(fmt), outMime: mimeFor(fmt), isImage: false };
+      }
+      case 'resize': {
+        const scale = el('resScale').value;
+        const crf = el('crf').value;
+        const fmt = el('resFormat').value;
+        let args = ['-i', inputName];
+        if (scale) args = args.concat(['-vf', `scale=${scale}:flags=lanczos`]);
+        if (fmt === 'webm') args = args.concat(['-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', crf, '-c:a', 'libopus']);
+        else args = args.concat(['-c:v', 'libx264', '-preset', 'veryfast', '-crf', crf, '-c:a', 'aac']);
+        args.push(out(fmt));
+        return { args, outName: out(fmt), outMime: mimeFor(fmt), isImage: false };
+      }
+      case 'gif': {
+        const start = (el('gifStart').value || '0').trim();
+        const dur = (el('gifDuration').value || '3').trim();
+        const fps = el('gifFps').value || '12';
+        const width = el('gifWidth').value || '480';
+        const vf = `fps=${fps},scale=${width}:-1:flags=lanczos`;
+        // two-pass palette optimization
+        return {
+          twoPass: true,
+          pass1: ['-ss', start, '-t', dur, '-i', inputName, '-vf', `${vf},palettegen`, '-y', 'palette.png'],
+          pass2: ['-ss', start, '-t', dur, '-i', inputName, '-i', 'palette.png', '-lavfi', `${vf} [x]; [x][1:v] paletteuse`, '-y', out('gif')],
+          args: null, outName: out('gif'), outMime: 'image/gif', isImage: false,
+        };
+      }
+      case 'thumb': {
+        const time = (el('thumbTime').value || '0').trim();
+        const fmt = el('thumbFormat').value;
+        const args = ['-ss', time, '-i', inputName, '-frames:v', '1', '-q:v', '2', out(fmt)];
+        return { args, outName: out(fmt), outMime: mimeFor(fmt), isImage: true };
+      }
+      case 'audio': {
+        const fmt = el('audioFormat').value;
+        let args = ['-i', inputName, '-vn'];
+        if (fmt === 'mp3') args = args.concat(['-c:a', 'libmp3lame', '-q:a', '2']);
+        else if (fmt === 'aac') args = args.concat(['-c:a', 'aac', '-b:a', '192k']);
+        const outExt = fmt === 'aac' ? 'm4a' : fmt;
+        args.push(out(outExt));
+        return { args, outName: out(outExt), outMime: mimeFor(fmt), isImage: false };
+      }
+    }
+  }
+
+  // ── Run ────────────────────────────────────────────
+  window.runOperation = async function () {
+    if (!engineReady || !inputFile || running) return;
+    running = true;
+    runBtn.disabled = true;
+    hide(errorCard);
+    hide(outputCard);
+    show(processCard);
+    logBox.textContent = '';
+    progressFill.style.width = '0%';
+    progressLabel.textContent = '0%';
+
+    let job;
+    try {
+      job = buildJob();
+    } catch (e) {
+      finishError('入力値が不正です: ' + (e && e.message ? e.message : e));
+      return;
+    }
+
+    try {
+      // Write input to virtual FS
+      await ffmpeg.writeFile(inputName, await fetchFile(inputFile));
+
+      if (job.twoPass) {
+        await ffmpeg.exec(job.pass1);
+        await ffmpeg.exec(job.pass2);
+      } else {
+        await ffmpeg.exec(job.args);
+      }
+
+      // Read result
+      const data = await ffmpeg.readFile(job.outName);
+      if (!data || data.length === 0) {
+        throw new Error('出力が空でした。パラメータ（時間指定・フォーマットの組み合わせ）を確認してください。');
+      }
+      const blob = new Blob([data.buffer], { type: job.outMime });
+
+      if (lastOutputURL) URL.revokeObjectURL(lastOutputURL);
+      lastOutputURL = URL.createObjectURL(blob);
+
+      showOutput(job, blob, lastOutputURL);
+
+      // Cleanup FS
+      await safeDelete(inputName);
+      await safeDelete(job.outName);
+      if (job.twoPass) await safeDelete('palette.png');
+    } catch (e) {
+      finishError('変換に失敗しました。ログを確認してください。\n' + (e && e.message ? e.message : e));
+      return;
+    }
+
+    running = false;
+    runBtn.disabled = false;
+  };
+
+  function showOutput(job, blob, url) {
+    outputPreview.innerHTML = '';
+    const outExt = job.outName.split('.').pop();
+    if (job.isImage || outExt === 'gif') {
+      const img = document.createElement('img');
+      img.src = url;
+      outputPreview.appendChild(img);
+    } else if (['mp3', 'wav', 'aac', 'm4a'].includes(outExt)) {
+      const audio = document.createElement('audio');
+      audio.controls = true; audio.src = url; audio.style.width = '90%';
+      outputPreview.appendChild(audio);
+    } else {
+      const video = document.createElement('video');
+      video.controls = true; video.src = url;
+      outputPreview.appendChild(video);
+    }
+
+    const baseName = (inputFile.name.replace(/\.[^.]+$/, '')) || 'output';
+    const dlName = baseName + '_' + currentOp + '.' + outExt;
+    outputMeta.textContent = `${dlName} · ${formatBytes(blob.size)}`;
+    downloadBtn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = url; a.download = dlName; a.click();
+    };
+    show(outputCard);
+  }
+
+  async function safeDelete(name) {
+    try { await ffmpeg.deleteFile(name); } catch (e) { /* ignore */ }
+  }
+
+  // ── Errors ─────────────────────────────────────────
+  function showError(msg) {
+    errorBox.textContent = msg;
+    show(errorCard);
+  }
+  function finishError(msg) {
+    showError(msg);
+    running = false;
+    runBtn.disabled = false;
+  }
+
+  // ── Helpers ────────────────────────────────────────
+  function mimeFor(fmt) {
+    const map = {
+      mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', mkv: 'video/x-matroska',
+      gif: 'image/gif', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+      mp3: 'audio/mpeg', wav: 'audio/wav', aac: 'audio/aac', m4a: 'audio/mp4',
+    };
+    return map[fmt] || 'application/octet-stream';
+  }
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1024 / 1024).toFixed(2) + ' MB';
+  }
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function show(node) { node.classList.remove('hidden'); }
+  function hide(node) { node.classList.add('hidden'); }
+
+  // ── CRF label ──────────────────────────────────────
+  el('crf').addEventListener('input', e => { el('crfVal').textContent = e.target.value; });
+
+  // ── Kick off engine load ───────────────────────────
+  loadEngine();
+</script>
+</body>
+</html>
